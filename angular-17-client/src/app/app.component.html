@@ -1,4 +1,4 @@
-<div>
+<!--<div>
   <nav class="navbar navbar-expand navbar-dark bg-dark">
     <a href="#" class="navbar-brand">bezKoder</a>
     <div class="navbar-nav mr-auto">
@@ -14,4 +14,213 @@
   <div class="container mt-3">
     <router-outlet></router-outlet>
   </div>
-</div>
+</div>-->
+
+
+<div class="bg-body-tertiary">
+
+	<div class="container" *ngIf="applicationInProgress">
+	
+			<div class="py-5 text-center">
+				<h2>FICA Registration form</h2>
+				<p class="lead">Please complete all the required fields below in order for us to successfully process your application</p>
+			</div>
+	
+			<div class="row g-5">
+				<div class="col-md-7 col-lg-8">
+	
+					<hr class="my-4">
+	
+					<h4 class="mb-3">Basic information</h4>
+	
+					<form class="needs-validation" [formGroup]="regForm">
+						
+						<div class="row g-3">
+	
+							<div class="col-12">
+								<div class="col-sm-6">
+									<label for="reg_type" class="form-label">Registration type</label>
+									<select #regTypeSelect class="form-select" (change)="updateRegType(regTypeSelect.value)" required>
+										<option value="">Choose...</option>
+										@for (type of reg_types; let i = $index; track type) {
+											<option [value]="type.id">{{ type.name }}</option>
+										}
+									</select>
+									<div class="invalid-feedback">
+										Please select a valid registration type.
+									</div>
+								</div>
+							</div>
+	
+						
+							<div class="col-sm-6">
+								<label for="firstName" class="form-label">First name</label>
+								<input type="text" class="form-control" id="firstName" formControlName="firstName" required>
+								<div class="invalid-feedback">
+									Valid first name is required.
+								</div>
+							</div>
+	
+							<div class="col-sm-6">
+								<label for="lastName" class="form-label">Last name</label>
+								<input type="text" class="form-control" id="lastName" formControlName="lastName" required>
+								<div class="invalid-feedback">
+									Valid last name is required.
+								</div>
+							</div>
+	
+							<div class="col-12">
+								<label for="username" class="form-label">Cellphone</label>
+								<div class="input-group has-validation">
+									<span class="input-group-text"><i class="bi bi-phone"></i></span>
+									<input type="text" class="form-control" id="username" placeholder="0810000000" formControlName="cell" required>
+									<div class="invalid-feedback">
+										Your username is required.
+									</div>
+								</div>
+							</div>
+	
+							<div class="col-12">
+								<label for="username" class="form-label">Business Registration Number</label>
+								<div class="input-group has-validation">
+									<span class="input-group-text"><i class="bi bi-phone"></i></span>
+									<input type="text" class="form-control" id="username" placeholder="YYYY/000000/00" formControlName="bus_reg_no" required>
+									<div class="invalid-feedback">
+										Your username is required.
+									</div>
+								</div>
+							</div>						
+	
+							<div class="col-12">
+								<label for="email" class="form-label">Email </label>
+								<input type="email" class="form-control" id="email" placeholder="you@example.com" formControlName="email">
+								<div class="form-error" *ngIf="regForm.get('email')?.invalid && regForm.get('email')?.touched">
+									A valid email is required.
+								</div>
+							</div>
+	
+							<div class="col-12">
+								<label for="address" class="form-label">Tax number</label>
+								<input type="text" class="form-control" id="address" placeholder="tax_no" formControlName="email" required>
+								<div class="invalid-feedback">
+									Please enter your shipping address.
+								</div>
+							</div>
+	
+							<hr class="my-4">
+	
+							<h4 class="mb-3">Banking information</h4>
+	
+	
+							<div class="col-sm-6">
+								<label for="acc_holder" class="form-label">Account Name / Holder</label>
+								<input type="text" class="form-control" id="acc_holder" placeholder="eg John Smith" formControlName="acc_holder">
+							</div>
+							<div class="col-sm-6">
+								<label for="acc_holder" class="form-label">Account Type</label>
+								<select #accSelect class="form-select" id="reg_type" (change)="updateAccType(accSelect.value)" required>
+									<option value="">Choose...</option>
+									@for (type of accTypes; let i = $index; track type) {
+										<option [value]="type.id">{{ type.name }}</option>
+									}
+								</select>              
+							</div>              
+	
+							<div class="col-sm-6">
+								<label for="acc_number" class="form-label">Account Number</label>
+								<input type="number" class="form-control" id="acc_number" placeholder="" formControlName="acc_no">
+							</div>
+	
+							<div class="col-sm-6">
+								<label for="bank" class="form-label">Bank test</label>
+								<select #bankSelect class="form-select" id="reg_type" (change)="updateBank(bankSelect.value)" required>
+									<option value="">Choose...</option>
+									@for (bank of banks; let i = $index; track bank) {
+										<option [value]="bank.id">{{ bank.name }}</option>
+									}
+								</select>  
+								<div class="invalid-feedback">
+									Please select a valid country.
+								</div>
+							</div>              
+							
+	
+							<div class="col-sm-6">
+								<label for="swift" class="form-label">SWIFT (BIC)/ SORT CODE</label>
+								<input type="number" class="form-control" id="acc_number" placeholder="eg 0000" formControlName="swift_code">
+							</div>
+	
+							<div class="col-sm-6">
+								<label for="iban" class="form-label">IBAN</label>
+								<input type="number" class="form-control" id="acc_number" placeholder="eg 0000" formControlName="iban">
+							</div>						
+	
+						<hr class="my-4">
+	
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="same-address">
+							<label class="form-check-label" for="same-address">Shipping address is the same as my billing address</label>
+						</div>
+	
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="save-info">
+							<label class="form-check-label" for="save-info">Save this information for next time</label>
+						</div>
+	
+						<hr class="my-4">
+	
+						<h4 class="mb-3">Upload Documents</h4>
+	
+						<div class="my-3">
+							<div class="form-check">
+								<input id="credit" name="paymentMethod" type="radio" class="form-check-input" checked required>
+								<label class="form-check-label" for="credit">Credit card</label>
+							</div>
+							<div class="form-check">
+								<input id="debit" name="paymentMethod" type="radio" class="form-check-input" required>
+								<label class="form-check-label" for="debit">Debit card</label>
+							</div>
+							<div class="form-check">
+								<input id="paypal" name="paymentMethod" type="radio" class="form-check-input" required>
+								<label class="form-check-label" for="paypal">PayPal</label>
+							</div>
+						</div>
+	
+						<hr class="my-4">
+	
+						<button class="w-100 btn btn-primary btn-lg" 
+							(click)="submitForm()"
+							[disabled]="regForm.status === 'INVALID'">
+							Complete Registration
+						</button>
+					
+					</div>
+				</form>
+			</div>
+	
+		<footer class="my-5 pt-5 text-body-secondary text-center text-small">
+			<p class="mb-1">&copy; 2025 WCBSM</p>
+			<ul class="list-inline">
+				<li class="list-inline-item"><a href="#">Privacy</a></li>
+				<li class="list-inline-item"><a href="#">Terms</a></li>
+			</ul>
+		</footer>
+	</div>
+	
+	</div>
+	</div>
+	
+	
+	<div class="container" *ngIf="!applicationInProgress">
+	
+		<div class="py-5 text-center">
+			<h2>Your Application has been processed!</h2>
+			<p class="lead">Congratulations, your application has been processed successfully. For any further queries please refer to your contact.</p>
+		</div>
+	
+	</div>
+	
+	<!-- ROUTER 
+	<router-outlet></router-outlet>-->
+	
+	
