@@ -24,7 +24,7 @@ exports.create = (req, res) => {
 	const file_trust = req.body.file_trust;
 	const passport = req.body.passport;
 
-  // Validate request
+  /*
   if (!user_id && !passport) {
     res.status(400).send({
       message: "We need Identification from you"
@@ -37,7 +37,7 @@ exports.create = (req, res) => {
       message: "We need an Email address from you"
     });
     return;
-  }	
+  }	*/
 
   // Create a Registration
   const registration = {

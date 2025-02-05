@@ -32,6 +32,9 @@ export class AppComponent {
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
+	isSACitizen: boolean = true;
+	isBusiness: boolean = false;
+	regType: string = '';
 
 	constructor(
 		private fb: FormBuilder, 
@@ -42,12 +45,12 @@ export class AppComponent {
 		this.localStore = document.defaultView?.localStorage;
 		if (this.localStore && this.localStore.getItem(LS_KEY)) {
 			const getLS = this.localStore.getItem(LS_KEY);
-			alert(getLS);
+			//this.applicationInProgress = getLS === '1' ? false : true;
 		}
 
 		this.regForm = new FormGroup({
 			reg_type: new FormControl(''),
-			id: new FormControl(''),
+			user_id: new FormControl(''),
 			firstName: new FormControl(''),
 			lastName: new FormControl(''),
 			bus_reg_no: new FormControl(''),
@@ -104,6 +107,7 @@ export class AppComponent {
   updateRegType(value: string) {
     console.log(value);
 		this.regForm.controls['reg_type'].setValue(value);
+		this.regType = value;
   }
 
   updateBank(value: string) {
@@ -114,22 +118,26 @@ export class AppComponent {
   updateAccType(value: string) {
     console.log(value);
 		this.regForm.controls['acc_type'].setValue(value);
-  }	
+  }
+
+	uploadFile(e: any) {
+		console.log('file upload: ', e);
+	}
 
   submitForm() {
 		const { localStore } = this;
 		const body = this.regForm.value;
 		console.log('final Obj for API req: ', body);
-		
-		
-		/*this.regService.createRegistration(body).subscribe(res => {
-			console.log('SUCCESS response from Subscribe: ',res);
-			this.applicationInProgress = false;
+
+		this.regService.create(body).subscribe(res => {
+			console.log('response from within subscribe method!');
 			if (localStore) localStore.setItem('owiqsjdh09192', '1');
-		}, (err) => {
+			this.applicationInProgress = false;
+		}, err => {
 			console.log('ERROR response from Subscribe: ',err);
-			this.applicationInProgress = true;
-		})*/
+			this.applicationInProgress = true;			
+		})
+		
   }
 
 }
