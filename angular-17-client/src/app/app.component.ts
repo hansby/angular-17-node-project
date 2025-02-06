@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { BehaviorSubject, combineLatest, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, delay, tap } from 'rxjs';
 import {
 	FormControl, FormGroup, ReactiveFormsModule,
 	FormBuilder,
@@ -127,6 +127,7 @@ export class AppComponent {
 	isBusiness: boolean = false;
 	regType: string = '';
 	fileTypes = fileTypes;
+	isLoading: boolean = false;
 
 	constructor(
 		private fb: FormBuilder, 
@@ -197,12 +198,6 @@ export class AppComponent {
 				this.regForm.updateValueAndValidity();
 		})
 
-		/*
-		ctrls['reg_type'].valueChanges.subscribe((val) => {
-			console.log('reg_type from listener: ', val);
-				
-		})*/
-
 	} /* end ngOninit */
 
 
@@ -253,41 +248,58 @@ export class AppComponent {
 		this.regForm.controls['acc_type'].setValue(value);
   }
 
-	uploadFile(e: any) {
-		console.log('file upload: ', e);
-	}
-
 	updateDBName(file: File | undefined, fileType: fileTypes) {
 		if (file) {
+			const ctrl = this.regForm.controls;
 			console.log('event emitter value: ', file);
-			const name = this.regForm.controls['firstName'].value;
-			const surname = this.regForm.controls['lastName'].value;
-			const id = this.regForm.controls['user_id'].value;
-			const passport = this.regForm.controls['passport'].value;
+			const name = ctrl['firstName'].value;
+			const surname = ctrl['lastName'].value;
+			const id = ctrl['user_id'].value;
+			const passport = ctrl['passport'].value;
 
 			let type = file.type;
 			let finalType = type.slice(type.indexOf('/') + 1, type.length);
 			if (finalType.includes('sheet')) finalType = 'xls';
 			if (finalType.includes('presentation')) finalType = 'pptx';
+			if (finalType.includes('document')) finalType = 'doc';
+			
 			const DBName = `${surname} ${name} - ${fileType} - ${id}.${finalType}`;
 			console.log('DBName for upload: ', DBName);
+
+			switch (fileType) {
+				case fileTypes.ID: ctrl['file_id'].setValue(DBName);
+					break;
+				case fileTypes.BUS_REG_DOC: ctrl['file_bus_reg'].setValue(DBName);
+					break;	
+				case fileTypes.TRUST_DOC: ctrl['file_trust'].setValue(DBName);
+					break;
+				case fileTypes.PROOF_OF_ADDRESS: ctrl['file_poa'].setValue(DBName);
+					break;																				
+			}
+
 		}
 	}
 
   submitForm() {
+		this.isLoading = true;
 		const { localStore } = this;
 		const body = this.regForm.value;
 		console.log('final Obj for API req: ', body);
 
 		if (this.regForm.status !== 'VALID') return;
 
-		this.regService.create(body).subscribe(res => {
+		this.regService.create(body).pipe(
+			delay(4000),
+		)
+		.subscribe(res => {
 			console.log('response from within subscribe method!');
 			if (localStore) localStore.setItem('owiqsjdh09192', '1');
 			this.applicationInProgress = false;
+			this.isLoading = false;
 		}, err => {
 			console.log('ERROR response from Subscribe: ',err);
-			this.applicationInProgress = true;			
+			this.applicationInProgress = true;
+			this.isLoading = false;		
 		})
 		
   }

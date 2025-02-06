@@ -31,7 +31,7 @@ export class FileUploadComponent implements OnInit {
     this.currentFile = event.target.files.item(0);
 		console.log('lets see current file before uploading: ', this.currentFile);
 		this.dbName.emit(this.currentFile);
-		//this.upload();
+		this.upload();
   }
 
   upload(): void {

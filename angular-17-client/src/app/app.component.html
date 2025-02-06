@@ -271,42 +271,36 @@
 
 						<ng-container *ngIf="regForm.controls['firstName'].value.length > 0 && regForm.controls['lastName'].value.length > 0">
 
-							<app-file-upload [fileName]="'Upload ID'" [fileType]="fileTypes.ID" (dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>
-							<app-file-upload [fileName]="'Upload Proof of Address'" [fileType]="fileTypes.PROOF_OF_ADDRESS"></app-file-upload>
-							<app-file-upload [fileName]="'Upload Registration Certificate (COR 14.3)'" [fileType]="fileTypes.BUS_REG_DOC"></app-file-upload>
-							<app-file-upload [fileName]="'Upload Letter of authority'" [fileType]="fileTypes.TRUST_DOC"></app-file-upload>
+							<app-file-upload 
+								[fileName]="'Upload ID'" 
+								[fileType]="fileTypes.ID" 
+								(dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>
+							<app-file-upload 
+								[fileName]="'Upload Proof of Address'" 
+								[fileType]="fileTypes.PROOF_OF_ADDRESS" 
+								(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>
+							<app-file-upload 
+								[fileName]="'Upload Registration Certificate (COR 14.3)'" 
+								[fileType]="fileTypes.BUS_REG_DOC"
+								(dbName)="updateDBName($event, fileTypes.BUS_REG_DOC)"></app-file-upload>
+							<app-file-upload 
+								[fileName]="'Upload Letter of authority'" 
+								[fileType]="fileTypes.TRUST_DOC"
+								(dbName)="updateDBName($event, fileTypes.TRUST_DOC)"></app-file-upload>
 							
 						</ng-container>
 						
-						<!--
-						<div class="mb-3">
-							<label for="formFile" class="form-label">Upload ID</label>
-							<input #u_id class="form-control" type="file" id="u_id" (change)="uploadFile(u_id)">
-						</div>
-
-						<div class="mb-3">
-							<label for="formFile" class="form-label">Upload Proof of Address</label>
-							<input #u_poa class="form-control" type="file" id="u_poa">
-						</div>						
-
-						<div class="mb-3" *ngIf="regType === 'business'">
-							<label for="formFile" class="form-label">Upload Registration Certificate (COR 14.3)</label>
-							<input class="form-control" type="file" id="u_bus">
-						</div>	
-						
-						<div class="mb-3" *ngIf="regType === 'trust'">
-							<label for="formFile" class="form-label">Upload Letter of authority</label>
-							<input class="form-control" type="file" id="u_trust">
-						</div>-->
-						
 						<hr class="my-4">
 	
-						<button class="w-100 btn btn-primary btn-lg" 
+						<button *ngIf="!isLoading" class="w-100 btn btn-primary btn-lg" 
 							(click)="submitForm()"
 							[disabled]="regForm.status === 'INVALID'">
 							Complete Registration
 						</button>
-					
+
+						<button [disabled]="true" *ngIf="isLoading" class="w-100 btn btn-primary btn-lg">
+							Please wait...
+						</button>
 					</div>
 				</form>
 			</div>
@@ -332,8 +326,5 @@
 		</div>
 	
 	</div>
-	
-	<!-- ROUTER 
-	<router-outlet></router-outlet>-->
 	
 	

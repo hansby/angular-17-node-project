@@ -9,7 +9,6 @@ hr {
 
 .btn-primary:disabled {
 	background: rgba(0, 0, 0, 0.4);
-	border: 1px solid red;	
 }
 
 .form-control.ng-dirty.ng-touched.ng-invalid, .form-select.ng-dirty.ng-touched.ng-invalid {
