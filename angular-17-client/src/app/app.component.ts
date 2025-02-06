@@ -14,10 +14,10 @@ import { RegistrationsService } from './services/registrations.service';
 const LS_KEY = 'owiqsjdh09192';
 
 export enum fileTypes {
-	ID = 'id',
-	PROOF_OF_ADDRESS = 'poa',
-	BUS_REG_DOC = 'bus_reg_doc',
-	TRUST_DOC = 'trust_doc'
+	ID = 'ID',
+	PROOF_OF_ADDRESS = 'POA',
+	BUS_REG_DOC = 'CPIC',
+	TRUST_DOC = 'TRUST'
 }
 
 enum REG_TYPE {
@@ -146,7 +146,7 @@ export class AppComponent {
 			email: new FormControl('', [Validators.required, Validators.email]),
 			tax_no: new FormControl(''),
 			acc_holder: new FormControl(''),
-			acc_type: new FormControl(''),
+			acc_type: new FormControl('', [Validators.required]),
 			acc_no: new FormControl(''),
 			swift_code: new FormControl(''),
 			iban: new FormControl(''),
@@ -156,9 +156,10 @@ export class AppComponent {
 			file_bus_reg: new FormControl(''),
 			file_trust: new FormControl(''),
 			passport: new FormControl(''),
+			citizenStatus: new FormControl('', [Validators.required])
 		}, {
 			validators: [
-				testForValidSAId('user_id')
+				//testForValidSAId('user_id')
 			]
 		});
 
@@ -196,12 +197,6 @@ export class AppComponent {
     {name: 'Ubank', id: 'ubank'},
   ];
 
-	checkIDNumberValidity(idNum: HTMLInputElement) {
-		const inptID = idNum.value;
-		//console.log('check id num: ', idNum.value);
-		// this.checkID();
-	}	
-
   updateRegType(value: string) {
     console.log(value);
 		this.regForm.controls['reg_type'].setValue(value);
@@ -211,6 +206,7 @@ export class AppComponent {
   updateBank(value: string) {
     console.log(value);
 		this.regForm.controls['bank'].setValue(value);
+		console.log('invalid ctrls: ', this.findInvalidControls());
   }	
 
   updateAccType(value: string) {
@@ -222,10 +218,29 @@ export class AppComponent {
 		console.log('file upload: ', e);
 	}
 
+	updateDBName(file: File | undefined, fileType: fileTypes) {
+		if (file) {
+			console.log('event emitter value: ', file);
+			const name = this.regForm.controls['firstName'].value;
+			const surname = this.regForm.controls['lastName'].value;
+			const id = this.regForm.controls['user_id'].value;
+			const passport = this.regForm.controls['passport'].value;
+
+			let type = file.type;
+			let finalType = type.slice(type.indexOf('/') + 1, type.length);
+			if (finalType.includes('sheet')) finalType = 'xls';
+			if (finalType.includes('presentation')) finalType = 'pptx';
+			const DBName = `${surname} ${name} - ${fileType} - ${id}.${finalType}`;
+			console.log('DBName for upload: ', DBName);
+		}
+	}
+
   submitForm() {
 		const { localStore } = this;
 		const body = this.regForm.value;
 		console.log('final Obj for API req: ', body);
+
+		if (this.regForm.status !== 'VALID') return;
 
 		this.regService.create(body).subscribe(res => {
 			console.log('response from within subscribe method!');
@@ -237,6 +252,17 @@ export class AppComponent {
 		})
 		
   }
+
+	findInvalidControls() {
+		const invalid = [];
+		const controls = this.regForm.controls;
+		for (const name in controls) {
+			if (controls[name].invalid) {
+				invalid.push(name);
+			}
+		}
+		return invalid;
+	}
 
 }
 

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -17,6 +17,7 @@ export class FileUploadComponent implements OnInit {
   fileInfos?: Observable<any>;
 	@Input() fileName: string | undefined;
 	@Input() fileType: string | undefined;
+	@Output() dbName = new EventEmitter();
 
   constructor(private uploadService: FileUploadService) {}
 
@@ -28,7 +29,9 @@ export class FileUploadComponent implements OnInit {
   selectFile(event: any): void {
     this.message = '';
     this.currentFile = event.target.files.item(0);
-		this.upload();
+		console.log('lets see current file before uploading: ', this.currentFile);
+		this.dbName.emit(this.currentFile);
+		//this.upload();
   }
 
   upload(): void {

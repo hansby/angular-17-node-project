@@ -58,12 +58,22 @@
 							<div class="my-3">
 								<div class="col-sm-6">
 								<div class="form-check">
-									<input id="credit" name="paymentMethod" type="radio" class="form-check-input" checked required>
-									<label class="form-check-label" for="credit">SA Citizen</label>
+									<input id="citizen" 
+										name="citizenStatus" 
+										type="radio" 
+										class="form-check-input" 
+										value="Citizen"
+										formControlName="citizenStatus">
+									<label class="form-check-label" for="citizen">SA Citizen</label>
 								</div>
 								<div class="form-check">
-									<input id="debit" name="paymentMethod" type="radio" class="form-check-input" required>
-									<label class="form-check-label" for="debit">Foreigner</label>
+									<input id="foreigner" 
+										name="citizenStatus" 
+										type="radio" 
+										class="form-check-input"
+										value="Foreigner"
+										formControlName="citizenStatus">
+									<label class="form-check-label" for="foreigner">Foreigner</label>
 								</div>
 								</div>
 							</div>							
@@ -106,7 +116,7 @@
 									</span>
 									<input type="text" class="form-control" id="username" placeholder="0810000000" formControlName="cell" required>
 									<div class="invalid-feedback">
-										Your username is required.
+										Your cell is required.
 									</div>
 								</div>
 							</div>
@@ -188,7 +198,12 @@
 							</div>
 							<div class="col-sm-6">
 								<label for="acc_holder" class="form-label">Account Type</label>
-								<select #accSelect class="form-select" id="reg_type" (change)="updateAccType(accSelect.value)" required>
+								<select #accSelect 
+									class="form-select" 
+									id="reg_type" 
+									(change)="updateAccType(accSelect.value)"
+									formControlName="acc_type"
+									name="acc_type">
 									<option value="">Choose...</option>
 									@for (type of accTypes; let i = $index; track type) {
 										<option [value]="type.id">{{ type.name }}</option>
@@ -239,12 +254,19 @@
 						</div>-->
 	
 						<h4 class="mb-3">Upload Documents</h4>
+						<ng-container *ngIf="regForm.controls['firstName'].value.length <= 0 || regForm.controls['lastName'].value.length <= 0">
+							<p>**Please fill in your name, surname and ID or Passport before completing this section.</p>
+						</ng-container>
 
-						<app-file-upload [fileName]="'Upload ID'" [fileType]="fileTypes.ID"></app-file-upload>
-						<app-file-upload [fileName]="'Upload Proof of Address'" [fileType]="fileTypes.PROOF_OF_ADDRESS"></app-file-upload>
-						<app-file-upload [fileName]="'Upload Registration Certificate (COR 14.3)'" [fileType]="fileTypes.BUS_REG_DOC"></app-file-upload>
-						<app-file-upload [fileName]="'Upload Letter of authority'" [fileType]="fileTypes.TRUST_DOC"></app-file-upload>
 
+						<ng-container *ngIf="regForm.controls['firstName'].value.length > 0 && regForm.controls['lastName'].value.length > 0">
+
+							<app-file-upload [fileName]="'Upload ID'" [fileType]="fileTypes.ID" (dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>
+							<app-file-upload [fileName]="'Upload Proof of Address'" [fileType]="fileTypes.PROOF_OF_ADDRESS"></app-file-upload>
+							<app-file-upload [fileName]="'Upload Registration Certificate (COR 14.3)'" [fileType]="fileTypes.BUS_REG_DOC"></app-file-upload>
+							<app-file-upload [fileName]="'Upload Letter of authority'" [fileType]="fileTypes.TRUST_DOC"></app-file-upload>
+							
+						</ng-container>
 						
 						<!--
 						<div class="mb-3">
