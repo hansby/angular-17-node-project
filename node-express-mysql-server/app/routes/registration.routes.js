@@ -1,28 +1,39 @@
 module.exports = app => {
   const registrations = require("../controllers/registration.controller.js");
+	const controller = require("../controllers/file.controller.js");
 
-  var router = require("express").Router();
+  var router_registration = require("express").Router();
+	var router_fileUpload = require("express").Router();
 
   // Create a new Registration
-  router.post("/", registrations.create);
+  router_registration.post("/", registrations.create);
 
   // Retrieve all Registration
-  router.get("/", registrations.findAll);
+  router_registration.get("/", registrations.findAll);
 
   // Retrieve all published Tutorials
   //router.get("/published", tutorials.findAllPublished);
 
   // Retrieve a single Tutorial with id
-  router.get("/:id", registrations.findOne);
+  router_registration.get("/:id", registrations.findOne);
 
   // Update a registrations with id
-  router.put("/:id", registrations.update);
+  router_registration.put("/:id", registrations.update);
 
   // Delete a registrations with id
-  router.delete("/:id", registrations.delete);
+  router_registration.delete("/:id", registrations.delete);
 
   // Delete all registrations
-  router.delete("/", registrations.deleteAll);
+  router_registration.delete("/", registrations.deleteAll);
 
-  app.use('/api/registrations', router);
+	/**
+	 * File upload endpoints
+	 */
+	router_fileUpload.post("/upload", controller.upload);
+	router_fileUpload.get("/files", controller.getListFiles);
+	router_fileUpload.get("/files/:name", controller.download);
+	router_fileUpload.delete("/files/:name", controller.remove);	
+
+  app.use('/api/registrations', router_registration);
+	app.use('/api/uploads', router_fileUpload);
 };

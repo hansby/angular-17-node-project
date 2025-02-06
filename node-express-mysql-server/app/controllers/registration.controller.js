@@ -10,6 +10,7 @@ exports.create = (req, res) => {
 	const firstName = req.body.firstName;
 	const lastName = req.body.lastName;
 	const bus_reg_no = req.body.bus_reg_no;
+	const trust_reg_no = req.body.trust_reg_no;
 	const cell = req.body.cell;
 	const email = req.body.email;
 	const tax_no = req.body.tax_no;
@@ -41,7 +42,7 @@ exports.create = (req, res) => {
 
   // Create a Registration
   const registration = {
-		user_id, reg_type, firstName, lastName, bus_reg_no, cell, email, tax_no, acc_holder, acc_type,
+		user_id, reg_type, firstName, lastName, bus_reg_no, trust_reg_no, cell, email, tax_no, acc_holder, acc_type,
 		acc_no, swift_code, iban, file_id, file_poa, file_bus_reg, file_trust, passport
   };
 

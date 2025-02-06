@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 
+global.__basedir = __dirname;
+
 const app = express();
 
 var corsOptions = {

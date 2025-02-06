@@ -74,9 +74,12 @@
 								<label for="username" class="form-label">ID Number</label>
 								<div class="input-group has-validation">
 									<span class="input-group-text"><i class="bi bi-phone"></i></span>
-									<input type="text" class="form-control" id="username" placeholder="0810000000" formControlName="user_id">
-									<div class="invalid-feedback">
-										Your username is required.
+									<input type="text" class="form-control" 
+										id="username" 
+										placeholder="0810000000" 
+										formControlName="user_id">
+									<div class="invalid-feedback" *ngIf="regForm.controls['user_id'].errors" class="frm_error_main">
+										Your ID number is invalid.
 									</div>
 								</div>
 							</div>
@@ -119,10 +122,26 @@
 									</span>
 									<input type="text" class="form-control" id="username" placeholder="YYYY/000000/00" formControlName="bus_reg_no">
 									<div class="invalid-feedback">
-										Your username is required.
+										This is a required field
 									</div>
 								</div>
-							</div>						
+							</div>		
+							
+							<div class="col-12" *ngIf="regType === 'trust'">
+								<label for="trust_reg_no" class="form-label">Trust Registration Number</label>
+								<div class="input-group has-validation">
+									<span class="input-group-text">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
+											<path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
+											<path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/>
+										</svg>										
+									</span>
+									<input type="text" class="form-control" id="trust_reg_no" placeholder="IT000000/YYYY" formControlName="trust_reg_no">
+									<div class="invalid-feedback">
+										This is a required field
+									</div>
+								</div>
+							</div>							
 	
 							<div class="col-12">
 								<label for="email" class="form-label">Email </label>
@@ -220,7 +239,14 @@
 						</div>-->
 	
 						<h4 class="mb-3">Upload Documents</h4>
-	
+
+						<app-file-upload [fileName]="'Upload ID'" [fileType]="fileTypes.ID"></app-file-upload>
+						<app-file-upload [fileName]="'Upload Proof of Address'" [fileType]="fileTypes.PROOF_OF_ADDRESS"></app-file-upload>
+						<app-file-upload [fileName]="'Upload Registration Certificate (COR 14.3)'" [fileType]="fileTypes.BUS_REG_DOC"></app-file-upload>
+						<app-file-upload [fileName]="'Upload Letter of authority'" [fileType]="fileTypes.TRUST_DOC"></app-file-upload>
+
+						
+						<!--
 						<div class="mb-3">
 							<label for="formFile" class="form-label">Upload ID</label>
 							<input #u_id class="form-control" type="file" id="u_id" (change)="uploadFile(u_id)">
@@ -239,8 +265,8 @@
 						<div class="mb-3" *ngIf="regType === 'trust'">
 							<label for="formFile" class="form-label">Upload Letter of authority</label>
 							<input class="form-control" type="file" id="u_trust">
-						</div>						
-	
+						</div>-->
+						
 						<hr class="my-4">
 	
 						<button class="w-100 btn btn-primary btn-lg" 

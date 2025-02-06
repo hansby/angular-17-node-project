@@ -1,8 +1,13 @@
-.form-error {
+.form-error, .frm_error_main {
 	color: red;
 	padding-top: 5px;
 }
 
 hr {
 	border-top: 1px solid rgba(0, 0, 0, .5) !important;
+}
+
+.btn-primary:disabled {
+	background: rgba(0, 0, 0, 0.4);
+	border: 1px solid red;	
 }

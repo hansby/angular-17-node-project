@@ -4,6 +4,7 @@ export class Registration {
 	firstName?: string;
 	lastName?: string;
 	bus_reg_no?: string;
+	trust_reg_no?: string;
 	cell?: string;
 	email?: string;
 	tax_no?: string;
