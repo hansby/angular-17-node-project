@@ -22,7 +22,11 @@
 							<div class="col-12">
 								<div class="">
 									<label for="reg_type" class="form-label">Registration type</label>
-									<select #regTypeSelect class="form-select" (change)="updateRegType(regTypeSelect.value)" required>
+									<select #regTypeSelect 
+										class="form-select" 
+										(change)="updateRegType(regTypeSelect.value)"
+										formControlName="reg_type"
+										name="reg_type">
 										<option value="">Choose...</option>
 										@for (type of reg_types; let i = $index; track type) {
 											<option [value]="type.id">{{ type.name }}</option>
@@ -62,7 +66,7 @@
 										name="citizenStatus" 
 										type="radio" 
 										class="form-check-input" 
-										value="Citizen"
+										value="citizen"
 										formControlName="citizenStatus">
 									<label class="form-check-label" for="citizen">SA Citizen</label>
 								</div>
@@ -71,7 +75,7 @@
 										name="citizenStatus" 
 										type="radio" 
 										class="form-check-input"
-										value="Foreigner"
+										value="foreigner"
 										formControlName="citizenStatus">
 									<label class="form-check-label" for="foreigner">Foreigner</label>
 								</div>
@@ -87,7 +91,8 @@
 									<input type="text" class="form-control" 
 										id="username" 
 										placeholder="0810000000" 
-										formControlName="user_id">
+										formControlName="user_id"
+										name="user_id">
 									<div class="invalid-feedback" *ngIf="regForm.controls['user_id'].errors" class="frm_error_main">
 										Your ID number is invalid.
 									</div>
@@ -179,7 +184,7 @@
 											<path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/>
 										</svg>								
 									</span>
-									<input type="text" class="form-control" id="tax_no" placeholder="" formControlName="tax_no">
+									<input type="text" class="form-control" id="tax_no" name="tax_no" formControlName="tax_no">
 									<div class="invalid-feedback">
 										Please enter your tax number.
 									</div>								
@@ -218,7 +223,12 @@
 	
 							<div class="col-sm-6">
 								<label for="bank" class="form-label">Bank</label>
-								<select #bankSelect class="form-select" id="reg_type" (change)="updateBank(bankSelect.value)" required>
+								<select #bankSelect 
+									class="form-select" 
+									id="reg_type" 
+									(change)="updateBank(bankSelect.value)"
+									formControlName="bank"
+									name="bank">
 									<option value="">Choose...</option>
 									@for (bank of banks; let i = $index; track bank) {
 										<option [value]="bank.id">{{ bank.name }}</option>

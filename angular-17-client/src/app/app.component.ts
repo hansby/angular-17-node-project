@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest, tap } from 'rxjs';
 import {
 	FormControl, FormGroup, ReactiveFormsModule,
 	FormBuilder,
@@ -24,6 +24,11 @@ enum REG_TYPE {
   IND = 'individual',
   BUS = 'business',
   TRUST = 'trust'
+}
+
+enum CITIZEN_STATUS {
+	sa = 'citizen',
+	foreigner = 'foreigner'
 }
 
 interface IIdentity {
@@ -136,7 +141,7 @@ export class AppComponent {
 		}
 
 		this.regForm = new FormGroup({
-			reg_type: new FormControl(''),
+			reg_type: new FormControl('', [Validators.required]),
 			user_id: new FormControl(''),
 			firstName: new FormControl(''),
 			lastName: new FormControl(''),
@@ -150,7 +155,7 @@ export class AppComponent {
 			acc_no: new FormControl(''),
 			swift_code: new FormControl(''),
 			iban: new FormControl(''),
-			bank: new FormControl(''),
+			bank: new FormControl('', [Validators.required]),
 			file_id: new FormControl(''),
 			file_poa: new FormControl(''),
 			file_bus_reg: new FormControl(''),
@@ -162,6 +167,41 @@ export class AppComponent {
 				//testForValidSAId('user_id')
 			]
 		});
+
+		const ctrls = this.regForm.controls;
+
+		const listener_RegType$ = ctrls['reg_type'].valueChanges;
+		const listener_CitizenStatus$ = ctrls['citizenStatus'].valueChanges;
+
+		const $ = combineLatest([listener_RegType$, listener_CitizenStatus$])
+			.subscribe(([reg_type, citizenStatus]) => {
+				console.log(`${reg_type} : ${citizenStatus}`);
+
+				const isSACitizen = reg_type === REG_TYPE.IND && citizenStatus === CITIZEN_STATUS.sa;
+				const isForeigner = citizenStatus === CITIZEN_STATUS.foreigner;
+				const isBusiness = reg_type === REG_TYPE.BUS;
+				const isTrust = reg_type === REG_TYPE.TRUST;
+
+				if (isSACitizen){ 
+					this.isSACitizen = true;
+					ctrls['user_id'].setValidators(Validators.required);
+					ctrls['tax_no'].setValidators(Validators.required);
+				}
+				if (isForeigner) {
+					this.isSACitizen = false;
+					ctrls['passport'].setValidators(Validators.required);
+				}
+				if (isBusiness) ctrls['bus_reg_no'].setValidators(Validators.required);
+				if (isTrust) ctrls['trust_reg_no'].setValidators(Validators.required);
+				
+				this.regForm.updateValueAndValidity();
+		})
+
+		/*
+		ctrls['reg_type'].valueChanges.subscribe((val) => {
+			console.log('reg_type from listener: ', val);
+				
+		})*/
 
 	} /* end ngOninit */
 
@@ -198,19 +238,18 @@ export class AppComponent {
   ];
 
   updateRegType(value: string) {
-    console.log(value);
-		this.regForm.controls['reg_type'].setValue(value);
+    //console.log(value);
+		//this.regForm.controls['reg_type'].setValue(value);
 		this.regType = value;
   }
 
   updateBank(value: string) {
-    console.log(value);
+    //console.log(value);
 		this.regForm.controls['bank'].setValue(value);
 		console.log('invalid ctrls: ', this.findInvalidControls());
   }	
 
   updateAccType(value: string) {
-    console.log(value);
 		this.regForm.controls['acc_type'].setValue(value);
   }
 
