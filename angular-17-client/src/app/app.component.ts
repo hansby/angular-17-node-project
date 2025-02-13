@@ -9,9 +9,36 @@ import {
 	FormArray,
 	AbstractControl,
 } from '@angular/forms';
-import { RegistrationsService } from './services/registrations.service';
+import { IRequiredQParams, RegistrationsService } from './services/registrations.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 const LS_KEY = 'owiqsjdh09192';
+
+interface IRegistration {
+	id: string;
+	reg_type: string;
+	firstName: string;
+	lastName: string;
+	bus_reg_no: string;
+	trust_reg_no: string;
+	cell: string;
+	email: string;
+	tax_no: string;
+	acc_holder: string;
+	acc_type: string;
+	acc_no: string;
+	swift_code: string;
+	iban: string;
+	bank: string;
+	file_id: string;
+	file_poa: string;
+	file_bus_reg: string;
+	file_trust: string;
+	passport: string;	
+	user_id: string;
+	updatedAt?: string,
+	createdAt?: string,
+}
 
 export enum fileTypes {
 	ID = 'ID',
@@ -41,77 +68,62 @@ interface IIdentity {
  * @param idNumber //Ref: http://www.sadev.co.za/content/what-south-african-id-number-made
  * @returns 
  */
-function checkID(idNumber: string) {
-	let correct = true;
+function checkID(idNumber: any) {
+
+	// assume everything is correct and if it later turns out not to be, just set this to false
+	var correct = true;
+
+	//Ref: http://www.sadev.co.za/content/what-south-african-id-number-made
+	// SA ID Number have to be 13 digits, so check the length
 	if (idNumber.length != 13 || !isNumber(idNumber)) {
-		console.warn('ID number does not appear to be authentic - input not a valid number');
 		correct = false;
 	}
-	let yearString = idNumber.substring(0, 2);
-	let monthString = idNumber.substring(2, 4);
-	let dayString = idNumber.substring(4, 6);
 
 	// get first 6 digits as a valid date
-	let tempDate = new Date(+yearString, (+monthString - 1) , +dayString);
-	let id_date = tempDate.getDate();
-	let id_month = tempDate.getMonth();
-	let id_year = tempDate.getFullYear();
-	if (!((id_year === +yearString) && (id_month === (+monthString - 1)) && (id_date === +dayString))) {
-		console.warn('ID number does not appear to be authentic - date part not valid');
-		correct = false;
+	var tempDate = new Date(idNumber.substring(0, 2), idNumber.substring(2, 4) - 1, idNumber.substring(4, 6));
+
+	var id_date = tempDate.getDate();
+	var id_month = tempDate.getMonth();
+	var id_year = tempDate.getFullYear();
+	
+	if(id_year < (new Date()).getFullYear() - 100){
+		id_year += 100
 	}
 
-	// get the gender
-	let genderCode = idNumber.substring(6, 10);
-	//let gender = parseInt(genderCode) < 5000 ? "Female" : "Male";
-
-	// get country ID for citzenship
-	//let citzenship = parseInt(idNumber.substring(10, 11)) == 0 ? "Yes" : "No";
+	/*
+	if (!((tempDate.getFullYear() == idNumber.substring(0, 2)) && (id_month == idNumber.substring(2, 4) - 1) && (id_date == idNumber.substring(4, 6)))) {
+			correct = false;
+	}*/
 
 	// apply Luhn formula for check-digits
-	let tempTotal = 0;
-	let checkSum = 0;
-	let multiplier = 1;
-	for (let i = 0; i < 13; ++i) {
+	var tempTotal = 0;
+	var checkSum = 0;
+	var multiplier = 1;
+	for (var i = 0; i < 13; ++i) {
 		tempTotal = parseInt(idNumber.charAt(i)) * multiplier;
-	if (tempTotal > 9) {
-		tempTotal = parseInt(tempTotal.toString().charAt(0)) + parseInt(tempTotal.toString().charAt(1));
-	}
-	checkSum = checkSum + tempTotal;
+		if (tempTotal > 9) {
+			tempTotal = parseInt(tempTotal.toString().charAt(0)) + parseInt(tempTotal.toString().charAt(1));
+		}
+		checkSum = checkSum + tempTotal;
 		multiplier = (multiplier % 2 == 0) ? 1 : 2;
 	}
 	if ((checkSum % 10) != 0) {
-		console.warn('ID number does not appear to be authentic - check digit is not valid');
 		correct = false;
 	};
 
 	// if no error found, hide the error message
 	if (correct) {
-		console.info("SUCCESS");
 		return true;
 	}
 	// otherwise, show the error
 	else {
-		console.warn("ERROR!")
+		return false;
 	}
-	return false;
 }
 
 function isNumber(n: string) {
 	return !isNaN(parseFloat(n)) && isFinite(+n);
-}	
-
-const testForValidSAId = (idNum: string) => {
-  const validator = (c: AbstractControl): { [key: string]: boolean } | null => {
-    const isIDValid = checkID(idNum);
-		console.log('is ID valid?? : ', isIDValid);
-    //const soonest = new Date(ttt.getFullYear(), ttt.getMonth(), ttt.getDate()).getTime();
-    //const date = c.get(dateField).value?.getTime?.();
-    if (!isIDValid) { return { idError: true }; }
-    return null;
-  };
-  return validator;
-};
+}
 
 @Component({
   selector: 'app-root',
@@ -125,9 +137,12 @@ export class AppComponent {
 	localStore: any;
 	isSACitizen: boolean = true;
 	isBusiness: boolean = false;
+	isTrust: boolean = false;
 	regType: string = '';
 	fileTypes = fileTypes;
 	isLoading: boolean = false;
+	formSubmissionErrors: Array<string> = [];
+	rateLimiterActive: boolean = false;
 
 	constructor(
 		private fb: FormBuilder, 
@@ -176,26 +191,35 @@ export class AppComponent {
 
 		const $ = combineLatest([listener_RegType$, listener_CitizenStatus$])
 			.subscribe(([reg_type, citizenStatus]) => {
-				console.log(`${reg_type} : ${citizenStatus}`);
+				//console.log(`${reg_type} : ${citizenStatus}`);
+
+				this.formSubmissionErrors.length = 0; // reset UI Error list
 
 				const isSACitizen = reg_type === REG_TYPE.IND && citizenStatus === CITIZEN_STATUS.sa;
-				const isForeigner = citizenStatus === CITIZEN_STATUS.foreigner;
+				// const isForeigner = reg_type === REG_TYPE.IND && citizenStatus === CITIZEN_STATUS.foreigner;
 				const isBusiness = reg_type === REG_TYPE.BUS;
 				const isTrust = reg_type === REG_TYPE.TRUST;
 
 				if (isSACitizen){ 
 					this.isSACitizen = true;
-					ctrls['user_id'].setValidators(Validators.required);
-					ctrls['tax_no'].setValidators(Validators.required);
-				}
-				if (isForeigner) {
+				} else { // Foreigner active
 					this.isSACitizen = false;
-					ctrls['passport'].setValidators(Validators.required);
 				}
-				if (isBusiness) ctrls['bus_reg_no'].setValidators(Validators.required);
-				if (isTrust) ctrls['trust_reg_no'].setValidators(Validators.required);
+
+				if (isBusiness) {
+					this.isBusiness = true;
+				} else {
+					this.isBusiness = false;
+				}
+
+				if (isTrust) {
+					this.isTrust = true;
+				} else {
+					this.isTrust = false;
+				}
 				
-				this.regForm.updateValueAndValidity();
+				//this.regForm.updateValueAndValidity();
+				//console.log('invalid ctrls: ', this.findInvalidControls());
 		})
 
 	} /* end ngOninit */
@@ -241,7 +265,6 @@ export class AppComponent {
   updateBank(value: string) {
     //console.log(value);
 		this.regForm.controls['bank'].setValue(value);
-		console.log('invalid ctrls: ', this.findInvalidControls());
   }	
 
   updateAccType(value: string) {
@@ -281,28 +304,102 @@ export class AppComponent {
 	}
 
   submitForm() {
+		let formSubList = this.formSubmissionErrors;
+		formSubList.length = 0;
 		this.isLoading = true;
 		const { localStore } = this;
-		const body = this.regForm.value;
-		console.log('final Obj for API req: ', body);
+
+		/* Check for Validation of Fields first */
+		const ctrls = this.regForm.controls;
+		const user_id = ctrls['user_id'].value;
+		const bus_reg_no = ctrls['bus_reg_no'].value;
+		const trust_reg_no = ctrls['trust_reg_no'].value;
+		const tax_no = ctrls['tax_no'].value;
+		const passport = ctrls['passport'].value;
+
+		if (this.isSACitizen) {
+			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
+			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
+			if (tax_no.length <= 0) formSubList.push('Please fill in your Tax number');
+			this.isLoading = false;
+			return;
+		}
+
+		if (!this.isSACitizen) {
+			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
+			this.isLoading = false;
+			return;
+		}
+		
+		if (this.isBusiness) {
+			if (bus_reg_no.length <= 0) formSubList.push('Please fill in your Business Registration number');
+			this.isLoading = false;
+			return;
+		}		
+
+		if (this.isTrust) {
+			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Tax Registration number');
+			this.isLoading = false;
+			return;
+		}		
+		
+		
+		//console.log(user_id, bus_reg_no, trust_reg_no, tax_no, passport);
+
+		
 
 		if (this.regForm.status !== 'VALID') return;
 
+		// const params = { ... } *** EG: /api/registrations?acc_no=81711&email=hansby
+
+		const body: IRegistration = this.regForm.value;
+		console.log('final Obj for API req: ', body);
+
+		const qParams: IRequiredQParams = {
+			user_id: body.user_id,
+			email: body.email,
+			acc_no: body.acc_no,
+			passport: body.passport
+		}
+
+		const $ = this.regService.getAll(qParams, this.isSACitizen).subscribe((res) => {
+			console.log('NEW getAll API resp', res);
+			
+			/*const duplicate_ID = body.user_id.length > 0 ? body.user_id === res.user_id : false;
+			const duplicate_EMAIL = body.email === res.email;
+			const duplicate_PASSPORT = body.passport.length > 0 ? body.passport === res.passport : false;
+			if (duplicate_ID) formSubList.push('The ID you are trying to register already exists in our system');
+			if (duplicate_EMAIL) formSubList.push('The Email address you are trying to register already exists in our system');
+			if (duplicate_PASSPORT) formSubList.push('The Passport number you are trying to register already exists in our system');
+			this.isLoading = false;*/
+
+
+		}, (errResponse: HttpErrorResponse) => {
+			console.log('err from regService API req: ', errResponse);
+			if (errResponse.status === 429) this.rateLimiterActive = true;
+		})
+
+		
 		this.regService.create(body).pipe(
 			delay(4000),
 		)
 		.subscribe(res => {
-			console.log('response from within subscribe method!');
+			//.log('response from within subscribe method!');
 			if (localStore) localStore.setItem('owiqsjdh09192', '1');
 			this.applicationInProgress = false;
 			this.isLoading = false;
 		}, err => {
-			console.log('ERROR response from Subscribe: ',err);
+			//console.log('ERROR response from Subscribe: ',err);
 			this.applicationInProgress = true;
 			this.isLoading = false;		
 		})
 		
   }
+
+	filterArrByField(arr: any, fieldName: string) {
+		const body: IRegistration = this.regForm.value;
+		//return arr.filter((reg: any) => reg[fieldName] === body[fieldName])
+	}
 
 	findInvalidControls() {
 		const invalid = [];

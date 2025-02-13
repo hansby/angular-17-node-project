@@ -289,6 +289,22 @@
 								(dbName)="updateDBName($event, fileTypes.TRUST_DOC)"></app-file-upload>
 							
 						</ng-container>
+
+						<ng-container *ngIf="formSubmissionErrors.length > 0">
+							<hr class="my-4">
+
+							<h4 class="mb-3">Submission Errors</h4>
+							<p>We could not process your application because of the following errors:</p>
+
+							<div>
+								<ul>
+									@for (err of formSubmissionErrors; let i = $index; track err) {
+										<li>{{ err }}</li>
+									}
+								</ul>
+							</div>
+
+						</ng-container>
 						
 						<hr class="my-4">
 	
@@ -317,14 +333,29 @@
 	</div>
 	</div>
 	
-	
-	<div class="container" *ngIf="!applicationInProgress">
-	
-		<div class="py-5 text-center">
-			<h2>Your Application has been processed!</h2>
-			<p class="lead">Congratulations, your application has been processed successfully. You will receive further communication from your relevant contact in due course.</p>
+	<!-- APPLICATION COMPLETE -->
+	<ng-container *ngIf="!applicationInProgress">
+		<div class="container">
+			<div class="py-5 text-center">
+				<h2>Your Application has been processed!</h2>
+				<p class="lead">Congratulations, your application has been processed successfully. You will receive further communication from your relevant contact in due course.</p>
+			</div>
 		</div>
-	
-	</div>
+	</ng-container>
+
+	<!-- RATE LIMITER MESSAGE -->
+	<ng-container *ngIf="rateLimiterActive">
+		<div class="container">
+			<div class="py-5 text-center">
+				<h2>Network spamming detected!</h2>
+				<p class="lead">
+					We are detecting that your IP address is spamming our server and network and thus we are temporarily blocking requests from your computer.
+				</p>
+				<p class="lead">
+					If this is not you and you are legitimately trying to complete your registration please reach out to your contact to assist.
+				</p>				
+			</div>
+		</div>		
+	</ng-container>
 	
 	

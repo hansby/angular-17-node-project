@@ -19,4 +19,5 @@ export class Registration {
 	file_bus_reg?: string;
 	file_trust?: string;
 	passport?: string;	
+	user_id?: string;
 }

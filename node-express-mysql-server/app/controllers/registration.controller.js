@@ -62,10 +62,22 @@ exports.create = (req, res) => {
 
 // Retrieve all Registrations from the database.
 exports.findAll = (req, res) => {
-  const title = req.query.title;
-  var condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
+  const user_id = req.query.user_id;
+	const email = req.query.email;
+	const passport = req.query.passport;
+	const bankAccNumber = req.query.acc_no;
+	const condition = {
+		where: {
+			[Op.or]: [
+				{ user_id: { [Op.like]: `%${user_id}%` } },
+				{ email: { [Op.like]: `%${email}%` } },
+				{ passport: { [Op.like]: `%${passport}%` } },
+				{ acc_no: { [Op.like]: `%${bankAccNumber}%` } },
+			]
+		}
+	}
 
-  Registration.findAll({ where: condition })
+  Registration.findAll(condition)
     .then(data => {
       res.send(data);
     })
@@ -81,7 +93,7 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  Registration.findByPk(id)
+  Registration.findOne({ where: { user_id: id } })
     .then(data => {
       if (data) {
         res.send(data);

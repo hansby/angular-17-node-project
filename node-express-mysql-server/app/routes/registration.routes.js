@@ -14,7 +14,7 @@ module.exports = app => {
   // Retrieve all published Tutorials
   //router.get("/published", tutorials.findAllPublished);
 
-  // Retrieve a single Tutorial with id
+  // Retrieve a single Registration with user_id
   router_registration.get("/:id", registrations.findOne);
 
   // Update a registrations with id

@@ -5,14 +5,28 @@ import { Registration } from '../models/registration.model';
 
 const baseUrl = 'http://localhost:8080/api/registrations';
 
+export interface IRequiredQParams {
+	user_id?: string,
+	email: string,
+	passport?: string,
+	acc_no: string,
+}
+
 @Injectable({
 	providedIn: 'root',
 })
 export class RegistrationsService {
 	constructor(private http: HttpClient) {}
 
-	getAll(): Observable<Registration[]> {
-		return this.http.get<Registration[]>(baseUrl);
+	getAll(params: IRequiredQParams, isSACitizen: boolean): Observable<Registration[]> {
+    const p: [string, string|number|boolean|undefined][] = [
+      ['email', params.email],
+      ['acc_no', params.acc_no],
+    ];
+		if (isSACitizen) p.push(['user_id', params.user_id]);
+		if (!isSACitizen) p.push(['passport', params.passport]); // foreigner
+		const query = p.map((p) => `${p[0]}=${p[1]}`).join('&');
+		return this.http.get<Registration[]>(`${baseUrl}?${query}`);
 	}
 
 	get(id: any): Observable<Registration> {

@@ -1,4 +1,6 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
+const slowDown = require("express-slow-down");
 const cors = require("cors");
 
 global.__basedir = __dirname;
@@ -10,6 +12,20 @@ var corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+});
+
+const speedLimiter = slowDown({
+  windowMs: 15 * 60 * 1000,
+  delayAfter: 2,
+  delayMs: () => 6000,
+});
+
+app.use(speedLimiter);
+app.use(limiter);
 
 // parse requests of content-type - application/json
 app.use(express.json());
