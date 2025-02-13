@@ -51,9 +51,10 @@ export class FileUploadComponent implements OnInit {
  }
 
   upload(): void {
-    if (this.currentFile) {
+    /*if (this.currentFile) {
 			let that = this;
 			let reader = new FileReader();
+
 			reader.readAsDataURL(this.currentFile);
 			reader.onload = function () {
 
@@ -97,6 +98,6 @@ export class FileUploadComponent implements OnInit {
 			};
 
 
-    }
+    }*/
   }
 }

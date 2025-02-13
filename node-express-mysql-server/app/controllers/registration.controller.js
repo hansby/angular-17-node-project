@@ -25,6 +25,7 @@ exports.create = (req, res) => {
 	const file_trust = req.body.file_trust;
 	const passport = req.body.passport;
 	const bank = req.body.bank;
+	const citizenStatus = req.body.citizenStatus;
 
   /*
   if (!user_id && !passport) {
@@ -44,7 +45,7 @@ exports.create = (req, res) => {
   // Create a Registration
   const registration = {
 		user_id, reg_type, firstName, lastName, bus_reg_no, trust_reg_no, cell, email, tax_no, acc_holder, acc_type,
-		acc_no, swift_code, iban, bank, file_id, file_poa, file_bus_reg, file_trust, passport
+		acc_no, swift_code, iban, bank, file_id, file_poa, file_bus_reg, file_trust, passport, citizenStatus
   };
 
   // Save Registration in the database
@@ -66,6 +67,8 @@ exports.findAll = (req, res) => {
 	const email = req.query.email;
 	const passport = req.query.passport;
 	const bankAccNumber = req.query.acc_no;
+	const trustRegNumber = req.query.trust_reg_no;
+	const businessRegNumber = req.query.bus_reg_no;
 	const condition = {
 		where: {
 			[Op.or]: [
@@ -73,6 +76,8 @@ exports.findAll = (req, res) => {
 				{ email: { [Op.like]: `%${email}%` } },
 				{ passport: { [Op.like]: `%${passport}%` } },
 				{ acc_no: { [Op.like]: `%${bankAccNumber}%` } },
+				{ trust_reg_no: { [Op.like]: `%${trustRegNumber}%` } },
+				{ bus_reg_no: { [Op.like]: `%${businessRegNumber}%` } },
 			]
 		}
 	}

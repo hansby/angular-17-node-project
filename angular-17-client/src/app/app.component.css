@@ -11,6 +11,10 @@ hr {
 	background: rgba(0, 0, 0, 0.4);
 }
 
-.form-control.ng-dirty.ng-touched.ng-invalid, .form-select.ng-dirty.ng-touched.ng-invalid {
+.form-control.ng-dirty.ng-touched.ng-invalid, .form-select.ng-dirty.ng-touched.ng-invalid, .record-exists {
 	border: 1px solid red;
 }
+
+.text-left { text-align: left;}
+
+.error-text { color: red !important; }

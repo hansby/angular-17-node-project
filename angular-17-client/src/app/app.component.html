@@ -6,6 +6,14 @@
 			<div class="py-5 text-center">
 				<h2>FICA Registration form</h2>
 				<p class="lead">Please complete all the required fields below in order for us to successfully process your application</p>
+				<br /><br />
+				<p class="text-left">Before starting please ensure you have the following documents ready for upload, based on your status.</p>
+				<p class="text-left">If you are:</p>
+				<ul class="text-left">
+					<li>an Individual: Copy of ID, Proof of Address</li>
+					<li>a Business: Copy of Business Registration Doc</li>
+					<li>a Trust: Copy of Letter of Authority</li>
+				</ul>
 			</div>
 	
 			<div class="row g-5">
@@ -275,17 +283,17 @@
 
 						<ng-container *ngIf="regForm.controls['firstName'].value.length > 0 && regForm.controls['lastName'].value.length > 0">
 
-							<ng-container *ngIf="isSACitizen">
+							<ng-container *ngIf="regType === 'individual' && isSACitizen">
 								<app-file-upload 
 									[fileName]="'Upload ID'" 
 									[fileType]="fileTypes.ID" 
 									(dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>
-							</ng-container>
 
-							<app-file-upload 
-								[fileName]="'Upload Proof of Address'" 
-								[fileType]="fileTypes.PROOF_OF_ADDRESS" 
-								(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>
+								<app-file-upload 
+									[fileName]="'Upload Proof of Address'" 
+									[fileType]="fileTypes.PROOF_OF_ADDRESS" 
+									(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>									
+							</ng-container>
 
 							<ng-container *ngIf="regType === 'business'">
 								<app-file-upload 
@@ -318,6 +326,15 @@
 							</div>
 
 						</ng-container>
+
+						<ng-container *ngIf="recordAlreadyExists">
+							<hr class="my-4">
+							<div class="record-exists">
+								<h4 class="mb-3 error-text">Details already exist</h4>
+								<p>We could not register your application because the details already exists in our system.</p>
+								<p>Please amend your details or speak to your contact to resolve the issue.</p>
+							</div>
+						</ng-container>						
 						
 						<hr class="my-4">
 	
@@ -347,7 +364,7 @@
 	</div>
 	
 	<!-- APPLICATION COMPLETE -->
-	<ng-container *ngIf="!applicationInProgress">
+	<ng-container *ngIf="!applicationInProgress && !rateLimiterActive">
 		<div class="container">
 			<div class="py-5 text-center">
 				<h2>Your Application has been processed!</h2>

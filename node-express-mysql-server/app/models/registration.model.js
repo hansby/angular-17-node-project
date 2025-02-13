@@ -21,6 +21,7 @@ module.exports = (sequelize, Sequelize) => {
 		file_bus_reg: { type: Sequelize.STRING },
 		file_trust: { type: Sequelize.STRING },
 		passport: { type: Sequelize.STRING },
+		citizenStatus: { type: Sequelize.STRING },
 
   });
 

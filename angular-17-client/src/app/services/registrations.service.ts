@@ -7,7 +7,7 @@ const baseUrl = 'http://localhost:8080/api/registrations';
 
 export interface IRequiredQParams {
 	user_id?: string,
-	email: string,
+	email?: string,
 	passport?: string,
 	acc_no: string,
 }

@@ -144,6 +144,7 @@ export class AppComponent {
 	isLoading: boolean = false;
 	formSubmissionErrors: Array<string> = [];
 	rateLimiterActive: boolean = false;
+	recordAlreadyExists: boolean = false;
 
 	constructor(
 		private fb: FormBuilder, 
@@ -292,6 +293,7 @@ export class AppComponent {
 		let formSubList = this.formSubmissionErrors;
 		formSubList.length = 0;
 		this.isLoading = true;
+		this.recordAlreadyExists = false;
 		const { localStore } = this;
 
 		/* Check for Validation of Fields first */
@@ -304,10 +306,18 @@ export class AppComponent {
 		const swift_code = ctrls['swift_code'].value ?? '';
 		const iban = ctrls['iban'].value ?? '';
 
+		// upload fields
+		const file_id = ctrls['file_id'].value ?? '';
+		const file_bus_reg = ctrls['file_bus_reg'].value ?? '';
+		const file_trust = ctrls['file_trust'].value ?? '';
+		const file_poa = ctrls['file_poa'].value ?? '';
+
 		if (this.isSACitizen && this.regType === REG_TYPE.IND) {
 			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
 			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
 			if (tax_no.length <= 0) formSubList.push('Please fill in your Tax number');
+			if (file_id.length <= 0) formSubList.push('Please Upload a copy of your ID');
+			if (file_poa.length <= 0) formSubList.push('Please Upload a copy of your Proof of Address');
 		}
 
 		if (this.isForeigner && this.regType === REG_TYPE.IND) {
@@ -321,21 +331,23 @@ export class AppComponent {
 		
 		if (this.regType === REG_TYPE.BUS) {
 			if (bus_reg_no.length <= 0) formSubList.push('Please fill in your Business Registration number');
+			if (file_bus_reg.length <= 0) formSubList.push('Please Upload a copy of your Business Registration Document');
 		}
 
 		if (this.regType === REG_TYPE.TRUST) {
 			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Trust Registration number');
+			if (file_trust.length <= 0) formSubList.push('Please Upload a copy of your Letter of Authority');
 		}
 		
-		this.isLoading = false;
-		if(formSubList.length > 0) return;
+		if(formSubList.length > 0) {
+			this.isLoading = false;
+			return;
+		}
 
 		// const params = { ... } *** EG: /api/registrations?acc_no=81711&email=hansby
 
 		const body: IRegistration = this.regForm.value;
 		console.log('final Obj for API req: ', body);
-
-		return;
 
 		const qParams: IRequiredQParams = {
 			user_id: body.user_id,
@@ -344,38 +356,45 @@ export class AppComponent {
 			passport: body.passport
 		}
 
-		const $ = this.regService.getAll(qParams, this.isSACitizen).subscribe((res) => {
-			console.log('NEW getAll API resp', res);
-			
-			/*const duplicate_ID = body.user_id.length > 0 ? body.user_id === res.user_id : false;
-			const duplicate_EMAIL = body.email === res.email;
-			const duplicate_PASSPORT = body.passport.length > 0 ? body.passport === res.passport : false;
-			if (duplicate_ID) formSubList.push('The ID you are trying to register already exists in our system');
-			if (duplicate_EMAIL) formSubList.push('The Email address you are trying to register already exists in our system');
-			if (duplicate_PASSPORT) formSubList.push('The Passport number you are trying to register already exists in our system');
-			this.isLoading = false;*/
+		const $ = this.regService.getAll(qParams, this.isSACitizen).subscribe((responseData) => {
 
+			// ***NB: BLOCK registration if data already exists in DB!
+			if (responseData.length > 0) {
+				this.recordAlreadyExists = true;
+				this.isLoading = false;
+				return;
+			}
+
+			// CREATE RECORD IF IT DOES NOT YET EXIST IN DB!!
+			this.regService.create(body).pipe(
+				delay(4000),
+			)
+			.subscribe(res => {
+				//.log('response from within subscribe method!');
+				if (localStore) localStore.setItem('owiqsjdh09192', '1');
+				this.applicationInProgress = false;
+				this.isLoading = false;
+			}, (err: HttpErrorResponse) => {
+				//console.log('ERROR response from Subscribe: ',err);
+				if (err.status === 429) {
+					this.rateLimiterActive = true;
+				} else {
+					this.rateLimiterActive = false;
+				}
+				this.isLoading = false;
+				this.applicationInProgress = false;
+			});
 
 		}, (errResponse: HttpErrorResponse) => {
 			console.log('err from regService API req: ', errResponse);
-			if (errResponse.status === 429) this.rateLimiterActive = true;
+			if (errResponse.status === 429) {
+				this.rateLimiterActive = true;
+				this.applicationInProgress = false;
+			}
+			this.isLoading = false;
 		})
 
-		
-		this.regService.create(body).pipe(
-			delay(4000),
-		)
-		.subscribe(res => {
-			//.log('response from within subscribe method!');
-			if (localStore) localStore.setItem('owiqsjdh09192', '1');
-			this.applicationInProgress = false;
-			this.isLoading = false;
-		}, err => {
-			//console.log('ERROR response from Subscribe: ',err);
-			this.applicationInProgress = true;
-			this.isLoading = false;		
-		})
-		
+	
   }
 
 	filterArrByField(arr: any, fieldName: string) {
