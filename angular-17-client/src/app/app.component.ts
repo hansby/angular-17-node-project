@@ -135,7 +135,8 @@ export class AppComponent {
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
-	isSACitizen: boolean = true;
+	isSACitizen: boolean = false;
+	isForeigner: boolean = false;
 	isBusiness: boolean = false;
 	isTrust: boolean = false;
 	regType: string = '';
@@ -177,7 +178,7 @@ export class AppComponent {
 			file_bus_reg: new FormControl(''),
 			file_trust: new FormControl(''),
 			passport: new FormControl(''),
-			citizenStatus: new FormControl('', [Validators.required])
+			citizenStatus: new FormControl('')
 		}, {
 			validators: [
 				//testForValidSAId('user_id')
@@ -187,40 +188,24 @@ export class AppComponent {
 		const ctrls = this.regForm.controls;
 
 		const listener_RegType$ = ctrls['reg_type'].valueChanges;
-		const listener_CitizenStatus$ = ctrls['citizenStatus'].valueChanges;
-
-		const $ = combineLatest([listener_RegType$, listener_CitizenStatus$])
-			.subscribe(([reg_type, citizenStatus]) => {
-				//console.log(`${reg_type} : ${citizenStatus}`);
-
+		const $_regType = listener_RegType$
+			.subscribe(([reg_type]) => {
 				this.formSubmissionErrors.length = 0; // reset UI Error list
-
-				const isSACitizen = reg_type === REG_TYPE.IND && citizenStatus === CITIZEN_STATUS.sa;
-				// const isForeigner = reg_type === REG_TYPE.IND && citizenStatus === CITIZEN_STATUS.foreigner;
-				const isBusiness = reg_type === REG_TYPE.BUS;
-				const isTrust = reg_type === REG_TYPE.TRUST;
-
-				if (isSACitizen){ 
-					this.isSACitizen = true;
-				} else { // Foreigner active
-					this.isSACitizen = false;
-				}
-
-				if (isBusiness) {
-					this.isBusiness = true;
-				} else {
-					this.isBusiness = false;
-				}
-
-				if (isTrust) {
-					this.isTrust = true;
-				} else {
-					this.isTrust = false;
-				}
-				
-				//this.regForm.updateValueAndValidity();
-				//console.log('invalid ctrls: ', this.findInvalidControls());
+				this.regType = reg_type;
+				//this.isSACitizen = reg_type === REG_TYPE.IND;
+				//this.isBusiness = reg_type === REG_TYPE.BUS;
+				//this.isTrust = reg_type === REG_TYPE.TRUST;
 		})
+
+		const listener_CitizenStatus$ = ctrls['citizenStatus'].valueChanges;
+		const $_citizenStatus = listener_CitizenStatus$
+			.subscribe(([status]) => {
+				this.formSubmissionErrors.length = 0; // reset UI Error list
+				this.isSACitizen = status === 'c';
+				this.isForeigner = status === 'f';
+				//this.isBusiness = reg_type === REG_TYPE.BUS;
+				//this.isTrust = reg_type === REG_TYPE.TRUST;
+		})		
 
 	} /* end ngOninit */
 
@@ -317,43 +302,40 @@ export class AppComponent {
 		const tax_no = ctrls['tax_no'].value;
 		const passport = ctrls['passport'].value;
 
-		if (this.isSACitizen) {
+		if (this.isSACitizen && this.regType === REG_TYPE.IND) {
 			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
 			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
 			if (tax_no.length <= 0) formSubList.push('Please fill in your Tax number');
 			this.isLoading = false;
-			return;
 		}
 
-		if (!this.isSACitizen) {
+		if (this.isForeigner) {
 			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
 			this.isLoading = false;
-			return;
 		}
 		
-		if (this.isBusiness) {
+		if (this.regType === REG_TYPE.BUS) {
 			if (bus_reg_no.length <= 0) formSubList.push('Please fill in your Business Registration number');
 			this.isLoading = false;
-			return;
 		}		
 
-		if (this.isTrust) {
+		alert('YO 1');
+
+		if (this.regType === REG_TYPE.TRUST) {
 			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Tax Registration number');
 			this.isLoading = false;
-			return;
 		}		
-		
-		
-		//console.log(user_id, bus_reg_no, trust_reg_no, tax_no, passport);
 
+		alert('YO 2');
 		
-
-		if (this.regForm.status !== 'VALID') return;
+		if(formSubList.length > 0) return;
 
 		// const params = { ... } *** EG: /api/registrations?acc_no=81711&email=hansby
 
 		const body: IRegistration = this.regForm.value;
 		console.log('final Obj for API req: ', body);
+
+		return;
 
 		const qParams: IRequiredQParams = {
 			user_id: body.user_id,
