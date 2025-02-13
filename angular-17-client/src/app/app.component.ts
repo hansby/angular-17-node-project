@@ -178,7 +178,7 @@ export class AppComponent {
 			file_bus_reg: new FormControl(''),
 			file_trust: new FormControl(''),
 			passport: new FormControl(''),
-			citizenStatus: new FormControl('')
+			citizenStatus: new FormControl('', [Validators.required])
 		}, {
 			validators: [
 				//testForValidSAId('user_id')
@@ -296,38 +296,38 @@ export class AppComponent {
 
 		/* Check for Validation of Fields first */
 		const ctrls = this.regForm.controls;
-		const user_id = ctrls['user_id'].value;
-		const bus_reg_no = ctrls['bus_reg_no'].value;
-		const trust_reg_no = ctrls['trust_reg_no'].value;
-		const tax_no = ctrls['tax_no'].value;
-		const passport = ctrls['passport'].value;
+		const user_id = ctrls['user_id'].value ?? '';
+		const bus_reg_no = ctrls['bus_reg_no'].value ?? '';
+		const trust_reg_no = ctrls['trust_reg_no'].value ?? '';
+		const tax_no = ctrls['tax_no'].value ?? '';
+		const passport = ctrls['passport'].value ?? '';
+		const swift_code = ctrls['swift_code'].value ?? '';
+		const iban = ctrls['iban'].value ?? '';
 
 		if (this.isSACitizen && this.regType === REG_TYPE.IND) {
 			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
 			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
 			if (tax_no.length <= 0) formSubList.push('Please fill in your Tax number');
-			this.isLoading = false;
+		}
+
+		if (this.isForeigner && this.regType === REG_TYPE.IND) {
+			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
 		}
 
 		if (this.isForeigner) {
-			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
-			this.isLoading = false;
+			if (swift_code.length <= 0) formSubList.push('Please fill in your Swift Code number');
+			if (iban.length <= 0) formSubList.push('Please fill in your IBAN number');
 		}
 		
 		if (this.regType === REG_TYPE.BUS) {
 			if (bus_reg_no.length <= 0) formSubList.push('Please fill in your Business Registration number');
-			this.isLoading = false;
-		}		
-
-		alert('YO 1');
+		}
 
 		if (this.regType === REG_TYPE.TRUST) {
-			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Tax Registration number');
-			this.isLoading = false;
-		}		
-
-		alert('YO 2');
+			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Trust Registration number');
+		}
 		
+		this.isLoading = false;
 		if(formSubList.length > 0) return;
 
 		// const params = { ... } *** EG: /api/registrations?acc_no=81711&email=hansby

@@ -57,7 +57,7 @@
 
 							<hr class="my-4">
 
-							<ng-container *ngIf="regType === 'individual'">
+							<ng-container> <!-- *ngIf="regType === 'individual'"-->
 
 								<h5 class="mb-3">I am a</h5>
 		
@@ -103,7 +103,7 @@
 								</div>
 							</div>
 							
-							<div class="col-12" *ngIf="isForeigner">
+							<div class="col-12" *ngIf="regType === 'individual' && isForeigner">
 								<label for="username" class="form-label">Passport</label>
 								<div class="input-group has-validation">
 									<span class="input-group-text"><i class="bi bi-phone"></i></span>
@@ -178,7 +178,7 @@
 								</div>
 							</div>
 	
-							<div class="col-12" *ngIf="isSACitizen">
+							<div class="col-12" *ngIf="regType === 'individual' && isSACitizen">
 								<label for="address" class="form-label">Tax number</label>
 
 								<div class="input-group has-validation">
@@ -244,12 +244,12 @@
 							</div>              
 							
 	
-							<div class="col-sm-6" *ngIf="!isSACitizen">
+							<div class="col-sm-6" *ngIf="isForeigner">
 								<label for="swift" class="form-label">SWIFT (BIC)/ SORT CODE</label>
 								<input type="number" class="form-control" id="acc_number" placeholder="eg 0000" formControlName="swift_code">
 							</div>
 	
-							<div class="col-sm-6" *ngIf="!isSACitizen">
+							<div class="col-sm-6" *ngIf="isForeigner">
 								<label for="iban" class="form-label">IBAN</label>
 								<input type="number" class="form-control" id="acc_number" placeholder="eg 0000" formControlName="iban">
 							</div>						
