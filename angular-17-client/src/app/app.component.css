@@ -15,6 +15,8 @@ hr {
 	border: 1px solid red;
 }
 
+.record-exists { padding: 15px }
+
 .text-left { text-align: left;}
 
 .error-text { color: red !important; }
