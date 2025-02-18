@@ -292,8 +292,7 @@
 								<app-file-upload 
 									[fileName]="'Upload Proof of Address'" 
 									[fileType]="fileTypes.PROOF_OF_ADDRESS" 
-									(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"
-									(fileStatus)="updateFileStatus($event)"></app-file-upload>									
+									(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>									
 							</ng-container>
 
 							<ng-container *ngIf="regType === 'business'">

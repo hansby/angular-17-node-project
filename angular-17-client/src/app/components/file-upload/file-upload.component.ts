@@ -32,8 +32,6 @@ export class FileUploadComponent implements OnInit {
   selectFile(event: any): void {
     this.message = '';
     this.currentFile = event.target.files.item(0);
-		// console.log('lets see current file before uploading: ', this.currentFile);
-		this.dbName.emit(this.currentFile);
 		this.upload();
   }
 
@@ -58,10 +56,11 @@ export class FileUploadComponent implements OnInit {
 
 			reader.readAsDataURL(this.currentFile);
 			reader.onload = function () {
-				that.fileStatus.emit({
+				/*that.fileStatus.emit({
 					currentFile: that.currentFile,
 					readerResult: reader.result
-				})
+				})*/
+				that.dbName.emit({file: that.currentFile, result: reader.result});
 			};
 			reader.onerror = function (error) {
 				console.log('File upload Error: ', error);

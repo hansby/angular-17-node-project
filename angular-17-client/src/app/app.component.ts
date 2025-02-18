@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { BehaviorSubject, combineLatest, delay, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, delay, forkJoin, tap } from 'rxjs';
 import {
 	FormControl, FormGroup, ReactiveFormsModule,
 	FormBuilder,
@@ -40,6 +40,11 @@ interface IRegistration {
 	user_id: string;
 	updatedAt?: string,
 	createdAt?: string,
+}
+
+interface IFormattedFile {
+	file: File,
+	result: FileReader
 }
 
 export enum fileTypes {
@@ -265,8 +270,8 @@ export class AppComponent {
 		this.regForm.controls['acc_type'].setValue(value);
   }
 
-	updateDBName(file: File | undefined, fileType: fileTypes) {
-		if (file) {
+	updateDBName(event: {file: File, result: FileReader}, fileType: fileTypes) {
+		if (event.file) {
 			const ctrl = this.regForm.controls;
 			//console.log('event emitter value: ', file);
 			const name = ctrl['firstName'].value;
@@ -274,42 +279,128 @@ export class AppComponent {
 			const id = ctrl['user_id'].value;
 			const passport = ctrl['passport'].value;
 
-			let type = file.type;
+			let type = event.file.type;
 			let finalType = type.slice(type.indexOf('/') + 1, type.length);
 			if (finalType.includes('sheet')) finalType = 'xls';
 			if (finalType.includes('presentation')) finalType = 'pptx';
 			if (finalType.includes('document')) finalType = 'doc';
 			
 			const DBName = `${surname} ${name} - ${fileType} - ${id}.${finalType}`;
-			//console.log('DBName for upload: ', DBName); 
 			this.dbName = DBName;
 			this.surname = surname;
 
+			const myNewFile = { file: new File([event.file], DBName, {type: fileType}), result: event.result };
+
 			switch (fileType) {
-				case fileTypes.ID: ctrl['file_id'].setValue(DBName);
+				case fileTypes.ID: ctrl['file_id'].setValue(myNewFile);
 					break;
-				case fileTypes.BUS_REG_DOC: ctrl['file_bus_reg'].setValue(DBName);
+				case fileTypes.BUS_REG_DOC: ctrl['file_bus_reg'].setValue(myNewFile);
 					break;	
-				case fileTypes.TRUST_DOC: ctrl['file_trust'].setValue(DBName);
+				case fileTypes.TRUST_DOC: ctrl['file_trust'].setValue(myNewFile);
 					break;
-				case fileTypes.PROOF_OF_ADDRESS: ctrl['file_poa'].setValue(DBName);
+				case fileTypes.PROOF_OF_ADDRESS: ctrl['file_poa'].setValue(myNewFile);
 					break;																				
 			}
 
 		}
 	}
 
+	/*
 	updateFileStatus(event: {currentFile: File, readerResult: FileReader}) {
 		this.currentFile = event.currentFile;
 		this.readerResult = event.readerResult;
-	}
+	}*/
 
   submitForm() {
 		let formSubList = this.formSubmissionErrors;
 		formSubList.length = 0;
 		this.isLoading = true;
 		this.recordAlreadyExists = false;
-		const { localStore } = this;
+
+		// Trap Field validation errors
+		this.fieldValidationChecker();
+		
+		if(formSubList.length > 0) {
+			this.isLoading = false;
+			return;
+		}
+
+		console.log('regForm crtls: ', this.regForm.controls);
+		
+		const getCtrl_POA = this.regForm.controls['file_poa'].value;
+		const googleDocObj_POA: IGoogleDoc = {
+			skipHumanReview: true,
+			rawDocument: {
+				mimeType: getCtrl_POA.file.type,
+				content: getCtrl_POA.result
+			}
+		}
+
+		const getCtrl_ID = this.regForm.controls['file_id'].value;
+		const googleDocObj_ID: IGoogleDoc = {
+			skipHumanReview: true,
+			rawDocument: {
+				mimeType: getCtrl_ID.file.type,
+				content: getCtrl_ID.result
+			}
+		}		
+
+		return;
+
+		const docAI_POA = this.uploadGoogleDoc.verifyGoogleAIDoc_POA(googleDocObj_POA);
+		const docAI_ID = this.uploadGoogleDoc.verifyGoogleAIDoc_ID(googleDocObj_ID);
+
+		forkJoin([docAI_POA, docAI_ID]).subscribe((allResponses) => {
+			console.log('allResponses from forkJoin: ', allResponses);
+		});
+
+		/*
+		this.uploadGoogleDoc.verifyGoogleAIDoc_POA(googleDocObj).subscribe((response) => {
+			console.log('lets see if this works!! :DDDDD', response);
+			if (response.document.text) {
+				const text = response.document.text.toString().toLowerCase();
+				const poa_hasSurname = text.includes(this.surname.toLowerCase());
+				const poa_accountNumber = text.includes('account number');
+				const poa_registrationNumber = text.includes('registration number');
+				const isValidPOA = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
+
+				if (!isValidPOA) {
+					formSubList.push('Your proof of address is not a valid document. Please upload a valid Proof of address');
+					this.isLoading = false;
+					return;
+				}
+
+				// Do DB Dupe Check and Create registration if PASS = True
+				this.dbDupeCheckAndRegistrationPost();
+
+			}
+		}, (err: HttpErrorResponse) => {
+			formSubList.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
+			console.log('Google API error: verifyGoogleAIDoc_POA method', err);
+			return;
+		});*/
+
+
+
+  }
+
+	filterArrByField(arr: any, fieldName: string) {
+		const body: IRegistration = this.regForm.value;
+	}
+
+	findInvalidControls() {
+		const invalid = [];
+		const controls = this.regForm.controls;
+		for (const name in controls) {
+			if (controls[name].invalid) {
+				invalid.push(name);
+			}
+		}
+		return invalid;
+	}
+
+	fieldValidationChecker() {
+		let formSubList = this.formSubmissionErrors;
 
 		/* Check for Validation of Fields first */
 		const ctrls = this.regForm.controls;
@@ -331,7 +422,7 @@ export class AppComponent {
 			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
 			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
 			if (tax_no.length <= 0) formSubList.push('Please fill in your Tax number');
-			//if (file_id.length <= 0) formSubList.push('Please Upload a copy of your ID');
+			if (file_id.length <= 0) formSubList.push('Please Upload a copy of your ID');
 			if (file_poa.length <= 0) formSubList.push('Please Upload a copy of your Proof of Address');
 		}
 
@@ -352,15 +443,11 @@ export class AppComponent {
 		if (this.regType === REG_TYPE.TRUST) {
 			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Trust Registration number');
 			if (file_trust.length <= 0) formSubList.push('Please Upload a copy of your Letter of Authority');
-		}
-		
-		if(formSubList.length > 0) {
-			this.isLoading = false;
-			return;
-		}
+		}		
+	}
 
-		// const params = { ... } *** EG: /api/registrations?acc_no=81711&email=hansby
-
+	dbDupeCheckAndRegistrationPost() {
+		const { localStore } = this;
 		const body: IRegistration = this.regForm.value;
 		console.log('final Obj for API req: ', body);
 
@@ -369,61 +456,7 @@ export class AppComponent {
 			email: body.email,
 			acc_no: body.acc_no,
 			passport: body.passport
-		}
-
-
-		const googleDocObj: IGoogleDoc = {
-			skipHumanReview: true,
-			rawDocument: {
-				mimeType: this.currentFile ? this.currentFile.type : '',
-				content: this.readerResult
-			}
-		}
-
-		console.log('googleDocObj from inside MAIN APP.TS file ', googleDocObj);
-		//console.log('getBase64File, ', this.base64File);
-
-	
-		this.uploadGoogleDoc.verifyDocumentbyGoogleAI(googleDocObj).subscribe((response) => {
-			console.log('lets see if this works!! :DDDDD', response);
-			if (response.document.text) {
-				const text = response.document.text.toString().toLowerCase();
-				const poa_hasSurname = text.includes(this.surname.toLowerCase());
-				const poa_accountNumber = text.includes('account number');
-				const poa_registrationNumber = text.includes('registration number');
-
-				const isValidPOA = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
-
-				this.isLoading = false;
-
-				if (!isValidPOA) {
-					formSubList.push('Your proof of address is not a valid document. Please upload a valid Proof of address');
-					return;
-				}
-
-				const myNewFile = new File([this.currentFile], this.dbName, {type: this.currentFile.type});
-
-				this.fileUploadService.upload(myNewFile).subscribe((fileStatus) => {
-					console.info('Your File has been SUCCESSFULLY uploaded to the File Server --- Please check folder! :D');
-				}, (err) => {
-					console.warn('Your File upload has FAILED!!', err);
-					formSubList.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
-					return;					
-				})
-
-				//console.log('poa_hasSurname', poa_hasSurname);
-				//console.log('poa_accountNumber', poa_accountNumber);
-				//console.log('poa_registrationNumber', poa_registrationNumber);
-
-			}
-		}, (err: HttpErrorResponse) => {
-			formSubList.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
-			console.log('Google API error: verifyDocumentbyGoogleAI method', err);
-			return;
-		});
-
-		
-		return;
+		}		
 
 		const $ = this.regService.getAll(qParams, this.isSACitizen).subscribe((responseData) => {
 
@@ -443,8 +476,18 @@ export class AppComponent {
 				if (localStore) localStore.setItem('owiqsjdh09192', '1');
 				this.applicationInProgress = false;
 				this.isLoading = false;
+
+				// Form is Successfully stored in DB ... NOW we can upload File
+				const myNewFile = new File([this.currentFile], this.dbName, {type: this.currentFile.type});
+				this.fileUploadService.upload(myNewFile).subscribe((fileStatus) => {
+					console.info('Your File has been SUCCESSFULLY uploaded to the File Server --- Please check folder! :D');
+				}, (err) => {
+					console.warn('Your File upload has FAILED!!', err);
+					this.formSubmissionErrors.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
+					return;					
+				})				
+
 			}, (err: HttpErrorResponse) => {
-				//console.log('ERROR response from Subscribe: ',err);
 				if (err.status === 429) {
 					this.rateLimiterActive = true;
 				} else {
@@ -452,6 +495,7 @@ export class AppComponent {
 				}
 				this.isLoading = false;
 				this.applicationInProgress = false;
+				return;
 			});
 
 		}, (errResponse: HttpErrorResponse) => {
@@ -461,25 +505,7 @@ export class AppComponent {
 				this.applicationInProgress = false;
 			}
 			this.isLoading = false;
-		})
-
-	
-  }
-
-	filterArrByField(arr: any, fieldName: string) {
-		const body: IRegistration = this.regForm.value;
-		//return arr.filter((reg: any) => reg[fieldName] === body[fieldName])
-	}
-
-	findInvalidControls() {
-		const invalid = [];
-		const controls = this.regForm.controls;
-		for (const name in controls) {
-			if (controls[name].invalid) {
-				invalid.push(name);
-			}
-		}
-		return invalid;
+		})		
 	}
 
 }
