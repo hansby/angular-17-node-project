@@ -11,6 +11,8 @@ import {
 } from '@angular/forms';
 import { IRequiredQParams, RegistrationsService } from './services/registrations.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { IGoogleDoc, UploadGoogleDocService } from './services/upload-google-doc.service';
+import { FileUploadService } from './services/file-upload.service';
 
 const LS_KEY = 'owiqsjdh09192';
 
@@ -145,10 +147,16 @@ export class AppComponent {
 	formSubmissionErrors: Array<string> = [];
 	rateLimiterActive: boolean = false;
 	recordAlreadyExists: boolean = false;
+	currentFile: any;
+	readerResult: any;
+	dbName: string = '';
+	surname: string = '';
 
 	constructor(
 		private fb: FormBuilder, 
 		private regService: RegistrationsService,
+		private uploadGoogleDoc: UploadGoogleDocService,
+		private fileUploadService: FileUploadService,
 		@Inject(DOCUMENT) private document: Document,
 	){
 
@@ -260,7 +268,7 @@ export class AppComponent {
 	updateDBName(file: File | undefined, fileType: fileTypes) {
 		if (file) {
 			const ctrl = this.regForm.controls;
-			console.log('event emitter value: ', file);
+			//console.log('event emitter value: ', file);
 			const name = ctrl['firstName'].value;
 			const surname = ctrl['lastName'].value;
 			const id = ctrl['user_id'].value;
@@ -273,7 +281,9 @@ export class AppComponent {
 			if (finalType.includes('document')) finalType = 'doc';
 			
 			const DBName = `${surname} ${name} - ${fileType} - ${id}.${finalType}`;
-			console.log('DBName for upload: ', DBName);
+			//console.log('DBName for upload: ', DBName); 
+			this.dbName = DBName;
+			this.surname = surname;
 
 			switch (fileType) {
 				case fileTypes.ID: ctrl['file_id'].setValue(DBName);
@@ -287,6 +297,11 @@ export class AppComponent {
 			}
 
 		}
+	}
+
+	updateFileStatus(event: {currentFile: File, readerResult: FileReader}) {
+		this.currentFile = event.currentFile;
+		this.readerResult = event.readerResult;
 	}
 
   submitForm() {
@@ -316,7 +331,7 @@ export class AppComponent {
 			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
 			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
 			if (tax_no.length <= 0) formSubList.push('Please fill in your Tax number');
-			if (file_id.length <= 0) formSubList.push('Please Upload a copy of your ID');
+			//if (file_id.length <= 0) formSubList.push('Please Upload a copy of your ID');
 			if (file_poa.length <= 0) formSubList.push('Please Upload a copy of your Proof of Address');
 		}
 
@@ -355,6 +370,60 @@ export class AppComponent {
 			acc_no: body.acc_no,
 			passport: body.passport
 		}
+
+
+		const googleDocObj: IGoogleDoc = {
+			skipHumanReview: true,
+			rawDocument: {
+				mimeType: this.currentFile ? this.currentFile.type : '',
+				content: this.readerResult
+			}
+		}
+
+		console.log('googleDocObj from inside MAIN APP.TS file ', googleDocObj);
+		//console.log('getBase64File, ', this.base64File);
+
+	
+		this.uploadGoogleDoc.verifyDocumentbyGoogleAI(googleDocObj).subscribe((response) => {
+			console.log('lets see if this works!! :DDDDD', response);
+			if (response.document.text) {
+				const text = response.document.text.toString().toLowerCase();
+				const poa_hasSurname = text.includes(this.surname.toLowerCase());
+				const poa_accountNumber = text.includes('account number');
+				const poa_registrationNumber = text.includes('registration number');
+
+				const isValidPOA = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
+
+				this.isLoading = false;
+
+				if (!isValidPOA) {
+					formSubList.push('Your proof of address is not a valid document. Please upload a valid Proof of address');
+					return;
+				}
+
+				const myNewFile = new File([this.currentFile], this.dbName, {type: this.currentFile.type});
+
+				this.fileUploadService.upload(myNewFile).subscribe((fileStatus) => {
+					console.info('Your File has been SUCCESSFULLY uploaded to the File Server --- Please check folder! :D');
+				}, (err) => {
+					console.warn('Your File upload has FAILED!!', err);
+					formSubList.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
+					return;					
+				})
+
+				//console.log('poa_hasSurname', poa_hasSurname);
+				//console.log('poa_accountNumber', poa_accountNumber);
+				//console.log('poa_registrationNumber', poa_registrationNumber);
+
+			}
+		}, (err: HttpErrorResponse) => {
+			formSubList.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
+			console.log('Google API error: verifyDocumentbyGoogleAI method', err);
+			return;
+		});
+
+		
+		return;
 
 		const $ = this.regService.getAll(qParams, this.isSACitizen).subscribe((responseData) => {
 

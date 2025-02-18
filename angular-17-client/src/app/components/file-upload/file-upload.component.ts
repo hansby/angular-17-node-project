@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FileUploadService } from '../../services/file-upload.service';
 import { IGoogleDoc, UploadGoogleDocService } from '../../services/upload-google-doc.service';
@@ -19,6 +19,7 @@ export class FileUploadComponent implements OnInit {
 	@Input() fileName: string | undefined;
 	@Input() fileType: string | undefined;
 	@Output() dbName = new EventEmitter();
+	@Output() fileStatus = new EventEmitter();
 	base64File: any;
 
   constructor(private uploadService: FileUploadService, private uploadGoogleDoc: UploadGoogleDocService) {}
@@ -51,53 +52,22 @@ export class FileUploadComponent implements OnInit {
  }
 
   upload(): void {
-    /*if (this.currentFile) {
+    if (this.currentFile) {
 			let that = this;
 			let reader = new FileReader();
 
 			reader.readAsDataURL(this.currentFile);
 			reader.onload = function () {
-
-				const googleDocObj: IGoogleDoc = {
-					skipHumanReview: true,
-					rawDocument: {
-						mimeType: that.currentFile ? that.currentFile.type : '',
-						content: reader.result
-					}
-				}
-	
-				// console.log('googleDocObj ', googleDocObj);
-				//console.log('getBase64File, ', this.base64File);
-
-			
-				that.uploadGoogleDoc.verifyDocumentbyGoogleAI(googleDocObj).subscribe({
-					next: (event: any) => {
-						if (event instanceof HttpResponse) {
-							that.message = event.body.message;
-							//this.fileInfos = this.uploadService.getFiles();
-						}
-					},
-					error: (err: any) => {
-						console.log(err);
-
-						if (err.error && err.error.message) {
-							that.message = err.error.message;
-						} else {
-							that.message = 'Could not upload the file!';
-						}
-					},
-					complete: () => {
-						that.currentFile = undefined;
-					},
-				});
-
-
+				that.fileStatus.emit({
+					currentFile: that.currentFile,
+					readerResult: reader.result
+				})
 			};
 			reader.onerror = function (error) {
 				console.log('File upload Error: ', error);
 			};
 
 
-    }*/
+    }
   }
 }
