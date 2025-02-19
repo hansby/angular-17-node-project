@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { BehaviorSubject, combineLatest, delay, forkJoin, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, delay, forkJoin, Observable, tap } from 'rxjs';
 import {
 	FormControl, FormGroup, ReactiveFormsModule,
 	FormBuilder,
@@ -289,7 +289,7 @@ export class AppComponent {
 			this.dbName = DBName;
 			this.surname = surname;
 
-			const myNewFile = { file: new File([event.file], DBName, {type: fileType}), result: event.result };
+			const myNewFile = { file: new File([event.file], DBName, {type: event.file.type}), result: event.result };
 
 			switch (fileType) {
 				case fileTypes.ID: ctrl['file_id'].setValue(myNewFile);
@@ -324,65 +324,120 @@ export class AppComponent {
 			this.isLoading = false;
 			return;
 		}
-
-		console.log('regForm crtls: ', this.regForm.controls);
 		
 		const getCtrl_POA = this.regForm.controls['file_poa'].value;
+		let result_poa = getCtrl_POA.result;
 		const googleDocObj_POA: IGoogleDoc = {
 			skipHumanReview: true,
 			rawDocument: {
 				mimeType: getCtrl_POA.file.type,
-				content: getCtrl_POA.result
+				content: result_poa.toString().includes('base64') ? result_poa.split('base64,')[1] : result_poa
 			}
 		}
 
 		const getCtrl_ID = this.regForm.controls['file_id'].value;
+		let result_id = getCtrl_ID.result;
 		const googleDocObj_ID: IGoogleDoc = {
 			skipHumanReview: true,
 			rawDocument: {
 				mimeType: getCtrl_ID.file.type,
-				content: getCtrl_ID.result
+				content: result_id.toString().includes('base64') ? result_id.split('base64,')[1] : result_id
 			}
+		}
+
+		// API refs --- Type: "Individual"
+		const docAI_POA = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.PROOF_OF_ADDRESS);
+		const docAI_ID = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_ID, fileTypes.ID);
+
+		const docAI_BUS_REG = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.BUS_REG_DOC);
+		const docAI_TRUST = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_ID, fileTypes.TRUST_DOC);		
+
+		this.forkJoinRunner([docAI_TRUST], this.runValidationLogic_Trust.bind(this));
+		// this.forkJoinRunner([docAI_POA, docAI_ID], this.runValidationLogic_Individual.bind(this));
+		//this.forkJoinRunner([docAI_POA, docAI_ID], this.runValidationLogic_Individual.bind(this));
+  }
+
+	forkJoinRunner(obsToRun: Array<Observable<any>>, cb: Function) {
+		return forkJoin((obsToRun)).subscribe((resp) => cb(resp), (err:HttpErrorResponse) => {
+			this.formSubmissionErrors.push('Google API error. Please reach out to your contact for help');
+			console.log('Google API error: verify Doc methods', err);
+			return;
+		})
+	}
+
+	runValidationLogic_Trust(response: any){
+		let formSubList = this.formSubmissionErrors;
+		const response_Trust = response[0];
+		const errTag = 'Letter of authority';
+		if (response_Trust && response_Trust.document) { // POA Data is available
+			const isDocValid = this.isDocValid(response_Trust.document.text, fileTypes.TRUST_DOC);
+			if (!isDocValid) {
+				formSubList.push(`Your ${errTag} is not a valid document. Please upload a valid ${errTag}`);
+				this.isLoading = false;
+				return;
+			}
+			// Do DB Dupe Check and Create registration if PASS = True
+			this.dbDupeCheckAndRegistrationPost();	
+		} else {
+			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
+			return;	
 		}		
+	}
 
-		return;
+	runValidationLogic_Individual(response: any){
+		let formSubList = this.formSubmissionErrors;
+		const response_POA = response[0];
+		const response_ID = response[1];
+		const errTag = 'Proof of address';
 
-		const docAI_POA = this.uploadGoogleDoc.verifyGoogleAIDoc_POA(googleDocObj_POA);
-		const docAI_ID = this.uploadGoogleDoc.verifyGoogleAIDoc_ID(googleDocObj_ID);
+		if (response_POA && response_POA.document) { // POA Data is available
+			const isValidPOA = this.isDocValid(response_POA.document.text, fileTypes.PROOF_OF_ADDRESS);
+			if (!isValidPOA) {
+				formSubList.push(`Your ${errTag} is not a valid document. Please upload a valid ${errTag}`);
+				this.isLoading = false;
+				return;
+			}
+			// Do DB Dupe Check and Create registration if PASS = True
+			this.dbDupeCheckAndRegistrationPost();	
+		} else {
+			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
+			return;	
+		}
 
-		forkJoin([docAI_POA, docAI_ID]).subscribe((allResponses) => {
-			console.log('allResponses from forkJoin: ', allResponses);
-		});
+		if (response_ID && response_ID.document) { // ID Data is available
+			const isValidID =  this.isDocValid(response_ID.document.text, fileTypes.ID);
+			if (!isValidID) {
+				formSubList.push(`Your ${fileTypes.ID} is not a valid document. Please upload a valid ${fileTypes.ID}`);
+				this.isLoading = false;
+				return;
+			}
+			// Do DB Dupe Check and Create registration if PASS = True
+			this.dbDupeCheckAndRegistrationPost();				
+		} else {
+			formSubList.push(`We could not verify your ${fileTypes.ID} document. Please reach out to your contact or try again later`);
+			return;					
+		}			
+	}
 
-		/*
-		this.uploadGoogleDoc.verifyGoogleAIDoc_POA(googleDocObj).subscribe((response) => {
-			console.log('lets see if this works!! :DDDDD', response);
-			if (response.document.text) {
-				const text = response.document.text.toString().toLowerCase();
+	isDocValid(dataText: string, fileType: fileTypes): boolean {
+		let isTrue = false;
+		const text = dataText.toString().toLowerCase();
+		switch(fileType) {
+			case fileTypes.PROOF_OF_ADDRESS:
 				const poa_hasSurname = text.includes(this.surname.toLowerCase());
 				const poa_accountNumber = text.includes('account number');
-				const poa_registrationNumber = text.includes('registration number');
-				const isValidPOA = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
-
-				if (!isValidPOA) {
-					formSubList.push('Your proof of address is not a valid document. Please upload a valid Proof of address');
-					this.isLoading = false;
-					return;
-				}
-
-				// Do DB Dupe Check and Create registration if PASS = True
-				this.dbDupeCheckAndRegistrationPost();
-
-			}
-		}, (err: HttpErrorResponse) => {
-			formSubList.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
-			console.log('Google API error: verifyGoogleAIDoc_POA method', err);
-			return;
-		});*/
-
-
-
-  }
+				const poa_registrationNumber = text.includes('registration number');				
+				return isTrue = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
+				break;
+			case fileTypes.ID:
+				return isTrue = true;
+				break;
+			case fileTypes.TRUST_DOC:
+				return isTrue = true;
+				break;				
+		}
+		return isTrue;
+	}
 
 	filterArrByField(arr: any, fieldName: string) {
 		const body: IRegistration = this.regForm.value;
