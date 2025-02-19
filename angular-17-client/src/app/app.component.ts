@@ -371,14 +371,18 @@ export class AppComponent {
 		 * */		
 
 		if(this.regType === REG_TYPE.BUS) {
-			//const docAI_BUS_REG = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.BUS_REG_DOC);
-			//this.forkJoinRunner([docAI_BUS_REG], this.runValidationLogic_BusReg.bind(this));
+			const getCtrl_BUS = this.regForm.controls['file_bus_reg'].value;
+			let result_bus_reg = getCtrl_BUS.result;
+			const googleDocObj_BUS: IGoogleDoc = {
+				skipHumanReview: true,
+				rawDocument: {
+					mimeType: getCtrl_BUS.file.type,
+					content: result_bus_reg.toString().includes('base64') ? result_bus_reg.split('base64,')[1] : result_bus_reg
+				}
+			}				
+			const docAI_BUS_REG = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_BUS, fileTypes.BUS_REG_DOC);
+			this.forkJoinRunner([docAI_BUS_REG], this.runValidationLogic_BusReg.bind(this));
 		}
-
-
-
-		// ------- TESTS
-		//this.dbDupeCheckAndRegistrationPost();
 		
   }
 
@@ -394,7 +398,7 @@ export class AppComponent {
 		let formSubList = this.formSubmissionErrors;
 		const response_Trust = response[0];
 		const errTag = 'Business Registration Doc';
-		if (response_Trust && response_Trust.document) { // POA Data is available
+		if (response_Trust && response_Trust.document) {
 			const isDocValid = this.isDocValid(response_Trust.document.text, fileTypes.BUS_REG_DOC);
 			if (!isDocValid) {
 				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
@@ -413,7 +417,7 @@ export class AppComponent {
 		let formSubList = this.formSubmissionErrors;
 		const response_Trust = response[0];
 		const errTag = 'Letter of authority';
-		if (response_Trust && response_Trust.document) { // POA Data is available
+		if (response_Trust && response_Trust.document) {
 			const isDocValid = this.isDocValid(response_Trust.document.text, fileTypes.TRUST_DOC);
 			if (!isDocValid) {
 				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
@@ -434,7 +438,7 @@ export class AppComponent {
 		const response_ID = response[1];
 		const errTag = 'Proof of address';
 
-		if (response_POA && response_POA.document) { // POA Data is available
+		if (response_POA && response_POA.document) {
 			const isValidPOA = this.isDocValid(response_POA.document.text, fileTypes.PROOF_OF_ADDRESS);
 			if (!isValidPOA) {
 				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
@@ -448,7 +452,7 @@ export class AppComponent {
 			return;	
 		}
 
-		if (response_ID && response_ID.document) { // ID Data is available
+		if (response_ID && response_ID.document) {
 			const isValidID =  this.isDocValid(response_ID.document.text, fileTypes.ID);
 			if (!isValidID) {
 				formSubList.push(`Your ${fileTypes.ID} is either not a valid document or it is but does not match your details above.`);

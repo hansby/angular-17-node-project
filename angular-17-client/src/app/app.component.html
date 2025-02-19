@@ -3,7 +3,7 @@
 
 	<div class="container" *ngIf="applicationInProgress">
 	
-			<div class="py-5 text-center">
+			<div class="py-5 text-center center-auto">
 				<h2>FICA Registration form</h2>
 				<p class="lead">Please complete all the required fields below in order for us to successfully process your application</p>
 				<br /><br />
@@ -16,8 +16,8 @@
 				</ul>
 			</div>
 	
-			<div class="row g-5">
-				<div class="col-md-7 col-lg-8">
+			<div class="row center-auto">
+				<div class="col-lg-12">
 	
 					<hr class="my-4">
 	
@@ -338,7 +338,7 @@
 						
 						<hr class="my-4">
 	
-						<button *ngIf="!isLoading" class="w-100 btn btn-primary btn-lg" 
+						<button *ngIf="!isLoading" class="center-auto w-50 btn btn-primary btn-lg" 
 							(click)="submitForm()"
 							[disabled]="regForm.status === 'INVALID'">
 							Complete Registration
