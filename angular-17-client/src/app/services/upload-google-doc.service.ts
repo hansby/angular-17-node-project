@@ -6,7 +6,7 @@ import { fileTypes } from '../app.component';
 const LOC = 'us';
 const baseUrl = `https://${LOC}-documentai.googleapis.com/v1/projects`;
 const PROJ_ID = '522083403925';
-const ACCESS_TOKEN = 'ya29.a0AXeO80SNHlcofwJ2IKndS84CYQ4snSxI4GcIwmHvJ4PhbjdpXo-dz7-5O_-QKR3XJn9o-6HgN4O6vDZMHPvGPkyQBAfULdmXrimTg-CrMQhRLBFDUpTFAS14rS5b2Lq26h0WED8JfiCbSWkzvP1JlQTWE-eH_GTd8ehLNGieV_JwkBwaCgYKAcwSARISFQHGX2Mi6EA5Xch9uirXpl6FYWN4sA0182';
+const ACCESS_TOKEN = 'ya29.a0AXeO80RN8jUQx_IGEuVIBpr4CXa6Vu7tiYqYJqlrC6sBH5uXRKl0zKPnaP7D2Nq-kR0mHHcPFhKpcCcyzMezUsg4zgzMfKiiuj_FJSXT0f_I1xCTF2t_-bhsya8Tq8Ubjt-82XvMXGzU0cO8RcCReOv31buBaJBQpQ-viNyBtg4knkoaCgYKAboSARISFQHGX2MipgET6tkcM_mEm8zDB9WJkQ0182';
 export interface IGoogleDoc {
 	skipHumanReview: boolean,
 	rawDocument: {

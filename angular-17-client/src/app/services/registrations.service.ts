@@ -23,8 +23,8 @@ export class RegistrationsService {
       ['email', params.email],
       ['acc_no', params.acc_no],
     ];
-		if (isSACitizen) p.push(['user_id', params.user_id]);
-		if (!isSACitizen) p.push(['passport', params.passport]); // foreigner
+		if (isSACitizen && params.user_id) p.push(['user_id', params.user_id]);
+		if (!isSACitizen && params.passport) p.push(['passport', params.passport]); // foreigner
 		const query = p.map((p) => `${p[0]}=${p[1]}`).join('&');
 		return this.http.get<Registration[]>(`${baseUrl}?${query}`);
 	}

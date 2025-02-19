@@ -1,13 +1,10 @@
 import { Component, Inject } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { BehaviorSubject, combineLatest, delay, forkJoin, Observable, tap } from 'rxjs';
 import {
 	FormControl, FormGroup, ReactiveFormsModule,
 	FormBuilder,
 	Validators,
-	ValidatorFn,
-	FormArray,
-	AbstractControl,
 } from '@angular/forms';
 import { IRequiredQParams, RegistrationsService } from './services/registrations.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -32,10 +29,10 @@ interface IRegistration {
 	swift_code: string;
 	iban: string;
 	bank: string;
-	file_id: string;
-	file_poa: string;
-	file_bus_reg: string;
-	file_trust: string;
+	file_id: any;
+	file_poa: any;
+	file_bus_reg: any;
+	file_trust: any;
 	passport: string;	
 	user_id: string;
 	updatedAt?: string,
@@ -76,7 +73,6 @@ interface IIdentity {
  * @returns 
  */
 function checkID(idNumber: any) {
-
 	// assume everything is correct and if it later turns out not to be, just set this to false
 	var correct = true;
 
@@ -96,11 +92,6 @@ function checkID(idNumber: any) {
 	if(id_year < (new Date()).getFullYear() - 100){
 		id_year += 100
 	}
-
-	/*
-	if (!((tempDate.getFullYear() == idNumber.substring(0, 2)) && (id_month == idNumber.substring(2, 4) - 1) && (id_date == idNumber.substring(4, 6)))) {
-			correct = false;
-	}*/
 
 	// apply Luhn formula for check-digits
 	var tempTotal = 0;
@@ -134,7 +125,6 @@ function isNumber(n: string) {
 
 @Component({
   selector: 'app-root',
-  //imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -223,8 +213,6 @@ export class AppComponent {
 
 	} /* end ngOninit */
 
-
-
   typeTrackerSubject$: BehaviorSubject<any> = new BehaviorSubject([]); 
 
 	accTypes: Array<IIdentity> = [
@@ -256,13 +244,10 @@ export class AppComponent {
   ];
 
   updateRegType(value: string) {
-    //console.log(value);
-		//this.regForm.controls['reg_type'].setValue(value);
 		this.regType = value;
   }
 
   updateBank(value: string) {
-    //console.log(value);
 		this.regForm.controls['bank'].setValue(value);
   }	
 
@@ -285,7 +270,7 @@ export class AppComponent {
 			if (finalType.includes('presentation')) finalType = 'pptx';
 			if (finalType.includes('document')) finalType = 'doc';
 			
-			const DBName = `${surname} ${name} - ${fileType} - ${id}.${finalType}`;
+			const DBName = `${surname} ${name} - ${fileType} - ${this.isSACitizen ? id : passport}.${finalType}`;
 			this.dbName = DBName;
 			this.surname = surname;
 
@@ -305,12 +290,6 @@ export class AppComponent {
 		}
 	}
 
-	/*
-	updateFileStatus(event: {currentFile: File, readerResult: FileReader}) {
-		this.currentFile = event.currentFile;
-		this.readerResult = event.readerResult;
-	}*/
-
   submitForm() {
 		let formSubList = this.formSubmissionErrors;
 		formSubList.length = 0;
@@ -324,37 +303,83 @@ export class AppComponent {
 			this.isLoading = false;
 			return;
 		}
+
+		/** =================================================
+		 *  API REFS --- TYPE: "INDIVIDUAL" - SA CITIZEN
+		 * 	=================================================
+		 * */ 
+
+		if(this.regType === REG_TYPE.IND && this.isSACitizen) {
+			const getCtrl_POA = this.regForm.controls['file_poa'].value;
+			let result_poa = getCtrl_POA.result;
+			const googleDocObj_POA: IGoogleDoc = {
+				skipHumanReview: true,
+				rawDocument: {
+					mimeType: getCtrl_POA.file.type,
+					content: result_poa.toString().includes('base64') ? result_poa.split('base64,')[1] : result_poa
+				}
+			}
+			const getCtrl_ID = this.regForm.controls['file_id'].value;
+			let result_id = getCtrl_ID.result;
+			const googleDocObj_ID: IGoogleDoc = {
+				skipHumanReview: true,
+				rawDocument: {
+					mimeType: getCtrl_ID.file.type,
+					content: result_id.toString().includes('base64') ? result_id.split('base64,')[1] : result_id
+				}
+			}		
+			const docAI_POA = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.PROOF_OF_ADDRESS);
+			const docAI_ID = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_ID, fileTypes.ID);
+			this.forkJoinRunner([docAI_POA, docAI_ID], this.runValidationLogic_Individual.bind(this));
+			return;
+		}
+
+		/** =================================================
+		 *  API REFS --- TYPE: "INDIVIDUAL" - FOREIGNER
+		 * 	=================================================
+		 * */ 
+
+		if (this.regType === REG_TYPE.IND && this.isForeigner) {
+			// Do DB Dupe Check and Create registration if PASS = True
+			this.dbDupeCheckAndRegistrationPost();
+		}
+
+
+		/** =================================================
+		 *  API REFS --- TYPE: "BUSINESS"
+		 * 	=================================================
+		 * */
+
+		if(this.regType === REG_TYPE.TRUST) {
+			const getCtrl_TRUST = this.regForm.controls['file_trust'].value;
+			let result_trust = getCtrl_TRUST.result;
+			const googleDocObj_TRUST: IGoogleDoc = {
+				skipHumanReview: true,
+				rawDocument: {
+					mimeType: getCtrl_TRUST.file.type,
+					content: result_trust.toString().includes('base64') ? result_trust.split('base64,')[1] : result_trust
+				}
+			}			
+			const docAI_TRUST = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_TRUST, fileTypes.TRUST_DOC);		
+			this.forkJoinRunner([docAI_TRUST], this.runValidationLogic_Trust.bind(this));
+		}
+
+
+		/** =================================================
+		 *  API REFS --- TYPE: "TRUST"
+		 * 	=================================================
+		 * */		
+
+		if(this.regType === REG_TYPE.BUS) {
+			//const docAI_BUS_REG = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.BUS_REG_DOC);
+			//this.forkJoinRunner([docAI_BUS_REG], this.runValidationLogic_BusReg.bind(this));
+		}
+
+
+
+		// ------- TESTS
+		//this.dbDupeCheckAndRegistrationPost();
 		
-		const getCtrl_POA = this.regForm.controls['file_poa'].value;
-		let result_poa = getCtrl_POA.result;
-		const googleDocObj_POA: IGoogleDoc = {
-			skipHumanReview: true,
-			rawDocument: {
-				mimeType: getCtrl_POA.file.type,
-				content: result_poa.toString().includes('base64') ? result_poa.split('base64,')[1] : result_poa
-			}
-		}
-
-		const getCtrl_ID = this.regForm.controls['file_id'].value;
-		let result_id = getCtrl_ID.result;
-		const googleDocObj_ID: IGoogleDoc = {
-			skipHumanReview: true,
-			rawDocument: {
-				mimeType: getCtrl_ID.file.type,
-				content: result_id.toString().includes('base64') ? result_id.split('base64,')[1] : result_id
-			}
-		}
-
-		// API refs --- Type: "Individual"
-		const docAI_POA = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.PROOF_OF_ADDRESS);
-		const docAI_ID = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_ID, fileTypes.ID);
-
-		const docAI_BUS_REG = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.BUS_REG_DOC);
-		const docAI_TRUST = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_ID, fileTypes.TRUST_DOC);		
-
-		this.forkJoinRunner([docAI_TRUST], this.runValidationLogic_Trust.bind(this));
-		// this.forkJoinRunner([docAI_POA, docAI_ID], this.runValidationLogic_Individual.bind(this));
-		//this.forkJoinRunner([docAI_POA, docAI_ID], this.runValidationLogic_Individual.bind(this));
   }
 
 	forkJoinRunner(obsToRun: Array<Observable<any>>, cb: Function) {
@@ -365,6 +390,25 @@ export class AppComponent {
 		})
 	}
 
+	runValidationLogic_BusReg(response: any){
+		let formSubList = this.formSubmissionErrors;
+		const response_Trust = response[0];
+		const errTag = 'Business Registration Doc';
+		if (response_Trust && response_Trust.document) { // POA Data is available
+			const isDocValid = this.isDocValid(response_Trust.document.text, fileTypes.BUS_REG_DOC);
+			if (!isDocValid) {
+				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
+				this.isLoading = false;
+				return;
+			}
+			// Do DB Dupe Check and Create registration if PASS = True
+			this.dbDupeCheckAndRegistrationPost();	
+		} else {
+			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
+			return;	
+		}		
+	}	
+
 	runValidationLogic_Trust(response: any){
 		let formSubList = this.formSubmissionErrors;
 		const response_Trust = response[0];
@@ -372,7 +416,7 @@ export class AppComponent {
 		if (response_Trust && response_Trust.document) { // POA Data is available
 			const isDocValid = this.isDocValid(response_Trust.document.text, fileTypes.TRUST_DOC);
 			if (!isDocValid) {
-				formSubList.push(`Your ${errTag} is not a valid document. Please upload a valid ${errTag}`);
+				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
 				return;
 			}
@@ -393,7 +437,7 @@ export class AppComponent {
 		if (response_POA && response_POA.document) { // POA Data is available
 			const isValidPOA = this.isDocValid(response_POA.document.text, fileTypes.PROOF_OF_ADDRESS);
 			if (!isValidPOA) {
-				formSubList.push(`Your ${errTag} is not a valid document. Please upload a valid ${errTag}`);
+				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
 				return;
 			}
@@ -407,7 +451,7 @@ export class AppComponent {
 		if (response_ID && response_ID.document) { // ID Data is available
 			const isValidID =  this.isDocValid(response_ID.document.text, fileTypes.ID);
 			if (!isValidID) {
-				formSubList.push(`Your ${fileTypes.ID} is not a valid document. Please upload a valid ${fileTypes.ID}`);
+				formSubList.push(`Your ${fileTypes.ID} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
 				return;
 			}
@@ -422,9 +466,10 @@ export class AppComponent {
 	isDocValid(dataText: string, fileType: fileTypes): boolean {
 		let isTrue = false;
 		const text = dataText.toString().toLowerCase();
+		const ctrl_surname = this.regForm.controls['lastName'].value;
 		switch(fileType) {
 			case fileTypes.PROOF_OF_ADDRESS:
-				const poa_hasSurname = text.includes(this.surname.toLowerCase());
+				const poa_hasSurname = text.includes(ctrl_surname.toLowerCase());
 				const poa_accountNumber = text.includes('account number');
 				const poa_registrationNumber = text.includes('registration number');				
 				return isTrue = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
@@ -433,8 +478,16 @@ export class AppComponent {
 				return isTrue = true;
 				break;
 			case fileTypes.TRUST_DOC:
+				const ctrl_trustNo = this.regForm.controls['trust_reg_no'].value;
+				const hasTrustSurname = text.includes(ctrl_surname.toLowerCase());
+				const hasTrustTitle = text.includes('LETTERS OF AUTHORITY'.toLowerCase());
+				const controlAct = text.includes('Trust Property Control Act'.toLowerCase());
+				const hasTrustNo = text.includes(ctrl_trustNo.toLowerCase());
+				return isTrue = hasTrustSurname && hasTrustTitle && controlAct && hasTrustNo;
+				break;
+			case fileTypes.BUS_REG_DOC:
 				return isTrue = true;
-				break;				
+				break;								
 		}
 		return isTrue;
 	}
@@ -506,6 +559,8 @@ export class AppComponent {
 		const body: IRegistration = this.regForm.value;
 		console.log('final Obj for API req: ', body);
 
+		//return;
+
 		const qParams: IRequiredQParams = {
 			user_id: body.user_id,
 			email: body.email,
@@ -522,7 +577,18 @@ export class AppComponent {
 				return;
 			}
 
-			// CREATE RECORD IF IT DOES NOT YET EXIST IN DB!!
+			/**
+			 * !!!NB: We need to re-format the file_*** form fields
+			 *  because at this point it has the entire file payload in it
+			 * where all the DB table (and APIs) really need is the [simple file name] format
+			 */
+			if(typeof body.file_id === 'object') body.file_id = body.file_id.file.name;
+			if(typeof body.file_bus_reg === 'object') body.file_bus_reg = body.file_bus_reg.file.name;
+			if(typeof body.file_trust === 'object') body.file_trust = body.file_trust.file.name;
+			if(typeof body.file_poa === 'object') body.file_poa = body.file_poa.file.name;			
+
+
+			// BLOCKERS AND CHECKS ALL DONE --- CREATE RECORD!
 			this.regService.create(body).pipe(
 				delay(4000),
 			)
@@ -533,14 +599,14 @@ export class AppComponent {
 				this.isLoading = false;
 
 				// Form is Successfully stored in DB ... NOW we can upload File
-				const myNewFile = new File([this.currentFile], this.dbName, {type: this.currentFile.type});
+				/*const myNewFile = new File([this.currentFile], this.dbName, {type: this.currentFile.type});
 				this.fileUploadService.upload(myNewFile).subscribe((fileStatus) => {
 					console.info('Your File has been SUCCESSFULLY uploaded to the File Server --- Please check folder! :D');
 				}, (err) => {
 					console.warn('Your File upload has FAILED!!', err);
 					this.formSubmissionErrors.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
 					return;					
-				})				
+				})*/				
 
 			}, (err: HttpErrorResponse) => {
 				if (err.status === 429) {
