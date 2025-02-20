@@ -6,7 +6,7 @@ import { fileTypes } from '../app.component';
 const LOC = 'us';
 const baseUrl = `https://${LOC}-documentai.googleapis.com/v1/projects`;
 const PROJ_ID = '522083403925';
-const ACCESS_TOKEN = 'ya29.a0AXeO80RN8jUQx_IGEuVIBpr4CXa6Vu7tiYqYJqlrC6sBH5uXRKl0zKPnaP7D2Nq-kR0mHHcPFhKpcCcyzMezUsg4zgzMfKiiuj_FJSXT0f_I1xCTF2t_-bhsya8Tq8Ubjt-82XvMXGzU0cO8RcCReOv31buBaJBQpQ-viNyBtg4knkoaCgYKAboSARISFQHGX2MipgET6tkcM_mEm8zDB9WJkQ0182';
+const ACCESS_TOKEN = 'ya29.a0AXeO80QkjndkvBMa25SJDyhwtqOoFhOXjJ1aYxk86gu6vZdtKT3mTnY3VrBvO6E1ZESW6nFgCRBZwib4pdIqpDmJh_4xZIF3jm0CFWpKkUw-BMf4Z-E_klxqysl0XlBhZ8XDL6iaeHfIe2oXFxWqy3vdXQSt5aPI4eKlJwXafmbi8UUaCgYKAXkSARISFQHGX2MiGnoMk4pW-s0vufgmtJUPJw0182';
 export interface IGoogleDoc {
 	skipHumanReview: boolean,
 	rawDocument: {
@@ -29,7 +29,7 @@ export class UploadGoogleDocService {
 		}
 		let processorID: string;
 		switch(docType) {
-			case fileTypes.ID: processorID = 'a8e1982410149b8e'
+			case fileTypes.ID: processorID = '60b18db85bb692fd'
 				break;
 			case fileTypes.BUS_REG_DOC: processorID = '88c872bf6214d9a5'
 				break;

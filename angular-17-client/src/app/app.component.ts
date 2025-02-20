@@ -438,39 +438,32 @@ export class AppComponent {
 		const response_ID = response[1];
 		const errTag = 'Proof of address';
 
-		if (response_POA && response_POA.document) {
+		if (response_POA && response_POA.document && response_ID && response_ID.document) {
 			const isValidPOA = this.isDocValid(response_POA.document.text, fileTypes.PROOF_OF_ADDRESS);
+			const isValidID =  this.isDocValid(response_ID.document, fileTypes.ID);
 			if (!isValidPOA) {
 				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
 				return;
-			}
-			// Do DB Dupe Check and Create registration if PASS = True
-			this.dbDupeCheckAndRegistrationPost();	
-		} else {
-			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
-			return;	
-		}
-
-		if (response_ID && response_ID.document) {
-			const isValidID =  this.isDocValid(response_ID.document.text, fileTypes.ID);
-			if (!isValidID) {
+			} else if (!isValidID) {
 				formSubList.push(`Your ${fileTypes.ID} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
 				return;
+			} else {
+				// Do DB Dupe Check and Create registration if PASS = True
+				this.dbDupeCheckAndRegistrationPost();	
 			}
-			// Do DB Dupe Check and Create registration if PASS = True
-			this.dbDupeCheckAndRegistrationPost();				
 		} else {
-			formSubList.push(`We could not verify your ${fileTypes.ID} document. Please reach out to your contact or try again later`);
-			return;					
-		}			
+			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
+			return;	
+		}		
 	}
 
-	isDocValid(dataText: string, fileType: fileTypes): boolean {
+	isDocValid(dataText: any, fileType: fileTypes): boolean {
 		let isTrue = false;
 		const text = dataText.toString().toLowerCase();
 		const ctrl_surname = this.regForm.controls['lastName'].value;
+		const ctrl_userID = this.regForm.controls['user_id'].value;
 		switch(fileType) {
 			case fileTypes.PROOF_OF_ADDRESS:
 				const poa_hasSurname = text.includes(ctrl_surname.toLowerCase());
@@ -479,10 +472,15 @@ export class AppComponent {
 				return isTrue = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
 				break;
 			case fileTypes.ID:
-				const hasIDname = text.includes('');
-				//const hasIDForeNameTag = text.includes('FORENAMES'.toLowerCase());
-				//const hasIDForeNameTag = text.includes('FORENAMES'.toLowerCase());
-				return isTrue = false;
+				const document = dataText.text.toString().toLowerCase();
+				const arr = dataText.entities[3];
+				const getIDNo = arr && arr.mentionText ? arr.mentionText.replace(/\s/g, '') : '';
+				const isIDsMatching = getIDNo === ctrl_userID;
+				const id_hasSurname = document.includes(ctrl_surname.toLowerCase());
+				const id_hasForenames = document.includes('FORENAMES'.toLowerCase());
+				const id_hasDateIssued = document.includes('DATE ISSUED'.toLowerCase());
+				const id_hasCountryOfBirth = document.includes('COUNTRY OF BIRTH'.toLowerCase());
+				return isTrue = id_hasSurname && id_hasForenames && id_hasDateIssued && id_hasCountryOfBirth && isIDsMatching;
 				break;
 			case fileTypes.TRUST_DOC:
 				const ctrl_trustNo = this.regForm.controls['trust_reg_no'].value;
@@ -570,9 +568,7 @@ export class AppComponent {
 	dbDupeCheckAndRegistrationPost() {
 		const { localStore } = this;
 		const body: IRegistration = this.regForm.value;
-		console.log('final Obj for API req: ', body);
-
-		//return;
+		const bodyCopyForFileUploads = Object.assign({}, body);
 
 		const qParams: IRequiredQParams = {
 			user_id: body.user_id,
@@ -598,9 +594,8 @@ export class AppComponent {
 			if(typeof body.file_id === 'object') body.file_id = body.file_id.file.name;
 			if(typeof body.file_bus_reg === 'object') body.file_bus_reg = body.file_bus_reg.file.name;
 			if(typeof body.file_trust === 'object') body.file_trust = body.file_trust.file.name;
-			if(typeof body.file_poa === 'object') body.file_poa = body.file_poa.file.name;			
-
-
+			if(typeof body.file_poa === 'object') body.file_poa = body.file_poa.file.name;	
+			
 			// BLOCKERS AND CHECKS ALL DONE --- CREATE RECORD!
 			this.regService.create(body).pipe(
 				delay(4000),
@@ -611,15 +606,37 @@ export class AppComponent {
 				this.applicationInProgress = false;
 				this.isLoading = false;
 
-				// Form is Successfully stored in DB ... NOW we can upload File
-				/*const myNewFile = new File([this.currentFile], this.dbName, {type: this.currentFile.type});
-				this.fileUploadService.upload(myNewFile).subscribe((fileStatus) => {
-					console.info('Your File has been SUCCESSFULLY uploaded to the File Server --- Please check folder! :D');
-				}, (err) => {
-					console.warn('Your File upload has FAILED!!', err);
-					this.formSubmissionErrors.push('There was a technical error in our system while uploading files. Please reach out to your contact for help');
-					return;					
-				})*/				
+				// Form is Successfully stored in DB ... NOW we can upload Files
+
+				if (this.regType === REG_TYPE.TRUST) {
+					const trustObj: File = bodyCopyForFileUploads.file_trust.file;
+					const myNewFile_trust = new File([trustObj], trustObj.name, {type: trustObj.type});
+					this.fileUploadService.upload(myNewFile_trust).subscribe((resp) => {
+						console.log('YES MAN!! File successfully uploaded! :DD');
+					}, (err: HttpErrorResponse) => console.log('OH CRAP! File upload FAILED! :((( '));
+				}
+		
+				if (this.regType === REG_TYPE.BUS) {
+					const busObj: File = bodyCopyForFileUploads.file_bus_reg.file;
+					const myNewFile_bus = new File([busObj], busObj.name, {type: busObj.type});
+					this.fileUploadService.upload(myNewFile_bus).subscribe((resp) => {
+						console.log('YES MAN!! File successfully uploaded! :DD');
+					}, (err: HttpErrorResponse) => console.log('OH CRAP! File upload FAILED! :((( '));
+				}		
+		
+				if (this.isSACitizen && this.regType === REG_TYPE.IND) {
+					const Obj_POA: File = bodyCopyForFileUploads.file_poa.file;
+					const Obj_ID: File = bodyCopyForFileUploads.file_id.file;
+					const myNewFile_POA = new File([Obj_POA], Obj_POA.name, {type: Obj_POA.type});
+					const myNewFile_ID = new File([Obj_ID], Obj_ID.name, {type: Obj_ID.type});
+		
+					const API_POA = this.fileUploadService.upload(myNewFile_POA);
+					const API_ID = this.fileUploadService.upload(myNewFile_ID);
+		
+					forkJoin(([API_POA, API_ID])).subscribe((resp) => {
+						console.log('YES MAN!! POA and ID files were successfully uploaded! :DD');
+					}, (err: HttpErrorResponse) => console.log('OH CRAP! File uploads have FAILED! :((( '));			
+				}				
 
 			}, (err: HttpErrorResponse) => {
 				if (err.status === 429) {
