@@ -479,7 +479,10 @@ export class AppComponent {
 				return isTrue = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
 				break;
 			case fileTypes.ID:
-				return isTrue = true;
+				const hasIDname = text.includes('');
+				//const hasIDForeNameTag = text.includes('FORENAMES'.toLowerCase());
+				//const hasIDForeNameTag = text.includes('FORENAMES'.toLowerCase());
+				return isTrue = false;
 				break;
 			case fileTypes.TRUST_DOC:
 				const ctrl_trustNo = this.regForm.controls['trust_reg_no'].value;
@@ -490,7 +493,13 @@ export class AppComponent {
 				return isTrue = hasTrustSurname && hasTrustTitle && controlAct && hasTrustNo;
 				break;
 			case fileTypes.BUS_REG_DOC:
-				return isTrue = true;
+				const ctrl_regNo = this.regForm.controls['bus_reg_no'].value;
+				const hasCommissionerTag = text.includes('issued by the Commissioner of Companies & Intellectual'.toLowerCase());
+				const hasCOR143Tag = text.includes('COR 14.3'.toLowerCase());
+				const hasEffectiveDate = text.includes('Effective date'.toLowerCase());
+				const hasRegNoTitle = text.includes('Registration number'.toLowerCase());
+				const hasRegNo = text.includes(ctrl_regNo.toLowerCase());
+				return isTrue = hasCommissionerTag && hasCOR143Tag && hasEffectiveDate && hasRegNoTitle && hasRegNo;
 				break;								
 		}
 		return isTrue;
