@@ -20,7 +20,7 @@ export class RegistrationsService {
 
 	getAll(params: IRequiredQParams, isSACitizen: boolean): Observable<Registration[]> {
     const p: [string, string|number|boolean|undefined][] = [
-      ['email', params.email],
+      //['email', params.email],
       ['acc_no', params.acc_no],
     ];
 		if (isSACitizen && params.user_id) p.push(['user_id', params.user_id]);

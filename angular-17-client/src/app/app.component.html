@@ -59,18 +59,7 @@
 						<h4 class="mb-3">Privacy Policy and POPI</h4>
 						
 						<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. </p>
-						<p>Please <a href="#modal_popi" data-toggle="modal">click here</a> to read Privacy policy and POPI conditions</p>						
-		
-						<!--
-						<div class="form-check">
-							<input type="checkbox" class="form-check-input" id="same-address">
-							<label class="form-check-label" for="same-address">I accept the Terms & Conditions</label>
-						</div>
-	
-						<div class="form-check">
-							<input type="checkbox" class="form-check-input" id="save-info">
-							<label class="form-check-label" for="save-info">Save this information for next time</label>
-						</div>	-->					
+						<p>Please <a href="#modal_popi" data-toggle="modal">click here</a> to read Privacy policy and POPI conditions</p>			
 					
 					</div>
 				</div>				
@@ -100,11 +89,164 @@
 		
 						<h4 class="mb-3">Personal information</h4>
 
-						<p>Yo yo yo page 2 data!!!</p>
-						<p>Yo yo yo page 2 data!!!</p>
-						<p>Yo yo yo page 2 data!!!</p>
-						<p>Yo yo yo page 2 data!!!</p>
-						<p>Yo yo yo page 2 data!!!</p>				
+						<form class="needs-validation" [formGroup]="regForm">
+						
+							<div class="row g-3">
+		
+								<div class="col-sm-6">
+									<label for="reg_type" class="form-label">Registration type</label>
+									<select #regTypeSelect 
+										class="form-select" 
+										(change)="updateRegType(regTypeSelect.value)"
+										formControlName="reg_type"
+										name="reg_type">
+										<option value="">Choose...</option>
+										@for (type of reg_types; let i = $index; track type) {
+											<option [value]="type.id">{{ type.name }}</option>
+										}
+									</select>
+									<div class="invalid-feedback">
+										Please select a valid registration type.
+									</div>
+								</div>
+								
+							</div>
+	
+							<br />
+							
+							<div class="row g-3">
+								
+								<div class="col-sm-6">
+									<label for="firstName" class="form-label">First name</label>
+									<input type="text" class="form-control" id="firstName" formControlName="firstName" required>
+									<div class="invalid-feedback">
+										Valid first name is required.
+									</div>
+								</div>
+		
+								<div class="col-sm-6">
+									<label for="lastName" class="form-label">Last name</label>
+									<input type="text" class="form-control" id="lastName" formControlName="lastName" required>
+									<div class="invalid-feedback">
+										Valid last name is required.
+									</div>
+								</div>
+	
+								
+	
+								<hr class="my-4">
+	
+								<ng-container>
+	
+									<h5 class="mb-3">I am a</h5>
+			
+									<div class="my-3">
+										<div class="col-sm-6">
+										<div class="form-check">
+											<input id="citizen" 
+												name="citizenStatus" 
+												type="radio" 
+												class="form-check-input" 
+												value="citizen"
+												formControlName="citizenStatus">
+											<label class="form-check-label" for="citizen">SA Citizen</label>
+										</div>
+										<div class="form-check">
+											<input id="foreigner" 
+												name="citizenStatus" 
+												type="radio" 
+												class="form-check-input"
+												value="foreigner"
+												formControlName="citizenStatus">
+											<label class="form-check-label" for="foreigner">Foreigner</label>
+										</div>
+										</div>
+									</div>							
+	
+								</ng-container>
+	
+	
+	
+								<div class="col-12" *ngIf="isSACitizen">
+									<label for="username" class="form-label">ID Number</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text"><i class="bi bi-phone"></i></span>
+										<input type="text" class="form-control" 
+											id="username" 
+											placeholder="" 
+											formControlName="user_id"
+											name="user_id">
+										<div class="invalid-feedback" *ngIf="regForm.controls['user_id'].errors" class="frm_error_main">
+											Your ID number is invalid.
+										</div>
+									</div>
+								</div>
+								
+								<div class="col-12" *ngIf="isForeigner">
+									<label for="username" class="form-label">Passport</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text"><i class="bi bi-phone"></i></span>
+										<input type="text" class="form-control" id="username" placeholder="" formControlName="passport">
+										<div class="invalid-feedback">
+											Your username is required.
+										</div>
+									</div>
+								</div>							
+		
+								<div class="col-12">
+									<label for="username" class="form-label">Cellphone</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-phone" viewBox="0 0 16 16">
+												<path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+												<path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+											</svg>										
+										</span>
+										<input type="text" class="form-control" id="username" placeholder="0810000000" formControlName="cell" required>
+										<div class="invalid-feedback">
+											Your cell is required.
+										</div>
+									</div>
+								</div>						
+		
+								<div class="col-12">
+									<label for="email" class="form-label">Email </label>
+	
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
+												<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+											</svg>									
+										</span>
+										<input type="email" class="form-control" id="email" placeholder="you@example.com" formControlName="email" required>
+										<div class="form-error" *ngIf="regForm.get('email')?.invalid && regForm.get('email')?.touched">
+											A valid email is required.
+										</div>									
+									</div>
+								</div>
+		
+								<div class="col-12">
+									<label for="address" class="form-label">Tax number</label>
+	
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
+												<path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
+												<path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/>
+											</svg>								
+										</span>
+										<input type="text" class="form-control" id="tax_no" name="tax_no" formControlName="tax_no">
+										<div class="invalid-feedback">
+											Please enter your tax number.
+										</div>								
+									</div>
+	
+								</div>
+
+								<!-- ADDRESS FIELDS -->
+		
+							</div>
+						</form>			
 
 					</div>
 				</div>				
@@ -134,14 +276,169 @@
 					<div class="col-lg-12">
 		
 						<hr class="my-4">
-		
-						<h4 class="mb-3">Banking Information</h4>
 
-						<p>Yo yo yo page 3 data!!!</p>
-						<p>Yo yo yo page 3 data!!!</p>
-						<p>Yo yo yo page 3 data!!!</p>
-						<p>Yo yo yo page 3 data!!!</p>
-						<p>Yo yo yo page 3 data!!!</p>
+						<form class="needs-validation" [formGroup]="regForm">
+
+							
+							<div class="row g-3">
+		
+								<h4 class="mb-3">Banking information</h4>
+
+
+								<div class="col-12" *ngIf="regType === 'business'">
+									<label for="username" class="form-label">Business Registration Number</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
+												<path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
+												<path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/>
+											</svg>										
+										</span>
+										<input type="text" class="form-control" id="username" placeholder="YYYY/000000/00" formControlName="bus_reg_no">
+										<div class="invalid-feedback">
+											This is a required field
+										</div>
+									</div>
+								</div>		
+								
+								<div class="col-12" *ngIf="regType === 'trust'">
+									<label for="trust_reg_no" class="form-label">Trust Registration Number</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
+												<path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
+												<path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/>
+											</svg>										
+										</span>
+										<input type="text" class="form-control" id="trust_reg_no" placeholder="IT000000/YYYY" formControlName="trust_reg_no">
+										<div class="invalid-feedback">
+											This is a required field
+										</div>
+									</div>
+								</div>								
+		
+		
+								<div class="col-sm-6">
+									<label for="acc_holder" class="form-label">Account Name / Holder</label>
+									<input type="text" class="form-control" id="acc_holder" placeholder="eg John Smith" formControlName="acc_holder" required>
+								</div>
+								<div class="col-sm-6">
+									<label for="acc_holder" class="form-label">Account Type</label>
+									<select #accSelect 
+										class="form-select" 
+										id="reg_type" 
+										(change)="updateAccType(accSelect.value)"
+										formControlName="acc_type"
+										name="acc_type">
+										<option value="">Choose...</option>
+										@for (type of accTypes; let i = $index; track type) {
+											<option [value]="type.id">{{ type.name }}</option>
+										}
+									</select>              
+								</div>              
+		
+								<div class="col-sm-6">
+									<label for="acc_number" class="form-label">Account Number</label>
+									<input type="number" class="form-control" id="acc_number" placeholder="" formControlName="acc_no" required>
+								</div>
+		
+								<div class="col-sm-6">
+									<label for="bank" class="form-label">Bank</label>
+									<select #bankSelect 
+										class="form-select" 
+										id="reg_type" 
+										(change)="updateBank(bankSelect.value)"
+										formControlName="bank"
+										name="bank">
+										<option value="">Choose...</option>
+										@for (bank of banks; let i = $index; track bank) {
+											<option [value]="bank.id">{{ bank.name }}</option>
+										}
+									</select>  
+									<div class="invalid-feedback">
+										Please select a valid country.
+									</div>
+								</div>              
+								
+		
+								<div class="col-sm-6" *ngIf="isForeigner">
+									<label for="swift" class="form-label">SWIFT (BIC)/ SORT CODE</label>
+									<input type="number" class="form-control" id="acc_number" placeholder="eg 0000" formControlName="swift_code">
+								</div>
+		
+								<div class="col-sm-6" *ngIf="isForeigner">
+									<label for="iban" class="form-label">IBAN</label>
+									<input type="number" class="form-control" id="acc_number" placeholder="eg 0000" formControlName="iban">
+								</div>						
+								
+							<hr class="my-4">
+	
+		
+							<h4 class="mb-3">Upload Documents</h4>
+							<ng-container *ngIf="regForm.controls['firstName'].value.length <= 0 || regForm.controls['lastName'].value.length <= 0">
+								<p>**Please fill in your name, surname and ID or Passport before completing this section.</p>
+							</ng-container>
+	
+	
+							<ng-container *ngIf="regForm.controls['firstName'].value.length > 0 && regForm.controls['lastName'].value.length > 0">
+	
+								<ng-container *ngIf="regType === 'individual' && isSACitizen">
+									<app-file-upload 
+										[fileName]="'Upload ID'" 
+										[fileType]="fileTypes.ID" 
+										(dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>
+	
+									<app-file-upload 
+										[fileName]="'Upload Proof of Address'" 
+										[fileType]="fileTypes.PROOF_OF_ADDRESS" 
+										(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>									
+								</ng-container>
+	
+								<ng-container *ngIf="regType === 'business'">
+									<app-file-upload 
+										[fileName]="'Upload Registration Certificate (COR 14.3)'" 
+										[fileType]="fileTypes.BUS_REG_DOC"
+										(dbName)="updateDBName($event, fileTypes.BUS_REG_DOC)"></app-file-upload>
+								</ng-container>
+	
+								<ng-container *ngIf="regType === 'trust'">
+									<app-file-upload 
+										[fileName]="'Upload Letter of authority'" 
+										[fileType]="fileTypes.TRUST_DOC"
+										(dbName)="updateDBName($event, fileTypes.TRUST_DOC)"></app-file-upload>
+								</ng-container>
+								
+							</ng-container>
+	
+							<ng-container *ngIf="formSubmissionErrors.length > 0"> 
+								<hr class="my-4">
+	
+								<div class="submission-errors">
+									
+									<h4 class="mb-3">Submission Errors</h4>
+									<p>We could not process your application because of the following errors:</p>
+	
+									<div>
+										<ul>
+											@for (err of formSubmissionErrors; let i = $index; track err) {
+												<li>{{ err }}</li>
+											}
+										</ul>
+									</div>
+								</div>
+							</ng-container>
+	
+							<ng-container *ngIf="recordAlreadyExists">
+								<hr class="my-4">
+								<div class="record-exists">
+									<h4 class="mb-3 error-text">Details already exist</h4>
+									<p><span class="error-text">Please note:</span> We could not register your application because the data already exists in our system.</p>
+									<p>Please amend your details above or speak to your contact to resolve the issue.</p>
+								</div>
+							</ng-container>
+
+						</div>
+					</form>
 					
 					</div>
 				</div>				
@@ -149,9 +446,18 @@
 				<!-- =========== PAGINATION ========== -->
 				<hr class="my-4">
 				<div class="pagination justify-space-around">
-					<button class="col-4 w-50 btn btn-primary btn-lg" (click)="previousPage()">Previous</button>		
-					<button class="col-4 w-50 btn btn-primary btn-lg" (click)="submitForm()">Submit</button>				 
+					<button *ngIf="!isLoading" class="col-4 w-50 btn btn-primary btn-lg" (click)="previousPage()">Previous</button>
+					<button *ngIf="!isLoading" class="col-4 w-50 btn btn-primary btn-lg" 
+						(click)="submitForm()"
+						[disabled]="regForm.status === 'INVALID'">
+						Complete Registration
+					</button>
+					<button [disabled]="true" *ngIf="isLoading" class="center-auto w-50 btn btn-primary btn-lg">
+						Please wait...
+					</button>
 				</div>
+
+
 				<hr class="my-4">				
 
 			</ng-container>

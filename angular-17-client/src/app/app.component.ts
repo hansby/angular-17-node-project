@@ -129,7 +129,7 @@ function isNumber(n: string) {
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-	page: number = 1;
+	page: number = 2;
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -176,6 +176,13 @@ export class AppComponent {
 			cell: new FormControl(''),
 			email: new FormControl('', [Validators.required, Validators.email]),
 			tax_no: new FormControl(''),
+
+			address_1: new FormControl('', [Validators.required]),
+			address_2: new FormControl('', [Validators.required]),
+			suburb: new FormControl('', [Validators.required]),
+			town: new FormControl('', [Validators.required]),
+			postal_code: new FormControl('', [Validators.required]),
+
 			acc_holder: new FormControl(''),
 			acc_type: new FormControl('', [Validators.required]),
 			acc_no: new FormControl(''),
@@ -183,6 +190,7 @@ export class AppComponent {
 			iban: new FormControl(''),
 			bank: new FormControl('', [Validators.required]),
 			file_id: new FormControl(''),
+			file_passport: new FormControl(''),
 			file_poa: new FormControl(''),
 			file_bus_reg: new FormControl(''),
 			file_trust: new FormControl(''),
@@ -537,24 +545,23 @@ export class AppComponent {
 
 		// upload fields
 		const file_id = ctrls['file_id'].value ?? '';
+		const file_passport = ctrls['file_passport'].value ?? '';
 		const file_bus_reg = ctrls['file_bus_reg'].value ?? '';
 		const file_trust = ctrls['file_trust'].value ?? '';
 		const file_poa = ctrls['file_poa'].value ?? '';
 
-		if (this.isSACitizen && this.regType === REG_TYPE.IND) {
+		if (this.isSACitizen) {
 			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
 			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
 			if (file_id.length <= 0) formSubList.push('Please Upload a copy of your ID');
 			if (file_poa.length <= 0) formSubList.push('Please Upload a copy of your Proof of Address');
 		}
 
-		if (this.isForeigner && this.regType === REG_TYPE.IND) {
-			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
-		}
-
 		if (this.isForeigner) {
+			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
+			if (file_passport.length <= 0) formSubList.push('Please Upload a copy of your Passport');
 			if (swift_code.length <= 0) formSubList.push('Please fill in your Swift Code number');
-			if (iban.length <= 0) formSubList.push('Please fill in your IBAN number');
+			if (iban.length <= 0) formSubList.push('Please fill in your IBAN number');			
 		}
 		
 		if (this.regType === REG_TYPE.BUS) {
