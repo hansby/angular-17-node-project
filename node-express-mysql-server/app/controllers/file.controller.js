@@ -1,9 +1,15 @@
+// INIT WINSTON LOGGER
+const winston = require("winston");
+const loggerFile = winston.createLogger({
+	transports: [new winston.transports.Console()],
+});
 const uploadFile = require("../middleware/upload");
 const fs = require("fs");
 const baseUrl = "http://localhost:8080";
 const documentAICheckPOA = require("../controllers/documentai.controller.js");
 
 const upload = async (req, res) => {
+	const fileName = req.body.name;
   try {
     await uploadFile(req, res);
 
@@ -20,6 +26,7 @@ const upload = async (req, res) => {
     console.log(err);
 
     if (err.code == "LIMIT_FILE_SIZE") {
+			loggerFile.error(`The file upload size is too big: ${fileName} `)
       return res.status(500).send({
         message: "File size cannot be larger than 2MB!",
       });

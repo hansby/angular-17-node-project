@@ -1,3 +1,8 @@
+// INIT WINSTON LOGGER
+const winston = require("winston");
+const logger = winston.createLogger({
+  transports: [new winston.transports.Console()],
+});
 const db = require("../models");
 const Registration = db.registrations;
 const Op = db.Sequelize.Op;
@@ -54,6 +59,7 @@ exports.create = (req, res) => {
       res.send(data);
     })
     .catch(err => {
+			logger.error(`Error on Create Reg API - User ID: ${user_id} ${passport} ${email} ${lastName}`);
       res.status(500).send({
         message:
           err.message || "Some error occurred while creating the Registration."
@@ -64,6 +70,7 @@ exports.create = (req, res) => {
 // Retrieve all Registrations from the database.
 exports.findAll = (req, res) => {
   const user_id = req.query.user_id;
+	const lastName = req.query.user_id;
 	const email = req.query.email;
 	const passport = req.query.passport;
 	const bankAccNumber = req.query.acc_no;
@@ -87,6 +94,7 @@ exports.findAll = (req, res) => {
       res.send(data);
     })
     .catch(err => {
+			logger.error(`Some error occurred while retrieving registrations. ${user_id} ${passport} ${email} ${lastName}`);
       res.status(500).send({
         message:
           err.message || "Some error occurred while retrieving registrations."
@@ -97,18 +105,24 @@ exports.findAll = (req, res) => {
 // Find a single Registration with an id
 exports.findOne = (req, res) => {
   const id = req.params.id;
+	const user_id = req.params.user_id;
+	const passport = req.params.passport;
+	const email = req.params.email;
+	const lastName = req.params.lastName;
 
   Registration.findOne({ where: { user_id: id } })
     .then(data => {
       if (data) {
         res.send(data);
       } else {
+				logger.error(`Cannot find Registration: ${id} ${user_id} ${passport} ${email} ${lastName}`);
         res.status(404).send({
           message: `Cannot find Registration with id=${id}.`
         });
       }
     })
     .catch(err => {
+			logger.error(`Error retrieving Registration: ${id} ${user_id} ${passport} ${email} ${lastName}`);
       res.status(500).send({
         message: "Error retrieving Registration with id=" + id
       });

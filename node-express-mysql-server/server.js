@@ -15,13 +15,13 @@ app.use(cors(corsOptions));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 6,
 });
 
 const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000,
-  delayAfter: 2,
-  delayMs: () => 6000,
+  delayAfter: 3,
+  delayMs: () => 5000,
 });
 
 app.use(speedLimiter);

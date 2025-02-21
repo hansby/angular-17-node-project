@@ -36,4 +36,7 @@ module.exports = app => {
 
   app.use('/api/registrations', router_registration);
 	app.use('/api/uploads', router_fileUpload);
+
+	// Logger Endpoint
+	app.use('/api/logger', router_fileUpload);
 };

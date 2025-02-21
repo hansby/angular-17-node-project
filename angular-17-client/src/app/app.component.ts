@@ -467,9 +467,9 @@ export class AppComponent {
 		switch(fileType) {
 			case fileTypes.PROOF_OF_ADDRESS:
 				const poa_hasSurname = text.includes(ctrl_surname.toLowerCase());
-				const poa_accountNumber = text.includes('account number');
-				const poa_registrationNumber = text.includes('registration number');				
-				return isTrue = poa_hasSurname && poa_accountNumber && poa_registrationNumber;
+				const poa_hasValidDate = true;
+				const poa_hasValidAddress = true;
+				return isTrue = poa_hasSurname;
 				break;
 			case fileTypes.ID:
 				const document = dataText.text.toString().toLowerCase();
@@ -526,7 +526,6 @@ export class AppComponent {
 		const user_id = ctrls['user_id'].value ?? '';
 		const bus_reg_no = ctrls['bus_reg_no'].value ?? '';
 		const trust_reg_no = ctrls['trust_reg_no'].value ?? '';
-		const tax_no = ctrls['tax_no'].value ?? '';
 		const passport = ctrls['passport'].value ?? '';
 		const swift_code = ctrls['swift_code'].value ?? '';
 		const iban = ctrls['iban'].value ?? '';
@@ -540,7 +539,6 @@ export class AppComponent {
 		if (this.isSACitizen && this.regType === REG_TYPE.IND) {
 			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
 			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
-			if (tax_no.length <= 0) formSubList.push('Please fill in your Tax number');
 			if (file_id.length <= 0) formSubList.push('Please Upload a copy of your ID');
 			if (file_poa.length <= 0) formSubList.push('Please Upload a copy of your Proof of Address');
 		}
@@ -603,8 +601,6 @@ export class AppComponent {
 			.subscribe(res => {
 				//.log('response from within subscribe method!');
 				if (localStore) localStore.setItem('owiqsjdh09192', '1');
-				this.applicationInProgress = false;
-				this.isLoading = false;
 
 				// Form is Successfully stored in DB ... NOW we can upload Files
 
@@ -613,6 +609,8 @@ export class AppComponent {
 					const myNewFile_trust = new File([trustObj], trustObj.name, {type: trustObj.type});
 					this.fileUploadService.upload(myNewFile_trust).subscribe((resp) => {
 						console.log('YES MAN!! File successfully uploaded! :DD');
+						this.applicationInProgress = false;
+						this.isLoading = false;						
 					}, (err: HttpErrorResponse) => console.log('OH CRAP! File upload FAILED! :((( '));
 				}
 		
@@ -621,6 +619,8 @@ export class AppComponent {
 					const myNewFile_bus = new File([busObj], busObj.name, {type: busObj.type});
 					this.fileUploadService.upload(myNewFile_bus).subscribe((resp) => {
 						console.log('YES MAN!! File successfully uploaded! :DD');
+						this.applicationInProgress = false;
+						this.isLoading = false;						
 					}, (err: HttpErrorResponse) => console.log('OH CRAP! File upload FAILED! :((( '));
 				}		
 		
@@ -634,6 +634,8 @@ export class AppComponent {
 					const API_ID = this.fileUploadService.upload(myNewFile_ID);
 		
 					forkJoin(([API_POA, API_ID])).subscribe((resp) => {
+						this.applicationInProgress = false;
+						this.isLoading = false;						
 						console.log('YES MAN!! POA and ID files were successfully uploaded! :DD');
 					}, (err: HttpErrorResponse) => console.log('OH CRAP! File uploads have FAILED! :((( '));			
 				}				
