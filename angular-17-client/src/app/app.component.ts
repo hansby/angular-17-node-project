@@ -129,7 +129,7 @@ function isNumber(n: string) {
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-	page: number = 2;
+	page: number = 1;
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;

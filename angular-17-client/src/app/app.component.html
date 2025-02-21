@@ -69,7 +69,7 @@
 				<div class="pagination justify-center">
 					<button class="col-4 w-50 btn btn-primary btn-lg" 
 						(click)="nextPage()"
-						[disabled]="!radioTandC.checked || !radioPOPI.checked">Next</button>				 
+						[disabled]="!radioTandC.checked || !radioPOPI.checked">Continue</button>				 
 				</div>	
 				<hr class="my-4">
 			</ng-container>
@@ -254,7 +254,7 @@
 				<!-- =========== PAGINATION ========== -->
 				<hr class="my-4">
 				<div class="pagination justify-space-around">
-					<button class="col-4 w-50 btn btn-primary btn-lg" (click)="previousPage()">Previous</button>		
+					<!--<button class="col-4 w-50 btn btn-primary btn-lg" (click)="previousPage()">Previous</button>-->
 					<button class="col-4 w-50 btn btn-primary btn-lg" 
 						(click)="nextPage()"
 						[disabled]="!page2IsValid">Next</button>				 
