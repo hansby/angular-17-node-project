@@ -129,6 +129,7 @@ function isNumber(n: string) {
   styleUrl: './app.component.css',
 })
 export class AppComponent {
+	page: number = 1;
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -146,6 +147,8 @@ export class AppComponent {
 	readerResult: any;
 	dbName: string = '';
 	surname: string = '';
+	page1IsValid: boolean = true;
+	page2IsValid: boolean = true;
 
 	constructor(
 		private fb: FormBuilder, 
@@ -659,6 +662,34 @@ export class AppComponent {
 			}
 			this.isLoading = false;
 		})		
+	}
+
+	popupModal(type: number) {
+		if (type === 1) {
+			alert('popup for Tc and Cs')
+		}
+		if (type === 2) {
+			alert('popup for POPI act');
+		}		
+	}
+
+	isPage1Valid(){
+		return true;
+	}
+
+	isPage2Valid(){
+		return true;
+	}	
+
+	nextPage(){
+		const { page } = this;
+		if (page === 1 && !this.isPage1Valid()) return;
+		if (page === 2 && !this.isPage2Valid()) return;
+		this.page++;
+	}
+
+	previousPage(){
+		this.page--;
 	}
 
 }

@@ -34,8 +34,17 @@ hr {
 	border: 1px solid red;
 }
 
+.submission-errors {
+	border: 3px solid red;
+	padding: 20px;
+}
+
 .record-exists { padding: 15px }
 
 .text-left { text-align: left;}
 
 .error-text { color: red !important; }
+
+.justify-center { justify-content: center;}
+.justify-space-around { justify-content: space-around;}
+

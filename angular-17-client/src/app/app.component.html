@@ -16,7 +16,147 @@
 					<li>a Trust: Copy of Letter of Authority</li>
 				</ul>
 			</div>
+
+
+			<!-- 
+				===========================================================================================   
+																				PAGE 1
+				===========================================================================================
+			 -->
+
+
+			<ng-container *ngIf="page === 1">
+				<div class="row center-auto">
+					<div class="col-lg-12">
+		
+						<hr class="my-4">
+		
+						<h4 class="mb-3">Disclaimers</h4>
+
+						<p>
+							Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+							Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
+							It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. 
+							It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, 
+							and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+
+							<p>
+								Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+								Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
+								It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. 
+								It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, 
+								and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>							
+
+						<hr class="my-4">
+
+						<h4 class="mb-3">Terms and Conditions</h4>
+						
+						<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. </p>
+						<p>Please <a href="" (click)="popupModal(1)">click here</a> to read through our terms and conditions and accept it</p>
+
+						<hr class="my-4">
+
+						<h4 class="mb-3">Privacy Policy and POPI</h4>
+						
+						<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. </p>
+						<p>Please <a href="" (click)="popupModal(2)">click here</a> to read Privacy policy and POPI conditions</p>						
+		
+						<!--
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="same-address">
+							<label class="form-check-label" for="same-address">I accept the Terms & Conditions</label>
+						</div>
 	
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="save-info">
+							<label class="form-check-label" for="save-info">Save this information for next time</label>
+						</div>	-->					
+					
+					</div>
+				</div>				
+
+				<!-- =========== PAGINATION ========== -->
+				<hr class="my-4">
+				<div class="pagination justify-center">
+					<button class="col-4 w-50 btn btn-primary btn-lg" 
+						(click)="nextPage()"
+						[disabled]="!page1IsValid">Next</button>				 
+				</div>	
+				<hr class="my-4">
+			</ng-container>
+
+			<!-- 
+				===========================================================================================   
+																				PAGE 2
+				===========================================================================================
+			 -->
+
+			<ng-container *ngIf="page === 2">
+
+				<div class="row center-auto">
+					<div class="col-lg-12">
+		
+						<hr class="my-4">
+		
+						<h4 class="mb-3">Personal information</h4>
+
+						<p>Yo yo yo page 2 data!!!</p>
+						<p>Yo yo yo page 2 data!!!</p>
+						<p>Yo yo yo page 2 data!!!</p>
+						<p>Yo yo yo page 2 data!!!</p>
+						<p>Yo yo yo page 2 data!!!</p>				
+
+					</div>
+				</div>				
+
+				<!-- =========== PAGINATION ========== -->
+				<hr class="my-4">
+				<div class="pagination justify-space-around">
+					<button class="col-4 w-50 btn btn-primary btn-lg" (click)="previousPage()">Previous</button>		
+					<button class="col-4 w-50 btn btn-primary btn-lg" 
+						(click)="nextPage()"
+						[disabled]="!page2IsValid">Next</button>				 
+				</div>
+				<hr class="my-4">						
+				
+			</ng-container>
+
+			<!-- 
+				===========================================================================================   
+																				PAGE 3
+				===========================================================================================
+			 -->
+
+
+			<ng-container *ngIf="page === 3">
+
+				<div class="row center-auto">
+					<div class="col-lg-12">
+		
+						<hr class="my-4">
+		
+						<h4 class="mb-3">Banking Information</h4>
+
+						<p>Yo yo yo page 3 data!!!</p>
+						<p>Yo yo yo page 3 data!!!</p>
+						<p>Yo yo yo page 3 data!!!</p>
+						<p>Yo yo yo page 3 data!!!</p>
+						<p>Yo yo yo page 3 data!!!</p>
+					
+					</div>
+				</div>				
+
+				<!-- =========== PAGINATION ========== -->
+				<hr class="my-4">
+				<div class="pagination justify-space-around">
+					<button class="col-4 w-50 btn btn-primary btn-lg" (click)="previousPage()">Previous</button>		
+					<button class="col-4 w-50 btn btn-primary btn-lg" (click)="submitForm()">Submit</button>				 
+				</div>
+				<hr class="my-4">				
+
+			</ng-container>
+
+			<!--
 			<div class="row center-auto">
 				<div class="col-lg-12">
 	
@@ -71,7 +211,7 @@
 
 							<hr class="my-4">
 
-							<ng-container> <!-- *ngIf="regType === 'individual'"-->
+							<ng-container>
 
 								<h5 class="mb-3">I am a</h5>
 		
@@ -269,17 +409,7 @@
 							</div>						
 							
 						<hr class="my-4">
-							
-						<!--
-						<div class="form-check">
-							<input type="checkbox" class="form-check-input" id="same-address">
-							<label class="form-check-label" for="same-address">Shipping address is the same as my billing address</label>
-						</div>
-	
-						<div class="form-check">
-							<input type="checkbox" class="form-check-input" id="save-info">
-							<label class="form-check-label" for="save-info">Save this information for next time</label>
-						</div>-->
+
 	
 						<h4 class="mb-3">Upload Documents</h4>
 						<ng-container *ngIf="regForm.controls['firstName'].value.length <= 0 || regForm.controls['lastName'].value.length <= 0">
@@ -317,20 +447,22 @@
 							
 						</ng-container>
 
-						<ng-container *ngIf="formSubmissionErrors.length > 0">
+						<ng-container *ngIf="formSubmissionErrors.length > 0"> 
 							<hr class="my-4">
 
-							<h4 class="mb-3">Submission Errors</h4>
-							<p>We could not process your application because of the following errors:</p>
+							<div class="submission-errors">
+								
+								<h4 class="mb-3">Submission Errors</h4>
+								<p>We could not process your application because of the following errors:</p>
 
-							<div>
-								<ul>
-									@for (err of formSubmissionErrors; let i = $index; track err) {
-										<li>{{ err }}</li>
-									}
-								</ul>
+								<div>
+									<ul>
+										@for (err of formSubmissionErrors; let i = $index; track err) {
+											<li>{{ err }}</li>
+										}
+									</ul>
+								</div>
 							</div>
-
 						</ng-container>
 
 						<ng-container *ngIf="recordAlreadyExists">
@@ -364,7 +496,7 @@
 				<li class="list-inline-item"><a href="#">Terms</a></li>
 			</ul>
 		</footer>
-	</div>
+	</div> -->
 	
 	</div>
 	</div>
