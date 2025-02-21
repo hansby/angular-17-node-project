@@ -149,6 +149,8 @@ export class AppComponent {
 	surname: string = '';
 	page1IsValid: boolean = true;
 	page2IsValid: boolean = true;
+	radioPOPIModel: any;
+	radioTandCModel: any;
 
 	constructor(
 		private fb: FormBuilder, 
@@ -662,15 +664,6 @@ export class AppComponent {
 			}
 			this.isLoading = false;
 		})		
-	}
-
-	popupModal(type: number) {
-		if (type === 1) {
-			alert('popup for Tc and Cs')
-		}
-		if (type === 2) {
-			alert('popup for POPI act');
-		}		
 	}
 
 	isPage1Valid(){

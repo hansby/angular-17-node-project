@@ -27,5 +27,8 @@
     "mysql2": "^2.3.3",
     "sequelize": "^6.32.0",
     "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.32"
   }
 }
