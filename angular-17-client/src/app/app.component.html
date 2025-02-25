@@ -105,9 +105,6 @@
 											<option [value]="type.id">{{ type.name }}</option>
 										}
 									</select>
-									<div class="invalid-feedback">
-										Please select a valid registration type.
-									</div>
 								</div>
 								
 							</div>
@@ -119,17 +116,11 @@
 								<div class="col-sm-6">
 									<label for="firstName" class="form-label">First name</label>
 									<input type="text" class="form-control" id="firstName" formControlName="firstName" required>
-									<div class="invalid-feedback">
-										Valid first name is required.
-									</div>
 								</div>
 		
 								<div class="col-sm-6">
 									<label for="lastName" class="form-label">Last name</label>
 									<input type="text" class="form-control" id="lastName" formControlName="lastName" required>
-									<div class="invalid-feedback">
-										Valid last name is required.
-									</div>
 								</div>
 	
 								
@@ -167,7 +158,7 @@
 	
 	
 	
-								<div class="col-12" *ngIf="isSACitizen">
+								<div class="col-sm-6" *ngIf="isSACitizen">
 									<label for="username" class="form-label">ID Number</label>
 									<div class="input-group has-validation width-420">
 										<span class="input-group-text"><i class="bi bi-phone"></i></span>
@@ -182,18 +173,15 @@
 									</div>
 								</div>
 								
-								<div class="col-12" *ngIf="isForeigner">
+								<div class="col-sm-6" *ngIf="isForeigner">
 									<label for="username" class="form-label">Passport</label>
 									<div class="input-group has-validation width-420">
 										<span class="input-group-text"><i class="bi bi-phone"></i></span>
 										<input type="text" class="form-control" id="username" placeholder="" formControlName="passport">
-										<div class="invalid-feedback">
-											Your username is required.
-										</div>
 									</div>
 								</div>							
 		
-								<div class="col-12">
+								<div class="col-sm-6">
 									<label for="username" class="form-label">Cellphone</label>
 									<div class="input-group has-validation width-420">
 										<span class="input-group-text">
@@ -203,13 +191,10 @@
 											</svg>										
 										</span>
 										<input type="text" class="form-control" id="username" placeholder="0810000000" formControlName="cell" required>
-										<div class="invalid-feedback">
-											Your cell is required.
-										</div>
 									</div>
 								</div>						
 		
-								<div class="col-12">
+								<div class="col-sm-6">
 									<label for="email" class="form-label">Email </label>
 	
 									<div class="input-group has-validation width-420">
@@ -225,7 +210,7 @@
 									</div>
 								</div>
 		
-								<div class="col-12">
+								<div class="col-sm-6">
 									<label for="address" class="form-label">Tax number</label>
 	
 									<div class="input-group has-validation width-420">
@@ -235,15 +220,78 @@
 												<path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/>
 											</svg>								
 										</span>
-										<input type="text" class="form-control" id="tax_no" name="tax_no" formControlName="tax_no">
-										<div class="invalid-feedback">
-											Please enter your tax number.
-										</div>								
+										<input type="text" class="form-control" id="tax_no" name="tax_no" formControlName="tax_no">							
 									</div>
 	
 								</div>
 
-								<!-- ADDRESS FIELDS -->
+							</div>
+
+							<hr class="my-4">
+
+							<!-- ADDRESS FIELDS -->
+							<div class="row g-3" *ngIf="regType === 'individual'">
+
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Address 1</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="address_1" placeholder="5" formControlName="address_1" name="address_1" required>
+									</div>
+								</div>		
+								
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Address 2</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="address_2" placeholder="Johnson way" formControlName="address_2" name="address_2" required>
+									</div>
+								</div>				
+								
+								
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Suburb</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="suburb" placeholder="Delport" formControlName="suburb" name="suburb" required>
+									</div>
+								</div>							
+								
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Town</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="town" placeholder="" formControlName="town" name="town" required>
+									</div>
+								</div>							
+								
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Postal Code</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="postal_code" placeholder="" formControlName="postal_code" name="postal_code" required>
+									</div>
+								</div>								
 		
 							</div>
 						</form>			
@@ -253,6 +301,25 @@
 
 				<!-- =========== PAGINATION ========== -->
 				<hr class="my-4">
+
+				<ng-container *ngIf="formSubmissionErrors_PAGE2.length > 0"> 
+
+					<div class="submission-errors row center-auto">
+						
+						<h4 class="mb-3">Form Errors</h4>
+						<p>Please complete the following fields before continuing:</p>
+
+						<div>
+							<ul>
+								@for (err of formSubmissionErrors_PAGE2; let i = $index; track err) {
+									<li>{{ err }}</li>
+								}
+							</ul>
+						</div>
+					</div>
+				</ng-container>
+
+
 				<div class="pagination justify-space-around">
 					<!--<button class="col-4 w-50 btn btn-primary btn-lg" (click)="previousPage()">Previous</button>-->
 					<button class="col-4 w-50 btn btn-primary btn-lg" 
@@ -279,9 +346,85 @@
 
 						<form class="needs-validation" [formGroup]="regForm">
 
-							
-							<div class="row g-3">
+
+							<!-- ADDRESS FIELDS -->
+							<div class="row g-3" *ngIf="regType !== 'individual'">
+
+								<h4 class="mb-3">Address Details</h4>
+								<p>Please complete address details for the {{ regType === 'trust' ? 'Trust' : 'Business' }}</p>
+
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Address 1</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="address_1" placeholder="Unit 5" formControlName="address_1" name="address_1" required>
+									</div>
+								</div>		
+								
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Address 2</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="address_2" placeholder="Business complex" formControlName="address_2" name="address_2" required>
+									</div>
+								</div>				
+								
+								
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Suburb</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="suburb" placeholder="Delport Industria" formControlName="suburb" name="suburb" required>
+									</div>
+								</div>							
+								
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Town</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="town" placeholder="" formControlName="town" name="town" required>
+									</div>
+								</div>							
+								
+								<div class="col-sm-6">
+									<label for="username" class="form-label">Postal Code</label>
+									<div class="input-group has-validation width-420">
+										<span class="input-group-text">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+												<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+											</svg>									
+										</span>
+										<input type="text" class="form-control" id="postal_code" placeholder="" formControlName="postal_code" name="postal_code" required>
+									</div>
+								</div>								
 		
+							</div>
+
+
+
+
+
+							<hr class="my-4">
+
+
+							<div class="row g-3">
+
 								<h4 class="mb-3">Banking information</h4>
 
 
@@ -386,14 +529,16 @@
 									<app-file-upload 
 										[fileName]="'Upload ID'" 
 										[fileType]="fileTypes.ID" 
-										(dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>
-	
-									<app-file-upload 
-										[fileName]="'Upload Proof of Address'" 
-										[fileType]="fileTypes.PROOF_OF_ADDRESS" 
-										(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>									
+										(dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>								
 								</ng-container>
 	
+								<!-- PROOF OF ADDRESS IS GENERIC: FOR ALL TYPES -->
+								<app-file-upload 
+									[fileName]="proofOfAddressLabelText" 
+									[fileType]="fileTypes.PROOF_OF_ADDRESS" 
+									(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>	
+
+
 								<ng-container *ngIf="regType === 'business'">
 									<app-file-upload 
 										[fileName]="'Upload Registration Certificate (COR 14.3)'" 
@@ -410,7 +555,7 @@
 								
 							</ng-container>
 	
-							<ng-container *ngIf="formSubmissionErrors.length > 0"> 
+							<ng-container *ngIf="formSubmissionErrors_PAGE3.length > 0"> 
 								<hr class="my-4">
 	
 								<div class="submission-errors">
@@ -420,7 +565,7 @@
 	
 									<div>
 										<ul>
-											@for (err of formSubmissionErrors; let i = $index; track err) {
+											@for (err of formSubmissionErrors_PAGE3; let i = $index; track err) {
 												<li>{{ err }}</li>
 											}
 										</ul>

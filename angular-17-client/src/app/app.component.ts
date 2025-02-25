@@ -46,9 +46,11 @@ interface IFormattedFile {
 
 export enum fileTypes {
 	ID = 'ID',
+	//PASSPORT = 'PASSPORT',
 	PROOF_OF_ADDRESS = 'POA',
 	BUS_REG_DOC = 'CPIC',
-	TRUST_DOC = 'TRUST'
+	TRUST_DOC = 'TRUST',
+	//BANK_CONF_LETTER = 'BCL',
 }
 
 enum REG_TYPE {
@@ -129,7 +131,7 @@ function isNumber(n: string) {
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-	page: number = 1;
+	page: number = 2;
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -141,16 +143,20 @@ export class AppComponent {
 	fileTypes = fileTypes;
 	isLoading: boolean = false;
 	formSubmissionErrors: Array<string> = [];
+	formSubmissionErrors_PAGE2: Array<string> = [];
+	formSubmissionErrors_PAGE3: Array<string> = [];
 	rateLimiterActive: boolean = false;
 	recordAlreadyExists: boolean = false;
 	currentFile: any;
 	readerResult: any;
 	dbName: string = '';
 	surname: string = '';
-	page1IsValid: boolean = true;
-	page2IsValid: boolean = true;
+	//page1IsValid: boolean = true;
+	//page2IsValid: boolean = true;
 	radioPOPIModel: any;
 	radioTandCModel: any;
+	emailRegex = /^\S+@\S+\.\S+$/;
+	proofOfAddressLabelText: string = 'Upload Proof of Address';
 
 	constructor(
 		private fb: FormBuilder, 
@@ -209,6 +215,15 @@ export class AppComponent {
 			.subscribe(([reg_type]) => {
 				this.formSubmissionErrors.length = 0; // reset UI Error list
 				this.regType = reg_type;
+				this.proofOfAddressLabelText = 'Upload Proof of Address';
+				switch(this.regType) {
+					case 't': 
+						this.proofOfAddressLabelText += ' (for Trust)';
+						break;
+					case 'b': 
+						this.proofOfAddressLabelText += ' (for Business)';
+						break;						
+				}
 				//this.isSACitizen = reg_type === REG_TYPE.IND;
 				//this.isBusiness = reg_type === REG_TYPE.BUS;
 				//this.isTrust = reg_type === REG_TYPE.TRUST;
@@ -304,17 +319,21 @@ export class AppComponent {
 	}
 
   submitForm() {
-		let formSubList = this.formSubmissionErrors;
-		formSubList.length = 0;
 		this.isLoading = true;
 		this.recordAlreadyExists = false;
 
 		// Trap Field validation errors
-		this.fieldValidationChecker();
-		
-		if(formSubList.length > 0) {
+		//let formSubList = this.formSubmissionErrors;
+		//formSubList.length = 0;		
+		//this.fieldValidationChecker(); **NB: REMOVING THIS LINE FOR NOW- SWITCHING to PER-PAGE VALIDATION
+		/*if(this.formSubmissionErrors_PAGE3.length > 0) {
 			this.isLoading = false;
 			return;
+		}*/
+
+		if (!this.page3IsValid()) {
+			this.isLoading = false;
+			return;			
 		}
 
 		/** =================================================
@@ -497,19 +516,21 @@ export class AppComponent {
 				break;
 			case fileTypes.TRUST_DOC:
 				const ctrl_trustNo = this.regForm.controls['trust_reg_no'].value;
+				const getTrustNo = ctrl_trustNo && ctrl_trustNo.length > 0 ? ctrl_trustNo.replace(/\s/g, '') : '';
 				const hasTrustSurname = text.includes(ctrl_surname.toLowerCase());
 				const hasTrustTitle = text.includes('LETTERS OF AUTHORITY'.toLowerCase());
 				const controlAct = text.includes('Trust Property Control Act'.toLowerCase());
-				const hasTrustNo = text.includes(ctrl_trustNo.toLowerCase());
+				const hasTrustNo = text.includes(getTrustNo.toLowerCase());
 				return isTrue = hasTrustSurname && hasTrustTitle && controlAct && hasTrustNo;
 				break;
 			case fileTypes.BUS_REG_DOC:
 				const ctrl_regNo = this.regForm.controls['bus_reg_no'].value;
+				const getBusRegNo = ctrl_regNo && ctrl_regNo.length > 0 ? ctrl_regNo.replace(/\s/g, '') : '';
 				const hasCommissionerTag = text.includes('issued by the Commissioner of Companies & Intellectual'.toLowerCase());
 				const hasCOR143Tag = text.includes('COR 14.3'.toLowerCase());
 				const hasEffectiveDate = text.includes('Effective date'.toLowerCase());
 				const hasRegNoTitle = text.includes('Registration number'.toLowerCase());
-				const hasRegNo = text.includes(ctrl_regNo.toLowerCase());
+				const hasRegNo = text.includes(getBusRegNo.toLowerCase());
 				return isTrue = hasCommissionerTag && hasCOR143Tag && hasEffectiveDate && hasRegNoTitle && hasRegNo;
 				break;								
 		}
@@ -673,18 +694,109 @@ export class AppComponent {
 		})		
 	}
 
-	isPage1Valid(){
-		return true;
+	page2IsValid(){
+		this.formSubmissionErrors_PAGE2.length = 0;
+		let formSubList = this.formSubmissionErrors_PAGE2;
+
+		/* Fields to validate */
+		const ctrls = this.regForm.controls;
+		const reg_type = ctrls['reg_type'].value ?? '';
+		const firstname = ctrls['firstName'].value ?? '';
+		const lastname = ctrls['lastName'].value ?? '';
+		const citizenStatus = ctrls['citizenStatus'].value ?? '';
+		const cellphone = ctrls['cell'].value ?? '';
+		const email = ctrls['email'].value ?? '';
+		const emailIsValid = this.emailRegex.test(email);
+		const user_id = ctrls['user_id'].value ?? '';
+		const passport = ctrls['passport'].value ?? '';
+		const numbersOnly = /^\d+$/;
+
+		// Address
+		const address_1 = ctrls['address_1'].value ?? '';
+		const address_2 = ctrls['address_2'].value ?? '';
+		const suburb = ctrls['suburb'].value ?? '';
+		const town = ctrls['town'].value ?? '';
+		const postal_code = ctrls['postal_code'].value ?? '';	
+
+		if (citizenStatus.length <= 0) formSubList.push('Please select your Citizen status (SA / Foreigner)');
+		if (this.isSACitizen) {
+			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
+			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
+		}
+		if (reg_type.length <= 0) formSubList.push('Please choose your Registration Type');
+		if (firstname.length <= 0) formSubList.push('First name');
+		if (lastname.length <= 0) formSubList.push('Last name');
+		if (cellphone.length <= 0) formSubList.push('Cellphone number');
+		if (cellphone.length > 0 && cellphone.length < 10) formSubList.push('Cellphone must be 10 or more digits');
+		if (!numbersOnly.test(cellphone)) formSubList.push('Cellphone must be numbers only');
+		if (email.length <= 0) formSubList.push('Email address');
+		if (email.length > 0 && !emailIsValid) formSubList.push('Email address is not valid');
+
+		// Address
+		if (address_1.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your address');
+		if (address_2.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your address');
+		if (suburb.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Suburb');
+		if (town.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Town');
+		if (postal_code.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Postal code');
+
+		if (this.isForeigner) {
+			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
+			//if (file_passport.length <= 0) formSubList.push('Please Upload a copy of your Passport');
+			//if (swift_code.length <= 0) formSubList.push('Please fill in your Swift Code number');
+			//if (iban.length <= 0) formSubList.push('Please fill in your IBAN number');			
+		}		
+
+
+		return formSubList.length <= 0;
 	}
 
-	isPage2Valid(){
-		return true;
+	page3IsValid(){
+		this.formSubmissionErrors_PAGE3.length = 0;
+		let formSubList = this.formSubmissionErrors_PAGE3;
+		const reg = this.regType;
+
+		/* Fields to validate */
+		const ctrls = this.regForm.controls;
+		const bus_reg_no = ctrls['bus_reg_no'].value ?? '';
+		const trust_reg_no = ctrls['trust_reg_no'].value ?? '';
+		const swift_code = ctrls['swift_code'].value ?? '';
+		const iban = ctrls['iban'].value ?? '';		
+
+		if (bus_reg_no.length <= 0 && reg === REG_TYPE.BUS) formSubList.push('Please fill in your Business Registration number');
+		if (trust_reg_no.length <= 0 && reg === REG_TYPE.TRUST) formSubList.push('Please fill in your Trust Registration number');
+		if (swift_code.length <= 0 && this.isForeigner) formSubList.push('Please fill in your Swift Code');
+		if (iban.length <= 0 && this.isForeigner) formSubList.push('Please fill in your IBAN number');
+
+		return formSubList.length <= 0;
+
+
+		if (this.regType === REG_TYPE.BUS) {
+			if (bus_reg_no.length <= 0) formSubList.push('Please fill in your Business Registration number');
+			//if (file_bus_reg.length <= 0) formSubList.push('Please Upload a copy of your Business Registration Document');
+		}
+
+		if (this.regType === REG_TYPE.TRUST) {
+			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Trust Registration number');
+			//if (file_trust.length <= 0) formSubList.push('Please Upload a copy of your Letter of Authority');
+		}				
 	}	
+
+	clearAddressFields() {
+		const ctrls = this.regForm.controls;
+		ctrls['address_1'].setValue('');
+		ctrls['address_2'].setValue('');
+		ctrls['suburb'].setValue('');
+		ctrls['town'].setValue('');
+		ctrls['postal_code'].setValue('');
+		this.regForm.updateValueAndValidity();	
+	}
 
 	nextPage(){
 		const { page } = this;
-		if (page === 1 && !this.isPage1Valid()) return;
-		if (page === 2 && !this.isPage2Valid()) return;
+		if (page === 2 && !this.page2IsValid()) return;
+		if (this.regType !== REG_TYPE.IND) this.clearAddressFields();
+		this.formSubmissionErrors_PAGE2.length = 0;
+		this.formSubmissionErrors_PAGE3.length = 0;
 		this.page++;
 	}
 
