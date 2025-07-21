@@ -13,6 +13,8 @@ import { FileUploadService } from './services/file-upload.service';
 
 const LS_KEY = 'owiqsjdh09192';
 
+const TEXT_ENSURE_ALL_DOCS = `Please ensure all required documents are uploaded before submitting your application`;
+
 interface IRegistration {
 	id: string;
 	reg_type: string;
@@ -131,7 +133,7 @@ function isNumber(n: string) {
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-	page: number = 2;
+	page: number = 2; // when all said and done this final value will be = 1
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -332,6 +334,7 @@ export class AppComponent {
 		}*/
 
 		if (!this.page3IsValid()) {
+			this.formSubmissionErrors_PAGE3.push(TEXT_ENSURE_ALL_DOCS);
 			this.isLoading = false;
 			return;			
 		}
@@ -344,6 +347,11 @@ export class AppComponent {
 		if(this.regType === REG_TYPE.IND && this.isSACitizen) {
 			const getCtrl_POA = this.regForm.controls['file_poa'].value;
 			let result_poa = getCtrl_POA.result;
+			if (!result_poa || typeof result_poa === "undefined") {
+				this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Proof of Address document before continuing`);
+				this.isLoading = false;
+				return;
+			}				
 			const googleDocObj_POA: IGoogleDoc = {
 				skipHumanReview: true,
 				rawDocument: {
@@ -353,6 +361,11 @@ export class AppComponent {
 			}
 			const getCtrl_ID = this.regForm.controls['file_id'].value;
 			let result_id = getCtrl_ID.result;
+			if (!result_id || typeof result_id === "undefined") {
+				this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your ID document before continuing`);
+				this.isLoading = false;
+				return;
+			}				
 			const googleDocObj_ID: IGoogleDoc = {
 				skipHumanReview: true,
 				rawDocument: {
@@ -385,6 +398,11 @@ export class AppComponent {
 		if(this.regType === REG_TYPE.TRUST) {
 			const getCtrl_TRUST = this.regForm.controls['file_trust'].value;
 			let result_trust = getCtrl_TRUST.result;
+			if (!result_trust || typeof result_trust === "undefined") {
+				this.formSubmissionErrors_PAGE3.push(TEXT_ENSURE_ALL_DOCS);
+				this.isLoading = false;
+				return;
+			}			
 			const googleDocObj_TRUST: IGoogleDoc = {
 				skipHumanReview: true,
 				rawDocument: {
@@ -405,6 +423,11 @@ export class AppComponent {
 		if(this.regType === REG_TYPE.BUS) {
 			const getCtrl_BUS = this.regForm.controls['file_bus_reg'].value;
 			let result_bus_reg = getCtrl_BUS.result;
+			if (!result_bus_reg || typeof result_bus_reg === "undefined") {
+				this.formSubmissionErrors_PAGE3.push(TEXT_ENSURE_ALL_DOCS);
+				this.isLoading = false;
+				return;
+			}
 			const googleDocObj_BUS: IGoogleDoc = {
 				skipHumanReview: true,
 				rawDocument: {
@@ -422,6 +445,7 @@ export class AppComponent {
 		return forkJoin((obsToRun)).subscribe((resp) => cb(resp), (err:HttpErrorResponse) => {
 			this.formSubmissionErrors.push('Google API error. Please reach out to your contact for help');
 			console.log('Google API error: verify Doc methods', err);
+			this.formSubmissionErrors_PAGE3.push(err.error?.error?.message ?? 'There was a Google API request error while trying to verify your details')
 			return;
 		})
 	}
@@ -685,11 +709,13 @@ export class AppComponent {
 			});
 
 		}, (errResponse: HttpErrorResponse) => {
-			console.log('err from regService API req: ', errResponse);
-			if (errResponse.status === 429) {
+			console.error('err from regService API req: ', errResponse);
+			/*if (errResponse.status === 429) {
 				this.rateLimiterActive = true;
 				this.applicationInProgress = false;
-			}
+			}*/
+			this.rateLimiterActive = true;
+			this.applicationInProgress = false;			
 			this.isLoading = false;
 		})		
 	}
@@ -768,6 +794,7 @@ export class AppComponent {
 		if (iban.length <= 0 && this.isForeigner) formSubList.push('Please fill in your IBAN number');
 
 		return formSubList.length <= 0;
+		//return formSubList.length <= 0;
 
 
 		if (this.regType === REG_TYPE.BUS) {

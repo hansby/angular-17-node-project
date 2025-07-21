@@ -1,5 +1,5 @@
 <div class="mb-3">
-	<label for="formFile" class="form-label">{{fileName}}</label>
+	<label for="formFile" class="form-label">{{fileName}} <span class="error-text">(required)</span></label>
 	<input class="form-control" type="file" id="u_bus" (change)="selectFile($event)">
   <!--<div class="col-4">
     <button class="btn btn-success btn-sm" [disabled]="!currentFile" (click)="upload()">
