@@ -2,6 +2,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const slowDown = require("express-slow-down");
 const cors = require("cors");
+const { callDocumentAI } = require("./app/services/docAIservice");
 
 global.__basedir = __dirname;
 
@@ -12,6 +13,9 @@ var corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+app.use(express.json({ limit: '10mb' })); // Increase body size limit
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -51,6 +55,18 @@ db.sequelize.sync()
 // simple route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to FICA application." });
+});
+
+// documentAiService
+app.post('/api/process-document', async (req, res) => {
+  const { data, projectId, processorId, location } = req.body;
+  try {
+    const result = await callDocumentAI(projectId, location, processorId, data);
+    res.json(result);
+  } catch (err) {
+    console.error('Document AI Error:', err.message);
+    res.status(500).json({ error: err.response?.data || err.message });
+  }
 });
 
 require("./app/routes/registration.routes")(app);

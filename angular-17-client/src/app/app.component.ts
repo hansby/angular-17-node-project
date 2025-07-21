@@ -445,6 +445,14 @@ export class AppComponent {
 		return forkJoin((obsToRun)).subscribe((resp) => cb(resp), (err:HttpErrorResponse) => {
 			this.formSubmissionErrors.push('Google API error. Please reach out to your contact for help');
 			console.log('Google API error: verify Doc methods', err);
+			if (err.status === 413 && err.message && err.message.includes('Payload Too Large')) {
+				this.formSubmissionErrors_PAGE3.push('The sizes of one or more of your files are too large. We allow a maximum size of 10Mb per file');
+				return;
+			}
+			if (err.status === 429 && err.message && err.message.includes('Too Many Requests')) {
+				this.formSubmissionErrors_PAGE3.push(`Our system is currently experiencing lots of traffic. We do apologize for the inconvenience and ask that you try again later`);
+				return;
+			}			
 			this.formSubmissionErrors_PAGE3.push(err.error?.error?.message ?? 'There was a Google API request error while trying to verify your details')
 			return;
 		})
@@ -489,7 +497,8 @@ export class AppComponent {
 	}
 
 	runValidationLogic_Individual(response: any){
-		let formSubList = this.formSubmissionErrors;
+		//let formSubList = this.formSubmissionErrors;
+		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_POA = response[0];
 		const response_ID = response[1];
 		const errTag = 'Proof of address';
@@ -517,6 +526,9 @@ export class AppComponent {
 
 	isDocValid(dataText: any, fileType: fileTypes): boolean {
 		let isTrue = false;
+		if (!dataText && !dataText.entities) {
+			return false;
+		}
 		const text = dataText.toString().toLowerCase();
 		const ctrl_surname = this.regForm.controls['lastName'].value;
 		const ctrl_userID = this.regForm.controls['user_id'].value;
@@ -558,7 +570,6 @@ export class AppComponent {
 				return isTrue = hasCommissionerTag && hasCOR143Tag && hasEffectiveDate && hasRegNoTitle && hasRegNo;
 				break;								
 		}
-		return isTrue;
 	}
 
 	filterArrByField(arr: any, fieldName: string) {
@@ -709,13 +720,13 @@ export class AppComponent {
 			});
 
 		}, (errResponse: HttpErrorResponse) => {
-			console.error('err from regService API req: ', errResponse);
-			/*if (errResponse.status === 429) {
+			console.log('err from regService API req: ', errResponse);
+			if (errResponse.status === 429) {
 				this.rateLimiterActive = true;
 				this.applicationInProgress = false;
-			}*/
-			this.rateLimiterActive = true;
-			this.applicationInProgress = false;			
+			} else {
+				this.formSubmissionErrors_PAGE3.push('System error: We could not connect to our services. Please try again later.')
+			}
 			this.isLoading = false;
 		})		
 	}
