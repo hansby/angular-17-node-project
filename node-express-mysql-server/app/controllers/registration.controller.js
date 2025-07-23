@@ -1,7 +1,25 @@
 // INIT WINSTON LOGGER
 const winston = require("winston");
+const DailyRotateFile = require('winston-daily-rotate-file');
 const logger = winston.createLogger({
-  transports: [new winston.transports.Console()],
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ level, message, timestamp }) => {
+      return `[${timestamp}] ${level}: ${message}`;
+    })
+  ),	
+  transports: [
+		new winston.transports.Console(),
+    // Daily rotating log files
+    new DailyRotateFile({
+      filename: 'logs/app-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '10m',
+      maxFiles: '14d'
+    })		
+	],
 });
 const db = require("../models");
 const Registration = db.registrations;

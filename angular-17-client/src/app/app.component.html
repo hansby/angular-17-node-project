@@ -522,7 +522,7 @@
 								<p>**Please fill in your name, surname and ID or Passport before completing this section.</p>
 							</ng-container>
 	
-	
+							<!-- FILE UPLOAD FIELDS -->
 							<ng-container *ngIf="regForm.controls['firstName'].value.length > 0 && regForm.controls['lastName'].value.length > 0">
 	
 								<ng-container *ngIf="regType === 'individual' && isSACitizen">
@@ -531,6 +531,13 @@
 										[fileType]="fileTypes.ID" 
 										(dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>								
 								</ng-container>
+
+								<ng-container *ngIf="isForeigner">
+									<app-file-upload 
+										[fileName]="'Upload Passport'" 
+										[fileType]="fileTypes.PASSPORT" 
+										(dbName)="updateDBName($event, fileTypes.PASSPORT)"></app-file-upload>								
+								</ng-container>								
 	
 								<!-- PROOF OF ADDRESS IS GENERIC: FOR ALL TYPES -->
 								<app-file-upload 
@@ -554,7 +561,8 @@
 								</ng-container>
 								
 							</ng-container>
-	
+							
+							<!-- SUBMISSION ERRORS ON LAST PAGE: if any are found -->
 							<ng-container *ngIf="formSubmissionErrors_PAGE3.length > 0"> 
 								<hr class="my-4">
 	

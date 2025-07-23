@@ -1,7 +1,25 @@
 // INIT WINSTON LOGGER
 const winston = require("winston");
-const loggerFile = winston.createLogger({
-	transports: [new winston.transports.Console()],
+const DailyRotateFile = require('winston-daily-rotate-file');
+const logger = winston.createLogger({
+	level: 'info',
+	format: winston.format.combine(
+		winston.format.timestamp(),
+		winston.format.printf(({ level, message, timestamp }) => {
+			return `[${timestamp}] ${level}: ${message}`;
+		})
+	),	
+	transports: [
+		new winston.transports.Console(),
+		// Daily rotating log files
+		new DailyRotateFile({
+			filename: 'logs/app-%DATE%.log',
+			datePattern: 'YYYY-MM-DD',
+			zippedArchive: true,
+			maxSize: '10m',
+			maxFiles: '14d'
+		})		
+	],
 });
 const uploadFile = require("../middleware/upload");
 const fs = require("fs");
@@ -22,19 +40,21 @@ const upload = async (req, res) => {
     res.status(200).send({
       message: "Uploaded the file successfully: " + req.file.originalname,
     });
+		logger.error("Uploaded the file successfully: " + req.file.originalname);
   } catch (err) {
     console.log(err);
 
     if (err.code == "LIMIT_FILE_SIZE") {
-			loggerFile.error(`The file upload size is too big: ${fileName} `)
+			logger.error(`The file upload size is too big: ${fileName}. File size bigger than 10MB `);
       return res.status(500).send({
-        message: "File size cannot be larger than 2MB!",
+        message: "File size cannot be larger than 10MB!",
       });
     }
 
     res.status(500).send({
       message: `Could not upload the file: ${req.file.originalname}. ${err}`,
     });
+		logger.error(`Could not upload the file: ${req.file.originalname}. ${err}`);
   }
 };
 

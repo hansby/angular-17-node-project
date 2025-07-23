@@ -29,6 +29,8 @@ export class UploadGoogleDocService {
 		switch(docType) {
 			case fileTypes.ID: processorID = '60b18db85bb692fd'
 				break;
+			case fileTypes.PASSPORT: processorID = '6c9c51a1e27651f3'
+				break;				
 			case fileTypes.BUS_REG_DOC: processorID = '88c872bf6214d9a5'
 				break;
 			case fileTypes.PROOF_OF_ADDRESS: processorID = '5b018beea92e33bf'
@@ -36,6 +38,8 @@ export class UploadGoogleDocService {
 			case fileTypes.TRUST_DOC: processorID = 'd06ed11859ac16a9'
 				break;						
 			// *** bank conf processor ID = 1450436d1aa73a
+			default:
+				throw new Error(`Unknown document type: ${docType}`)			
 		}		
 		return this.http.post<IGoogleDoc>('http://localhost:8080/api/process-document', {
 			data,

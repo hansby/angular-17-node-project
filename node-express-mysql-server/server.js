@@ -28,8 +28,8 @@ const speedLimiter = slowDown({
   delayMs: () => 5000,
 });
 
-app.use(speedLimiter);
-app.use(limiter);
+//app.use(speedLimiter);
+//app.use(limiter);
 
 // parse requests of content-type - application/json
 app.use(express.json());

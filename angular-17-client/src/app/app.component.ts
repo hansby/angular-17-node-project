@@ -35,6 +35,7 @@ interface IRegistration {
 	file_poa: any;
 	file_bus_reg: any;
 	file_trust: any;
+	file_passport: any;
 	passport: string;	
 	user_id: string;
 	updatedAt?: string,
@@ -48,11 +49,11 @@ interface IFormattedFile {
 
 export enum fileTypes {
 	ID = 'ID',
-	//PASSPORT = 'PASSPORT',
+	PASSPORT = 'PASSPORT',
 	PROOF_OF_ADDRESS = 'POA',
 	BUS_REG_DOC = 'CPIC',
 	TRUST_DOC = 'TRUST',
-	//BANK_CONF_LETTER = 'BCL',
+	BANK_CONF_LETTER = 'BCL',
 }
 
 enum REG_TYPE {
@@ -309,6 +310,8 @@ export class AppComponent {
 			switch (fileType) {
 				case fileTypes.ID: ctrl['file_id'].setValue(myNewFile);
 					break;
+				case fileTypes.PASSPORT: ctrl['file_passport'].setValue(myNewFile);
+					break;					
 				case fileTypes.BUS_REG_DOC: ctrl['file_bus_reg'].setValue(myNewFile);
 					break;	
 				case fileTypes.TRUST_DOC: ctrl['file_trust'].setValue(myNewFile);
@@ -323,21 +326,38 @@ export class AppComponent {
   submitForm() {
 		this.isLoading = true;
 		this.recordAlreadyExists = false;
-
-		// Trap Field validation errors
-		//let formSubList = this.formSubmissionErrors;
-		//formSubList.length = 0;		
-		//this.fieldValidationChecker(); **NB: REMOVING THIS LINE FOR NOW- SWITCHING to PER-PAGE VALIDATION
-		/*if(this.formSubmissionErrors_PAGE3.length > 0) {
-			this.isLoading = false;
-			return;
-		}*/
+		const errList = this.formSubmissionErrors_PAGE3;
 
 		if (!this.page3IsValid()) {
-			this.formSubmissionErrors_PAGE3.push(TEXT_ENSURE_ALL_DOCS);
+			errList.push(TEXT_ENSURE_ALL_DOCS);
 			this.isLoading = false;
 			return;			
 		}
+
+		/** =================================================
+		 *  API REFS --- FOREIGNER / PASSPORT
+		 * 	=================================================
+		 * */ 
+
+		if (this.isForeigner) {
+			const errMsg = `Please upload a copy of your Passport`;
+			const getCtrl_PASSPORT = this.regForm.controls['file_passport'].value;
+			let result_passport = getCtrl_PASSPORT.result;
+			if (!result_passport || typeof result_passport === "undefined") {
+				this.formSubmissionErrors_PAGE3.push(errMsg);
+				this.isLoading = false;
+				return;
+			}
+			const googleDocObj_PASS: IGoogleDoc = {
+				skipHumanReview: true,
+				rawDocument: {
+					mimeType: getCtrl_PASSPORT.file.type,
+					content: result_passport.toString().includes('base64') ? result_passport.split('base64,')[1] : result_passport
+				}
+			}
+			const docAI_PASSPORT = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_PASS, fileTypes.PASSPORT);
+			this.forkJoinRunner([docAI_PASSPORT], this.runValidationLogic_Passport.bind(this));
+		}		
 
 		/** =================================================
 		 *  API REFS --- TYPE: "INDIVIDUAL" - SA CITIZEN
@@ -379,16 +399,6 @@ export class AppComponent {
 			return;
 		}
 
-		/** =================================================
-		 *  API REFS --- TYPE: "INDIVIDUAL" - FOREIGNER
-		 * 	=================================================
-		 * */ 
-
-		if (this.regType === REG_TYPE.IND && this.isForeigner) {
-			// Do DB Dupe Check and Create registration if PASS = True
-			this.dbDupeCheckAndRegistrationPost();
-		}
-
 
 		/** =================================================
 		 *  API REFS --- TYPE: "BUSINESS"
@@ -399,7 +409,7 @@ export class AppComponent {
 			const getCtrl_TRUST = this.regForm.controls['file_trust'].value;
 			let result_trust = getCtrl_TRUST.result;
 			if (!result_trust || typeof result_trust === "undefined") {
-				this.formSubmissionErrors_PAGE3.push(TEXT_ENSURE_ALL_DOCS);
+				this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Trust document before continuing`);
 				this.isLoading = false;
 				return;
 			}			
@@ -424,7 +434,7 @@ export class AppComponent {
 			const getCtrl_BUS = this.regForm.controls['file_bus_reg'].value;
 			let result_bus_reg = getCtrl_BUS.result;
 			if (!result_bus_reg || typeof result_bus_reg === "undefined") {
-				this.formSubmissionErrors_PAGE3.push(TEXT_ENSURE_ALL_DOCS);
+				this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Business Registration document before continuing`);
 				this.isLoading = false;
 				return;
 			}
@@ -458,8 +468,27 @@ export class AppComponent {
 		})
 	}
 
+	runValidationLogic_Passport(response: any) {
+		let formSubList = this.formSubmissionErrors_PAGE3;
+		const response_Passport = response[0];
+		const errTag = 'Passport Doc';
+		if (response_Passport && response_Passport.document) {
+			const isDocValid = this.isDocValid(response_Passport.document, fileTypes.PASSPORT);
+			if (!isDocValid) {
+				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
+				this.isLoading = false;
+				return;
+			}
+			// Do DB Dupe Check and Create registration if PASS = True
+			this.dbDupeCheckAndRegistrationPost();	
+		} else {
+			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
+			return;	
+		}	
+	}
+
 	runValidationLogic_BusReg(response: any){
-		let formSubList = this.formSubmissionErrors;
+		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_Trust = response[0];
 		const errTag = 'Business Registration Doc';
 		if (response_Trust && response_Trust.document) {
@@ -478,7 +507,7 @@ export class AppComponent {
 	}	
 
 	runValidationLogic_Trust(response: any){
-		let formSubList = this.formSubmissionErrors;
+		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_Trust = response[0];
 		const errTag = 'Letter of authority';
 		if (response_Trust && response_Trust.document) {
@@ -532,7 +561,19 @@ export class AppComponent {
 		const text = dataText.toString().toLowerCase();
 		const ctrl_surname = this.regForm.controls['lastName'].value;
 		const ctrl_userID = this.regForm.controls['user_id'].value;
+		const ctrl_userPassport = this.regForm.controls['passport'].value;
 		switch(fileType) {
+			case fileTypes.PASSPORT:
+				const document_pass = dataText.text.toString().toLowerCase();
+				const arr_pass = dataText.entities[3];
+				const getPassportNo = arr_pass && arr_pass.mentionText ? arr_pass.mentionText.replace(/\s/g, '') : '';
+				const pass_hasSurname = document_pass.includes(ctrl_surname.toLowerCase());
+				const isPassportsMatching = getPassportNo === ctrl_userPassport;
+				const pass_nationality = document_pass.includes('Nationality'.toLowerCase());
+				const pass_sex = document_pass.includes('Sex'.toLowerCase());
+				const pass_dateOfIssue = document_pass.includes('Date of issue'.toLowerCase());
+				return isTrue = pass_hasSurname && isPassportsMatching && pass_nationality && pass_sex && pass_dateOfIssue;
+				break;
 			case fileTypes.PROOF_OF_ADDRESS:
 				const poa_hasSurname = text.includes(ctrl_surname.toLowerCase());
 				const poa_hasValidDate = true;
@@ -570,6 +611,7 @@ export class AppComponent {
 				return isTrue = hasCommissionerTag && hasCOR143Tag && hasEffectiveDate && hasRegNoTitle && hasRegNo;
 				break;								
 		}
+		return isTrue
 	}
 
 	filterArrByField(arr: any, fieldName: string) {
@@ -632,6 +674,9 @@ export class AppComponent {
 	}
 
 	dbDupeCheckAndRegistrationPost() {
+		if (this.formSubmissionErrors_PAGE3.length > 0) {
+			return;
+		}		
 		const { localStore } = this;
 		const body: IRegistration = this.regForm.value;
 		const bodyCopyForFileUploads = Object.assign({}, body);
@@ -642,7 +687,7 @@ export class AppComponent {
 			acc_no: body.acc_no,
 			passport: body.passport
 		}		
-
+		
 		const $ = this.regService.getAll(qParams, this.isSACitizen).subscribe((responseData) => {
 
 			// ***NB: BLOCK registration if data already exists in DB!
@@ -658,6 +703,7 @@ export class AppComponent {
 			 * where all the DB table (and APIs) really need is the [simple file name] format
 			 */
 			if(typeof body.file_id === 'object') body.file_id = body.file_id.file.name;
+			if(typeof body.file_passport === 'object') body.file_passport = body.file_passport.file.name;
 			if(typeof body.file_bus_reg === 'object') body.file_bus_reg = body.file_bus_reg.file.name;
 			if(typeof body.file_trust === 'object') body.file_trust = body.file_trust.file.name;
 			if(typeof body.file_poa === 'object') body.file_poa = body.file_poa.file.name;	
@@ -679,7 +725,7 @@ export class AppComponent {
 						console.log('YES MAN!! File successfully uploaded! :DD');
 						this.applicationInProgress = false;
 						this.isLoading = false;						
-					}, (err: HttpErrorResponse) => console.log('OH CRAP! File upload FAILED! :((( '));
+					}, (err: HttpErrorResponse) => console.log('OH CRAP! TRUST File upload FAILED! :((( '));
 				}
 		
 				if (this.regType === REG_TYPE.BUS) {
@@ -689,7 +735,7 @@ export class AppComponent {
 						console.log('YES MAN!! File successfully uploaded! :DD');
 						this.applicationInProgress = false;
 						this.isLoading = false;						
-					}, (err: HttpErrorResponse) => console.log('OH CRAP! File upload FAILED! :((( '));
+					}, (err: HttpErrorResponse) => console.log('OH CRAP! BUS DOC File upload FAILED! :((( '));
 				}		
 		
 				if (this.isSACitizen && this.regType === REG_TYPE.IND) {
@@ -705,8 +751,19 @@ export class AppComponent {
 						this.applicationInProgress = false;
 						this.isLoading = false;						
 						console.log('YES MAN!! POA and ID files were successfully uploaded! :DD');
-					}, (err: HttpErrorResponse) => console.log('OH CRAP! File uploads have FAILED! :((( '));			
-				}				
+					}, (err: HttpErrorResponse) => console.log('OH CRAP! POA and ID File uploads have FAILED! :((( '));			
+				}
+
+				if (this.isForeigner) {
+					const Obj_PASSPORT: File = bodyCopyForFileUploads.file_passport.file;
+					const myNewFile_PASSPORT = new File([Obj_PASSPORT], Obj_PASSPORT.name, {type: Obj_PASSPORT.type});
+					const API_PASSPORT = this.fileUploadService.upload(myNewFile_PASSPORT);
+					forkJoin(([API_PASSPORT])).subscribe((resp) => {
+						this.applicationInProgress = false;
+						this.isLoading = false;
+						console.log('YES MAN!! PASSPORT file was successfully uploaded! :DD');
+					}, (err: HttpErrorResponse) => console.log('OH CRAP! PASSPORT File uploads have FAILED! :((( '));	
+				}
 
 			}, (err: HttpErrorResponse) => {
 				if (err.status === 429) {
@@ -755,7 +812,7 @@ export class AppComponent {
 		const town = ctrls['town'].value ?? '';
 		const postal_code = ctrls['postal_code'].value ?? '';	
 
-		if (citizenStatus.length <= 0) formSubList.push('Please select your Citizen status (SA / Foreigner)');
+		if (citizenStatus.length <= 0) formSubList.push('Please select your Citizen status (SA / Foreigner) under "I am a"');
 		if (this.isSACitizen) {
 			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
 			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
@@ -770,19 +827,15 @@ export class AppComponent {
 		if (email.length > 0 && !emailIsValid) formSubList.push('Email address is not valid');
 
 		// Address
-		if (address_1.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your address');
-		if (address_2.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your address');
+		if (address_1.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete address 1 field');
+		if (address_2.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete address 2 field');
 		if (suburb.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Suburb');
 		if (town.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Town');
 		if (postal_code.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Postal code');
 
 		if (this.isForeigner) {
-			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
-			//if (file_passport.length <= 0) formSubList.push('Please Upload a copy of your Passport');
-			//if (swift_code.length <= 0) formSubList.push('Please fill in your Swift Code number');
-			//if (iban.length <= 0) formSubList.push('Please fill in your IBAN number');			
-		}		
-
+			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');			
+		}
 
 		return formSubList.length <= 0;
 	}
@@ -804,19 +857,7 @@ export class AppComponent {
 		if (swift_code.length <= 0 && this.isForeigner) formSubList.push('Please fill in your Swift Code');
 		if (iban.length <= 0 && this.isForeigner) formSubList.push('Please fill in your IBAN number');
 
-		return formSubList.length <= 0;
-		//return formSubList.length <= 0;
-
-
-		if (this.regType === REG_TYPE.BUS) {
-			if (bus_reg_no.length <= 0) formSubList.push('Please fill in your Business Registration number');
-			//if (file_bus_reg.length <= 0) formSubList.push('Please Upload a copy of your Business Registration Document');
-		}
-
-		if (this.regType === REG_TYPE.TRUST) {
-			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Trust Registration number');
-			//if (file_trust.length <= 0) formSubList.push('Please Upload a copy of your Letter of Authority');
-		}				
+		return formSubList.length <= 0;			
 	}	
 
 	clearAddressFields() {
