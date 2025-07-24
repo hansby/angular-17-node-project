@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { fileTypes } from '../app.component';
+import { fileTypes } from '../../app/components/home/home.component';
 
 const LOC = 'us';
 const baseUrl = `https://${LOC}-documentai.googleapis.com/v1/projects`;

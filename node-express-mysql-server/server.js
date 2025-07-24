@@ -4,6 +4,30 @@ const slowDown = require("express-slow-down");
 const cors = require("cors");
 const { callDocumentAI } = require("./app/services/docAIservice");
 
+// INIT WINSTON LOGGER
+const winston = require("winston");
+const DailyRotateFile = require('winston-daily-rotate-file');
+const logger = winston.createLogger({
+	level: 'info',
+	format: winston.format.combine(
+		winston.format.timestamp(),
+		winston.format.printf(({ level, message, timestamp }) => {
+			return `[${timestamp}] ${level}: ${message}`;
+		})
+	),	
+	transports: [
+		new winston.transports.Console(),
+		// Daily rotating log files
+		new DailyRotateFile({
+			filename: 'logs/app-%DATE%.log',
+			datePattern: 'YYYY-MM-DD',
+			zippedArchive: true,
+			maxSize: '10m',
+			maxFiles: '14d'
+		})		
+	],
+});
+
 global.__basedir = __dirname;
 
 const app = express();
@@ -63,8 +87,11 @@ app.post('/api/process-document', async (req, res) => {
   try {
     const result = await callDocumentAI(projectId, location, processorId, data);
     res.json(result);
+		logger.error(`Successfull callDocumentAI call`);
   } catch (err) {
-    console.error('Document AI Error:', err.message);
+		const newErrMsg = err.response?.data?.error.message || `Error on callDocumentAI: ${err.message}`;
+		logger.error(newErrMsg);
+    console.error(newErrMsg);
     res.status(500).json({ error: err.response?.data || err.message });
   }
 });
