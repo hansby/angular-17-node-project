@@ -1,3 +1,75 @@
-<h1>Successfull Application</h1>
 
-<p>Welcome to successful applications from DB...</p>
+<div class="container" *ngIf="!isLoggedIn">
+
+	<main class="form-signin m-auto">
+		<form>
+			<h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+			<div class="form-floating">
+				<input type="text" 
+					[(ngModel)]="inpt_username" 
+					[ngModelOptions]="{standalone: true}"
+					class="form-control" id="floatingInput" placeholder="john doe"> <label for="floatingInput">Username</label> </div>
+			<div class="form-floating">
+				<input type="password" 
+				[(ngModel)]="inpt_password" 
+				[ngModelOptions]="{standalone: true}"
+				class="form-control" id="floatingPassword" placeholder="Password"> <label for="floatingPassword">Password</label> </div>
+			<button class="btn btn-primary w-100 py-2" type="submit" (click)="login()">Sign in</button> 
+		</form>
+	</main>
+
+</div>
+
+<div class="container" *ngIf="isLoggedIn">
+
+	<div class="py-4 text-center center-auto">
+		<br />
+		<h2>Registered Applications</h2>
+		<p class="lead">These are all the successfull applications registered on the system</p>
+	</div>
+
+	<div class="py-4 text-center center-auto">
+
+    <form class="form-inline search">
+      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>		
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th scope="col">First Name</th>
+					<th scope="col">Last Name</th>
+					<th scope="col">ID</th>
+					<th scope="col">PASSPORT</th>
+					<th scope="col">Date Registered</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th scope="row">Julian</th>
+					<td>Hansby</td>
+					<td>091232345</td>
+					<td>AIS098235235</td>
+					<td>25 August</td>
+				</tr>
+				<tr>
+					<th scope="row">Julian</th>
+					<td>Hansby</td>
+					<td>091232345</td>
+					<td>AIS098235235</td>
+					<td>25 August</td>
+				</tr>
+				<tr>
+					<th scope="row">Julian</th>
+					<td>Hansby</td>
+					<td>091232345</td>
+					<td>AIS098235235</td>
+					<td>25 August</td>
+				</tr>
+			</tbody>
+		</table>
+
+	</div>
+
+</div>
