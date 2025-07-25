@@ -2,21 +2,6 @@
 <div>
 
 	<div class="container" *ngIf="applicationInProgress">
-	
-			<div class="py-4 text-center center-auto">
-				<br />
-				<h2>FICA Registration form</h2>
-				<p class="lead">Please complete all the required fields below in order for us to successfully process your application</p>
-				<br /><br />
-				<p class="text-left">Before starting please ensure you have the following documents ready for upload, based on your status.</p>
-				<p class="text-left">If you are:</p>
-				<ul class="text-left">
-					<li>an Individual: Copy of ID, Proof of Address</li>
-					<li>a Business: Copy of Business Registration Doc</li>
-					<li>a Trust: Copy of Letter of Authority</li>
-				</ul>
-			</div>
-
 
 			<!-- 
 				===========================================================================================   
@@ -27,9 +12,15 @@
 
 			<ng-container *ngIf="page === 1">
 				<div class="row center-auto">
+
+					<div class="py-4 text-center center-auto">
+						<br />
+						<h2>FICA Registration form</h2>
+					</div>
+
+					<hr class="my-4">
+
 					<div class="col-lg-12">
-		
-						<hr class="my-4">
 		
 						<h4 class="mb-3">Disclaimers</h4>
 
@@ -81,6 +72,19 @@
 			 -->
 
 			<ng-container *ngIf="page === 2">
+				<div class="py-4 text-center center-auto">
+					<br />
+					<h2>FICA Registration form</h2>					
+					<p class="lead">Please complete all the required fields below in order for us to successfully process your application</p>
+					<br /><br />
+					<p class="text-left">Before starting please ensure you have the following documents ready for upload, based on your citizen status and registration type:</p>
+					<ul class="text-left">
+						<li>Copy of ID or Passport</li>
+						<li>an Individual: Proof of Address</li>
+						<li>a Business: Copy of Business Registration Doc</li>
+						<li>a Trust: Copy of Letter of Authority</li>
+					</ul>				
+				</div>
 
 				<div class="row center-auto">
 					<div class="col-lg-12">
@@ -129,7 +133,7 @@
 	
 								<ng-container>
 	
-									<h5 class="mb-3">I am a</h5>
+									<h5 class="mb-3">I am</h5>
 			
 									<div class="my-3">
 										<div class="col-sm-6">
@@ -140,7 +144,7 @@
 												class="form-check-input" 
 												value="citizen"
 												formControlName="citizenStatus">
-											<label class="form-check-label" for="citizen">SA Citizen</label>
+											<label class="form-check-label" for="citizen">an SA Citizen</label>
 										</div>
 										<div class="form-check">
 											<input id="foreigner" 
@@ -149,7 +153,7 @@
 												class="form-check-input"
 												value="foreigner"
 												formControlName="citizenStatus">
-											<label class="form-check-label" for="foreigner">Foreigner</label>
+											<label class="form-check-label" for="foreigner">a Foreigner</label>
 										</div>
 										</div>
 									</div>							
