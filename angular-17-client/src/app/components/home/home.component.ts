@@ -56,7 +56,7 @@ export enum fileTypes {
 	BANK_CONF_LETTER = 'BCL',
 }
 
-enum REG_TYPE {
+export enum REG_TYPE {
 	IND = 'individual',
 	BUS = 'business',
 	TRUST = 'trust'
@@ -134,7 +134,7 @@ function isNumber(n: string) {
 	styleUrl: './home.component.css',
 })
 export class HomeComponent {
-	page: number = 1; // when all said and done this final value will be = 1
+	page: number = 2; // when all said and done this final value will be = 1
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -469,6 +469,7 @@ export class HomeComponent {
 	}
 
 	runValidationLogic_Passport(response: any) {
+		this.dbDupeCheckAndRegistrationPost();	
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_Passport = response[0];
 		const errTag = 'Passport Doc';
@@ -488,6 +489,7 @@ export class HomeComponent {
 	}
 
 	runValidationLogic_BusReg(response: any){
+		this.dbDupeCheckAndRegistrationPost();	
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_Trust = response[0];
 		const errTag = 'Business Registration Doc';
@@ -507,6 +509,7 @@ export class HomeComponent {
 	}	
 
 	runValidationLogic_Trust(response: any){
+		this.dbDupeCheckAndRegistrationPost();	
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_Trust = response[0];
 		const errTag = 'Letter of authority';
@@ -526,6 +529,7 @@ export class HomeComponent {
 	}
 
 	runValidationLogic_Individual(response: any){
+		this.dbDupeCheckAndRegistrationPost();	
 		//let formSubList = this.formSubmissionErrors;
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_POA = response[0];
@@ -565,7 +569,7 @@ export class HomeComponent {
 		switch(fileType) {
 			case fileTypes.PASSPORT:
 				const document_pass = dataText.text.toString().toLowerCase();
-				const arr_pass = dataText.entities[3];
+				const arr_pass = dataText.entities[5];
 				const getPassportNo = arr_pass && arr_pass.mentionText ? arr_pass.mentionText.replace(/\s/g, '') : '';
 				const pass_hasSurname = document_pass.includes(ctrl_surname.toLowerCase());
 				const isPassportsMatching = getPassportNo === ctrl_userPassport;
@@ -685,10 +689,12 @@ export class HomeComponent {
 			user_id: body.user_id,
 			email: body.email,
 			acc_no: body.acc_no,
-			passport: body.passport
+			passport: body.passport,
+			bus_reg_no: body.bus_reg_no,
+			trust_reg_no: body.trust_reg_no
 		}		
 
-		const $ = this.regService.getAll(qParams, this.isSACitizen).subscribe((responseData) => {
+		const $ = this.regService.getAll(qParams, this.regType).subscribe((responseData) => {
 
 			// ***NB: BLOCK registration if data already exists in DB!
 			if (responseData.length > 0) {

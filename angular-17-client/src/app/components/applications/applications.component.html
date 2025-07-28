@@ -22,53 +22,76 @@
 
 <div class="container" *ngIf="isLoggedIn">
 
-	<div class="py-4 center-auto">
+	<div class="py-4">
 		<br />
 		<h2>Registered Applications</h2>
 		<p class="lead">These are all the successfull applications registered on the system</p>
 	</div>
 
-	<div class="py-4 center-auto">
+	<div class="py-4">
 
-    <form class="form-inline search">
-      <input class="form-control mr-sm-2 search-inpt" type="search" placeholder="Search by ID, Passport, Bus or Trust no..." aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    <form class="form-inline search" [formGroup]="form">
+			<!--<div class="dropdown">
+				<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Search by
+				</button>
+				<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					<button class="dropdown-item" type="button" (click)="updateSearchBy(searchType.id)">ID no</button>
+					<button class="dropdown-item" type="button" (click)="updateSearchBy(searchType.passport)">Passport no</button>
+					<button class="dropdown-item" type="button" (click)="updateSearchBy(searchType.bus_reg_no)">Bus Reg no</button>
+					<button class="dropdown-item" type="button" (click)="updateSearchBy(searchType.trust_reg_no)">Trust Reg no</button>
+				</div>
+			</div>-->
+      <input class="form-control mr-sm-2 search-inpt" 
+				type="search" 
+				[placeholder]="'Search by ID, Bus Reg or Trust Reg No'"  
+				aria-label="Search"
+				formControlName="search">
+      <button class="btn btn-outline-success my-2 my-sm-0" 
+				type="submit" 
+				(click)="doSearch()">Search</button>
     </form>		
+
+		<!-- 
+			+(searchBy === null ? '...' : searchBy) 
+			[disabled]="searchBy === null"
+		-->
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th scope="col">First Name</th>
-					<th scope="col">Last Name</th>
+					<th scope="col">Name</th>
 					<th scope="col">ID</th>
-					<th scope="col">PASSPORT</th>
+					<th scope="col">Bus Reg No</th>
+					<th scope="col">Trust Reg No</th>
+					<th scope="col">Cell</th>
+					<th scope="col">Citizen Status</th>
+					<th scope="col">Reg Type</th>
+					<th scope="col">Bank</th>
+					<!--<th scope="col">Acc No</th>-->
 					<th scope="col">Date Registered</th>
 				</tr>
 			</thead>
-			<tbody>
-				<tr>
-					<th scope="row">Julian</th>
-					<td>Hansby</td>
-					<td>091232345</td>
-					<td>AIS098235235</td>
-					<td>25 August</td>
-				</tr>
-				<tr>
-					<th scope="row">Julian</th>
-					<td>Hansby</td>
-					<td>091232345</td>
-					<td>AIS098235235</td>
-					<td>25 August</td>
-				</tr>
-				<tr>
-					<th scope="row">Julian</th>
-					<td>Hansby</td>
-					<td>091232345</td>
-					<td>AIS098235235</td>
-					<td>25 August</td>
+			<tbody *ngIf="_UISearchResults.length > 0">
+				<tr *ngFor="let beneficiary of _UISearchResults">
+					<td scope="row">{{beneficiary.firstName}} {{beneficiary.lastName}}</td>
+					<td scope="row">{{beneficiary.user_id}}</td>
+					<td scope="row">{{beneficiary.bus_reg_no}}</td>
+					<td scope="row">{{beneficiary.trust_reg_no}}</td>
+					<td scope="row">{{beneficiary.cell}}</td>
+					<td scope="row">{{beneficiary.citizenStatus === 'citizen' ? 'SA' : 'Foreigner'}}</td>
+					<td scope="row">{{beneficiary.reg_type}}</td>
+					<td scope="row">{{beneficiary.bank}}</td>
+					<!--<td scope="row">{{beneficiary.acc_no}}</td>-->
+					<td scope="row">{{beneficiary.createdAt | date:'yyyy-MM-dd'}}</td>
 				</tr>
 			</tbody>
 		</table>
+
+		<p class="text-center" *ngIf="noResultsFound">
+			<br /><br /><br />
+			No search results found. Please try a different keyword
+		</p>
 
 	</div>
 

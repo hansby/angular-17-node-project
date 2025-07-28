@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ISearchResults, SearchService, searchType } from '../../services/search.service';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { debounceTime, distinctUntilKeyChanged, map, startWith } from 'rxjs';
 
 const USERNAME = 'raymond001';
 const PASSWORD = 'AccessApps001';
@@ -14,11 +17,65 @@ export class ApplicationsComponent implements OnInit {
 	isLoggedIn: boolean = true;
 	inpt_username: string = '';
 	inpt_password: string = '';
+	searchBy: searchType | null = null;
+  form = new UntypedFormGroup({
+    search: new UntypedFormControl(''),
+  });	
 
-	constructor() {}
+	searchType = searchType;
+	_UISearchResults: Array<ISearchResults> = [];
+	noResultsFound: boolean = false;
+
+
+	constructor(private search: SearchService) {}
 
 	ngOnInit(): void {
+		/*this.form.controls['search'].valueChanges.pipe(
+			map((val) => ({ ...val, hash: JSON.stringify(val) })),
+			distinctUntilKeyChanged('hash'),
+			debounceTime(300),			
+		).subscribe((keyword) => {
+			console.log('keyword from search: ', keyword);
+		})*/
+	}
 
+	updateSearchBy(type: searchType) {
+		this.searchBy = type;
+	}
+
+	doSearch() {
+		this.noResultsFound = false;
+		this._UISearchResults = [];
+		const keyword = this.form.controls['search'].value;
+		if (!keyword || keyword.length <= 0) return;
+		console.log('keyword from search: ', keyword);
+		this.search.getBySearchFilter(keyword).subscribe((searchResults) => {
+			console.log('lets see searchResults: ', searchResults);
+			if (searchResults.length > 0) {
+				this._UISearchResults = searchResults;
+				/**
+				 *.map((result) => {
+					let formattedNo = null;
+					switch(this.searchBy) {
+						case searchType.id:
+							formattedNo = result.
+						break;
+						case y:
+							// code block
+						break;
+						default:
+							// code block						
+					}
+					return {
+						...result,
+
+					}
+				}) 
+				 */
+			} else {
+				this.noResultsFound = true;
+			}
+		})
 	}
 
 	login() {

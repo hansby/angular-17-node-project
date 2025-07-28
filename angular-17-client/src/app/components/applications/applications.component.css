@@ -12,3 +12,7 @@
 }
 
 .search-inpt { min-width: 400px; }
+
+.dropdown {
+	margin-right: 10px;
+}
