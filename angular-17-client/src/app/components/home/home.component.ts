@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { BehaviorSubject, combineLatest, delay, forkJoin, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, delay, forkJoin, Observable, tap } from 'rxjs';
 import {
 	FormControl, FormGroup, ReactiveFormsModule,
 	FormBuilder,
@@ -10,6 +10,7 @@ import { IRequiredQParams, RegistrationsService } from '../../services/registrat
 import { HttpErrorResponse } from '@angular/common/http';
 import { IGoogleDoc, UploadGoogleDocService } from '../../services/upload-google-doc.service';
 import { FileUploadService } from '../../services/file-upload.service';
+import { LoggerService } from '../../services/logger.service';
 
 const LS_KEY = 'owiqsjdh09192';
 
@@ -167,6 +168,7 @@ export class HomeComponent {
 		private uploadGoogleDoc: UploadGoogleDocService,
 		private fileUploadService: FileUploadService,
 		@Inject(DOCUMENT) private document: Document,
+		private loggerService: LoggerService
 	){
 
 		this.localStore = document.defaultView?.localStorage;
@@ -327,7 +329,14 @@ export class HomeComponent {
 		this.isLoading = true;
 		this.recordAlreadyExists = false;
 		const errList = this.formSubmissionErrors_PAGE3;
-
+		const ctrls = this.regForm.controls;
+		const user = {
+			name: `${ctrls['firstName'].value} ${ctrls['lastName'].value}`,
+			user_id: ctrls['user_id'].value,
+			bus_reg_no: ctrls['bus_reg_no'].value,
+			trust_reg_no: ctrls['trust_reg_no'].value,
+		}
+			
 		if (!this.page3IsValid()) {
 			errList.push(TEXT_ENSURE_ALL_DOCS);
 			this.isLoading = false;
@@ -355,7 +364,9 @@ export class HomeComponent {
 					content: result_passport.toString().includes('base64') ? result_passport.split('base64,')[1] : result_passport
 				}
 			}
-			const docAI_PASSPORT = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_PASS, fileTypes.PASSPORT);
+			const docAI_PASSPORT = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_PASS, fileTypes.PASSPORT).pipe(
+				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - PASSPORT: ${user}`))
+			);
 			this.forkJoinRunner([docAI_PASSPORT], this.runValidationLogic_Passport.bind(this));
 		}		
 
@@ -393,8 +404,12 @@ export class HomeComponent {
 					content: result_id.toString().includes('base64') ? result_id.split('base64,')[1] : result_id
 				}
 			}		
-			const docAI_POA = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.PROOF_OF_ADDRESS);
-			const docAI_ID = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_ID, fileTypes.ID);
+			const docAI_POA = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.PROOF_OF_ADDRESS).pipe(
+				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - PROOF OF ADDRESS: ${user}`))
+			);
+			const docAI_ID = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_ID, fileTypes.ID).pipe(
+				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ID: ${user}`))
+			);
 			this.forkJoinRunner([docAI_POA, docAI_ID], this.runValidationLogic_Individual.bind(this));
 			return;
 		}
@@ -420,7 +435,9 @@ export class HomeComponent {
 					content: result_trust.toString().includes('base64') ? result_trust.split('base64,')[1] : result_trust
 				}
 			}			
-			const docAI_TRUST = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_TRUST, fileTypes.TRUST_DOC);		
+			const docAI_TRUST = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_TRUST, fileTypes.TRUST_DOC).pipe(
+				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - TRUST: ${user}`))
+			);		
 			this.forkJoinRunner([docAI_TRUST], this.runValidationLogic_Trust.bind(this));
 		}
 
@@ -445,7 +462,9 @@ export class HomeComponent {
 					content: result_bus_reg.toString().includes('base64') ? result_bus_reg.split('base64,')[1] : result_bus_reg
 				}
 			}				
-			const docAI_BUS_REG = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_BUS, fileTypes.BUS_REG_DOC);
+			const docAI_BUS_REG = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_BUS, fileTypes.BUS_REG_DOC).pipe(
+				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - BUS REG DOC: ${user}`))
+			);
 			this.forkJoinRunner([docAI_BUS_REG], this.runValidationLogic_BusReg.bind(this));
 		}
 		
@@ -469,7 +488,7 @@ export class HomeComponent {
 	}
 
 	runValidationLogic_Passport(response: any) {
-		this.dbDupeCheckAndRegistrationPost();	
+		//this.dbDupeCheckAndRegistrationPost();	
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_Passport = response[0];
 		const errTag = 'Passport Doc';
@@ -489,7 +508,7 @@ export class HomeComponent {
 	}
 
 	runValidationLogic_BusReg(response: any){
-		this.dbDupeCheckAndRegistrationPost();	
+		//this.dbDupeCheckAndRegistrationPost();	
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_Trust = response[0];
 		const errTag = 'Business Registration Doc';
@@ -509,7 +528,7 @@ export class HomeComponent {
 	}	
 
 	runValidationLogic_Trust(response: any){
-		this.dbDupeCheckAndRegistrationPost();	
+		//this.dbDupeCheckAndRegistrationPost();	
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_Trust = response[0];
 		const errTag = 'Letter of authority';
@@ -529,7 +548,7 @@ export class HomeComponent {
 	}
 
 	runValidationLogic_Individual(response: any){
-		this.dbDupeCheckAndRegistrationPost();	
+		//this.dbDupeCheckAndRegistrationPost();	
 		//let formSubList = this.formSubmissionErrors;
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		const response_POA = response[0];
@@ -569,7 +588,7 @@ export class HomeComponent {
 		switch(fileType) {
 			case fileTypes.PASSPORT:
 				const document_pass = dataText.text.toString().toLowerCase();
-				const arr_pass = dataText.entities[5];
+				const arr_pass = dataText.entities[3];
 				const getPassportNo = arr_pass && arr_pass.mentionText ? arr_pass.mentionText.replace(/\s/g, '') : '';
 				const pass_hasSurname = document_pass.includes(ctrl_surname.toLowerCase());
 				const isPassportsMatching = getPassportNo === ctrl_userPassport;
@@ -728,20 +747,20 @@ export class HomeComponent {
 					const trustObj: File = bodyCopyForFileUploads.file_trust.file;
 					const myNewFile_trust = new File([trustObj], trustObj.name, {type: trustObj.type});
 					this.fileUploadService.upload(myNewFile_trust).subscribe((resp) => {
-						console.log('YES MAN!! File successfully uploaded! :DD');
+						this.loggerService.sendLog(`TRUST DOC UPLOAD FILE SUCCESS!: ${qParams}`);
 						this.applicationInProgress = false;
 						this.isLoading = false;						
-					}, (err: HttpErrorResponse) => console.log('OH CRAP! TRUST File upload FAILED! :((( '));
+					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`TRUST DOC UPLOAD FILE ERROR!: ${qParams}`));
 				}
 		
 				if (this.regType === REG_TYPE.BUS) {
 					const busObj: File = bodyCopyForFileUploads.file_bus_reg.file;
 					const myNewFile_bus = new File([busObj], busObj.name, {type: busObj.type});
 					this.fileUploadService.upload(myNewFile_bus).subscribe((resp) => {
-						console.log('YES MAN!! File successfully uploaded! :DD');
+						this.loggerService.sendLog(`BUS DOC UPLOAD FILE SUCCESS!: ${qParams}`);
 						this.applicationInProgress = false;
 						this.isLoading = false;						
-					}, (err: HttpErrorResponse) => console.log('OH CRAP! BUS DOC File upload FAILED! :((( '));
+					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`BUS DOC UPLOAD FILE ERROR!: ${qParams}`));
 				}		
 		
 				if (this.isSACitizen && this.regType === REG_TYPE.IND) {
@@ -756,8 +775,8 @@ export class HomeComponent {
 					forkJoin(([API_POA, API_ID])).subscribe((resp) => {
 						this.applicationInProgress = false;
 						this.isLoading = false;						
-						console.log('YES MAN!! POA and ID files were successfully uploaded! :DD');
-					}, (err: HttpErrorResponse) => console.log('OH CRAP! POA and ID File uploads have FAILED! :((( '));			
+						this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE SUCCESS!: ${qParams}`);
+					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE Failed: ${qParams}`));			
 				}
 
 				if (this.isForeigner) {
@@ -767,13 +786,14 @@ export class HomeComponent {
 					forkJoin(([API_PASSPORT])).subscribe((resp) => {
 						this.applicationInProgress = false;
 						this.isLoading = false;
-						console.log('YES MAN!! PASSPORT file was successfully uploaded! :DD');
-					}, (err: HttpErrorResponse) => console.log('OH CRAP! PASSPORT File uploads have FAILED! :((( '));	
+						this.loggerService.sendLog(`Passport UPLOAD FILE SUCCESS!: ${qParams}`);
+					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Passport UPLOAD FILE FAILED!: ${qParams}`));	
 				}
 
 			}, (err: HttpErrorResponse) => {
 				if (err.status === 429) {
 					this.rateLimiterActive = true;
+					this.loggerService.sendLog(`Rate Limit Kicked in - Blocked Reqs!: ${qParams}`);
 				} else {
 					this.rateLimiterActive = false;
 				}
@@ -784,6 +804,7 @@ export class HomeComponent {
 
 		}, (errResponse: HttpErrorResponse) => {
 			console.log('err from regService API req: ', errResponse);
+			this.loggerService.sendLog(`err from regService API req: ${qParams}, ${errResponse}`);
 			if (errResponse.status === 429) {
 				this.rateLimiterActive = true;
 				this.applicationInProgress = false;

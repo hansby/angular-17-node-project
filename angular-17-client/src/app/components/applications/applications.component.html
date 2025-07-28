@@ -44,7 +44,7 @@
 			</div>-->
       <input class="form-control mr-sm-2 search-inpt" 
 				type="search" 
-				[placeholder]="'Search by ID, Bus Reg or Trust Reg No'"  
+				[placeholder]="'Search by Name, ID, Bus Reg or Trust Reg No'"  
 				aria-label="Search"
 				formControlName="search">
       <button class="btn btn-outline-success my-2 my-sm-0" 
@@ -61,7 +61,7 @@
 			<thead>
 				<tr>
 					<th scope="col">Name</th>
-					<th scope="col">ID</th>
+					<th scope="col">ID/PASSPORT</th>
 					<th scope="col">Bus Reg No</th>
 					<th scope="col">Trust Reg No</th>
 					<th scope="col">Cell</th>
@@ -73,17 +73,17 @@
 				</tr>
 			</thead>
 			<tbody *ngIf="_UISearchResults.length > 0">
-				<tr *ngFor="let beneficiary of _UISearchResults">
-					<td scope="row">{{beneficiary.firstName}} {{beneficiary.lastName}}</td>
-					<td scope="row">{{beneficiary.user_id}}</td>
-					<td scope="row">{{beneficiary.bus_reg_no}}</td>
-					<td scope="row">{{beneficiary.trust_reg_no}}</td>
-					<td scope="row">{{beneficiary.cell}}</td>
-					<td scope="row">{{beneficiary.citizenStatus === 'citizen' ? 'SA' : 'Foreigner'}}</td>
-					<td scope="row">{{beneficiary.reg_type}}</td>
-					<td scope="row">{{beneficiary.bank}}</td>
+				<tr *ngFor="let ben of _UISearchResults">
+					<td scope="row">{{ben.firstName}} {{ben.lastName}}</td>
+					<td scope="row">{{ben.user_id && ben.user_id.length > 0 ? ben.user_id : ben.passport}}</td>
+					<td scope="row">{{ben.bus_reg_no}}</td>
+					<td scope="row">{{ben.trust_reg_no}}</td>
+					<td scope="row">{{ben.cell}}</td>
+					<td scope="row">{{ben.citizenStatus === 'citizen' ? 'SA' : 'Foreigner'}}</td>
+					<td scope="row">{{ben.reg_type}}</td>
+					<td scope="row">{{ben.bank}}</td>
 					<!--<td scope="row">{{beneficiary.acc_no}}</td>-->
-					<td scope="row">{{beneficiary.createdAt | date:'yyyy-MM-dd'}}</td>
+					<td scope="row">{{ben.createdAt | date:'yyyy-MM-dd'}}</td>
 				</tr>
 			</tbody>
 		</table>
