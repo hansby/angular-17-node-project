@@ -189,7 +189,7 @@ export class HomeComponent {
 			tax_no: new FormControl(''),
 
 			address_1: new FormControl('', [Validators.required]),
-			address_2: new FormControl('', [Validators.required]),
+			address_2: new FormControl(''),
 			suburb: new FormControl('', [Validators.required]),
 			town: new FormControl('', [Validators.required]),
 			postal_code: new FormControl('', [Validators.required]),
@@ -577,14 +577,16 @@ export class HomeComponent {
 	}
 
 	isDocValid(dataText: any, fileType: fileTypes): boolean {
+		const ctrls = this.regForm.controls;
 		let isTrue = false;
 		if (!dataText && !dataText.entities) {
 			return false;
 		}
 		const text = dataText.toString().toLowerCase();
-		const ctrl_surname = this.regForm.controls['lastName'].value;
-		const ctrl_userID = this.regForm.controls['user_id'].value;
-		const ctrl_userPassport = this.regForm.controls['passport'].value;
+		const ctrl_surname = ctrls['lastName'].value;
+		const ctrl_userID = ctrls['user_id'].value;
+		const ctrl_userPassport = ctrls['passport'].value;
+
 		switch(fileType) {
 			case fileTypes.PASSPORT:
 				const document_pass = dataText.text.toString().toLowerCase();
@@ -598,10 +600,14 @@ export class HomeComponent {
 				return isTrue = pass_hasSurname && isPassportsMatching && pass_nationality && pass_sex && pass_dateOfIssue;
 				break;
 			case fileTypes.PROOF_OF_ADDRESS:
-				const poa_hasSurname = text.includes(ctrl_surname.toLowerCase());
-				const poa_hasValidDate = true;
-				const poa_hasValidAddress = true;
-				return isTrue = poa_hasSurname;
+				const address1 = text.includes(ctrls['address_1'].value.toLowerCase());
+				const address2 = text.includes(ctrls['address_2'].value.toLowerCase());
+				const suburb = text.includes(ctrls['suburb'].value.toLowerCase());
+				const town = text.includes(ctrls['town'].value.toLowerCase());
+				const postal_code = text.includes(ctrls['postal_code'].value.toLowerCase());	
+				const poa_hasAccNo = text.includes('account number');
+				const poa_hasAddress = (address1 || address2) && suburb && postal_code && town;
+				return isTrue = poa_hasAccNo && poa_hasAddress;
 				break;
 			case fileTypes.ID:
 				const document = dataText.text.toString().toLowerCase();
@@ -855,7 +861,7 @@ export class HomeComponent {
 
 		// Address
 		if (address_1.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete address 1 field');
-		if (address_2.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete address 2 field');
+		//if (address_2.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete address 2 field');
 		if (suburb.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Suburb');
 		if (town.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Town');
 		if (postal_code.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete your Postal code');
