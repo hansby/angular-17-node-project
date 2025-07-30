@@ -205,6 +205,7 @@ export class HomeComponent {
 			file_poa: new FormControl(''),
 			file_bus_reg: new FormControl(''),
 			file_trust: new FormControl(''),
+			file_bcl: new FormControl(''),
 			passport: new FormControl(''),
 			citizenStatus: new FormControl('', [Validators.required])
 		}, {
@@ -319,7 +320,9 @@ export class HomeComponent {
 				case fileTypes.TRUST_DOC: ctrl['file_trust'].setValue(myNewFile);
 					break;
 				case fileTypes.PROOF_OF_ADDRESS: ctrl['file_poa'].setValue(myNewFile);
-					break;																				
+					break;									
+				case fileTypes.BANK_CONF_LETTER: ctrl['file_bcl'].setValue(myNewFile);
+					break;																	
 			}
 
 		}
@@ -342,6 +345,7 @@ export class HomeComponent {
 			this.isLoading = false;
 			return;			
 		}
+
 
 		/** =================================================
 		 *  API REFS --- FOREIGNER / PASSPORT
@@ -719,7 +723,7 @@ export class HomeComponent {
 			trust_reg_no: body.trust_reg_no
 		}		
 
-		const $ = this.regService.getAll(qParams, this.regType).subscribe((responseData) => {
+		const $ = this.regService.getAll(qParams, this.regType, this.isSACitizen).subscribe((responseData) => {
 
 			// ***NB: BLOCK registration if data already exists in DB!
 			if (responseData.length > 0) {
@@ -887,8 +891,8 @@ export class HomeComponent {
 
 		if (bus_reg_no.length <= 0 && reg === REG_TYPE.BUS) formSubList.push('Please fill in your Business Registration number');
 		if (trust_reg_no.length <= 0 && reg === REG_TYPE.TRUST) formSubList.push('Please fill in your Trust Registration number');
-		if (swift_code.length <= 0 && this.isForeigner) formSubList.push('Please fill in your Swift Code');
-		if (iban.length <= 0 && this.isForeigner) formSubList.push('Please fill in your IBAN number');
+		if (swift_code.length <= 0 && this.isForeigner) formSubList.push('Please fill in a valid Swift Code');
+		if (iban.length <= 0 && this.isForeigner) formSubList.push('Please fill in a valid IBAN number');
 
 		return formSubList.length <= 0;			
 	}	

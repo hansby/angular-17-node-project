@@ -522,6 +522,13 @@
 	
 							<!-- FILE UPLOAD FIELDS -->
 							<ng-container *ngIf="regForm.controls['firstName'].value.length > 0 && regForm.controls['lastName'].value.length > 0">
+
+								<ng-container>
+									<app-file-upload 
+										[fileName]="'Upload Bank Confirmation Letter'" 
+										[fileType]="fileTypes.BANK_CONF_LETTER" 
+										(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER)"></app-file-upload>								
+								</ng-container>								
 	
 								<ng-container *ngIf="regType === 'individual' && isSACitizen">
 									<app-file-upload 

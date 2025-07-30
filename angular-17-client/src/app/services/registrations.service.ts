@@ -21,13 +21,13 @@ export interface IRequiredQParams {
 export class RegistrationsService {
 	constructor(private http: HttpClient) {}
 
-	getAll(params: IRequiredQParams, regType: string): Observable<Registration[]> {
+	getAll(params: IRequiredQParams, regType: string, saCitizen: boolean): Observable<Registration[]> {
     const p: [string, string|number|boolean|undefined][] = [
       //['email', params.email],
       ['acc_no', params.acc_no],
     ];
-		if (regType === REG_TYPE.IND && params.user_id) p.push(['user_id', params.user_id]);
-		if (regType === REG_TYPE.IND && params.passport) p.push(['passport', params.passport]);
+		if (regType === REG_TYPE.IND && params.user_id && saCitizen) p.push(['user_id', params.user_id]);
+		if (regType === REG_TYPE.IND && params.passport && !saCitizen) p.push(['passport', params.passport]);
 		if (regType === REG_TYPE.BUS && params.bus_reg_no) p.push(['bus_reg_no', params.bus_reg_no]);
 		if (regType === REG_TYPE.TRUST && params.trust_reg_no) p.push(['trust_reg_no', params.trust_reg_no]);
 		const query = p.map((p) => `${p[0]}=${p[1]}`).join('&');

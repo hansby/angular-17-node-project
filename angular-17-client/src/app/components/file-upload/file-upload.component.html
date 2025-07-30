@@ -1,24 +1,8 @@
 <div class="mb-3">
 	<label for="formFile" class="form-label">{{fileName}} <span class="error-text">(required)</span></label>
 	<input class="form-control" type="file" id="u_bus" (change)="selectFile($event)">
-  <!--<div class="col-4">
-    <button class="btn btn-success btn-sm" [disabled]="!currentFile" (click)="upload()">
-      Upload
-    </button>
-  </div>-->
 </div>
 
 @if (message) {
 	<div class="alert alert-success" role="alert">{{ message }}</div>
 }
-<!--
-<div class="card mt-3">
-  <div class="card-header">List of Files</div>
-  <ul class="list-group list-group-flush">
-    @for (file of fileInfos | async; track file.name) {
-    <li class="list-group-item">
-      <a href="{{ file.url }}">{{ file.name }}</a>
-    </li>
-    }
-  </ul>
-</div>-->
