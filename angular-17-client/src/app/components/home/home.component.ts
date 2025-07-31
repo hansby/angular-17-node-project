@@ -346,6 +346,19 @@ export class HomeComponent {
 			return;			
 		}
 
+		/** ====================================================
+		 *  API REFS --- BANK CONFIRMATION LETTER VALIDATION
+		 * 	====================================================
+		 * */		
+		const errMsg_bcl = `Please upload a copy of your Bank Confirmation Letter`;
+		const getCtrl_BCL = this.regForm.controls['file_bcl'].value;
+		let result_bcl = getCtrl_BCL.result;
+		if (!result_bcl || typeof result_bcl === "undefined") {
+			this.formSubmissionErrors_PAGE3.push(errMsg_bcl);
+			this.isLoading = false;
+			return;
+		}		
+
 
 		/** =================================================
 		 *  API REFS --- FOREIGNER / PASSPORT
