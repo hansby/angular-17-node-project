@@ -9,12 +9,12 @@
 
 	<div class="py-4">
 
-    <form class="form-inline search" [formGroup]="form">
+    <form class="form-inline search">
       <input class="form-control mr-sm-2 search-inpt" 
 				type="search" 
 				[placeholder]="'Search by keyword'"  
 				aria-label="Search"
-				formControlName="search">
+				[(ngModel)]="searchText" [ngModelOptions]="{standalone: true}">
       <button class="btn btn-outline-success my-2 my-sm-0" 
 				type="submit" 
 				(click)="doSearch()">Search</button>
@@ -29,11 +29,11 @@
 					<th scope="col">Status</th>
 				</tr>
 			</thead>
-			<tbody *ngIf="_APILogs.length > 0">
-				<tr *ngFor="let log of _APILogs; let idx = index">
+			<tbody *ngIf="filteredItems.length > 0">
+				<tr *ngFor="let log of filteredItems; let idx = index">
 					<td scope="row">{{ log.data }}</td>
 					<td scope="row">
-						<button class="btn btn-info" data-toggle="modal" data-target="#modal_tandcs" (click)="currentResolveID = idx">Resolve</button>
+						<button class="btn btn-info" data-toggle="modal" data-target="#modal_tandcs" (click)="currentResolveID = log.id">Resolve</button>
 					</td>
 				</tr>
 			</tbody>
