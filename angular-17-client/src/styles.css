@@ -55,3 +55,4 @@ hr {
 .justify-center { justify-content: center;}
 .justify-space-around { justify-content: space-around;}
 
+.search-inpt { min-width: 400px; }

@@ -1,3 +1,74 @@
-<h1>Application Error Logs</h1>
 
-<p>Welcome to error logs...</p>
+<div class="container">
+
+	<div class="py-4">
+		<br />
+		<h2>Error Logs / Failed Applications</h2>
+		<!--<p class="lead">These are all the successfull applications registered on the system</p>-->
+	</div>
+
+	<div class="py-4">
+
+    <form class="form-inline search" [formGroup]="form">
+      <input class="form-control mr-sm-2 search-inpt" 
+				type="search" 
+				[placeholder]="'Search by keyword'"  
+				aria-label="Search"
+				formControlName="search">
+      <button class="btn btn-outline-success my-2 my-sm-0" 
+				type="submit" 
+				(click)="doSearch()">Search</button>
+    </form>
+
+		<br /><br />
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th scope="col">Log</th>
+					<th scope="col">Status</th>
+				</tr>
+			</thead>
+			<tbody *ngIf="_APILogs.length > 0">
+				<tr *ngFor="let log of _APILogs; let idx = index">
+					<td scope="row">{{ log.data }}</td>
+					<td scope="row">
+						<button class="btn btn-info" data-toggle="modal" data-target="#modal_tandcs" (click)="currentResolveID = idx">Resolve</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p class="text-center" *ngIf="noResultsFound">
+			<br /><br /><br />
+			No search results found. Please try a different keyword
+		</p>
+
+	</div>
+
+</div>
+
+
+
+<!-- RESOLVE MODAL: CONFIRM ACCEPT -->
+<div class="modal fade" id="modal_tandcs" tabindex="-1" role="dialog" aria-labelledby="modal_tandcsLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal_tandcsLabel">Confirm Resolution</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+				<p>
+					Are you sure you want to resolve this issue?
+				</p>
+			</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="confirmResolve()">Yes, Confirm</button>
+				<!-- [disabled]="!radioTandC.checked" -->
+      </div>
+    </div>
+  </div>
+</div>

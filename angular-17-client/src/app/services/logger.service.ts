@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface ISearchResultsLogs {
+	user_id: string,
+}
+
 @Injectable({
   providedIn: 'root',
 })
