@@ -25,12 +25,14 @@
 		<table class="table">
 			<thead>
 				<tr>
+					<th scope="col">Number</th>
 					<th scope="col">Log</th>
 					<th scope="col">Status</th>
 				</tr>
 			</thead>
 			<tbody *ngIf="filteredItems.length > 0">
 				<tr *ngFor="let log of filteredItems; let idx = index">
+					<td scope="row">{{ idx + 1 }}</td>
 					<td scope="row">{{ log.data }}</td>
 					<td scope="row">
 						<button class="btn btn-info" data-toggle="modal" data-target="#modal_tandcs" (click)="currentResolveID = log.id">Resolve</button>

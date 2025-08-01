@@ -303,8 +303,8 @@ export class HomeComponent {
 			if (finalType.includes('sheet')) finalType = 'xls';
 			if (finalType.includes('presentation')) finalType = 'pptx';
 			if (finalType.includes('document')) finalType = 'doc';
-			
-			const DBName = `${surname} ${name} - ${fileType} - ${this.isSACitizen ? id : passport}.${finalType}`;
+
+			const DBName = `${surname} ${name} - ${fileType === fileTypes.TRUST_DOC ? 'LOA' : fileType} - ${this.isSACitizen ? id : passport}.${finalType}`;
 			this.dbName = DBName;
 			this.surname = surname;
 
@@ -349,7 +349,7 @@ export class HomeComponent {
 		/** ====================================================
 		 *  API REFS --- BANK CONFIRMATION LETTER VALIDATION
 		 * 	====================================================
-		 * */		
+		 * 		
 		const errMsg_bcl = `Please upload a copy of your Bank Confirmation Letter`;
 		const getCtrl_BCL = this.regForm.controls['file_bcl'].value;
 		let result_bcl = getCtrl_BCL.result;
@@ -357,7 +357,7 @@ export class HomeComponent {
 			this.formSubmissionErrors_PAGE3.push(errMsg_bcl);
 			this.isLoading = false;
 			return;
-		}		
+		}	*/	
 
 
 		/** =================================================
