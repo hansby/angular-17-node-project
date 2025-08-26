@@ -16,7 +16,7 @@ export class DashboardComponent implements OnInit {
 
 	ngOnInit() {
 		this._stats$ = this.registrationsService.getStats();
-		this._logs$ = this.logs.getLogs();
+		this._logs$ = this.logs.getLogStats();
 	}
 	goToApplications() {
 		window.location.href = '/applications';

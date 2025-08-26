@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { SearchService, searchType } from '../../services/search.service';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { of } from 'rxjs';
+import { LoggerService } from '../../services/logger.service';
+import { Observable, tap } from 'rxjs';
 @Component({
 	selector: 'error-logs',
 	templateUrl: './error-logs.component.html',
@@ -12,6 +13,8 @@ export class ErrorLogsComponent implements OnInit {
 	form = new UntypedFormGroup({
 		search: new UntypedFormControl(''),
 	});	
+
+	_logData$: Observable<any> | null = null;
 
 	currentResolveID: number | null = null;
 	searchText: string = '';
@@ -38,9 +41,14 @@ export class ErrorLogsComponent implements OnInit {
 	];
 	noResultsFound: boolean = false;
 
-	constructor(private search: SearchService) {}
+	constructor(private search: SearchService, private logs: LoggerService) {}
 
 	ngOnInit(): void {
+		this._logData$ = this.logs.getAllRawLogs().pipe(
+			tap((data) => {
+				console.log('log data: ', data);
+			})
+		);
 	}
 
 	get filteredItems() {

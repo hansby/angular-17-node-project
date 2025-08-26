@@ -3,7 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 
 export interface ISearchResultsLogs {
-	user_id: string,
+	id: number,
+	log: string,
+	is_resolved: boolean,
 }
 
 export interface ILogStats {
@@ -11,7 +13,7 @@ export interface ILogStats {
 	unresolvedCount: number;
 }
 
-const baseUrl = 'http://localhost:8080/api/logger';
+const baseUrl = 'http://localhost:8080/api/error-logs';
 
 @Injectable({
   providedIn: 'root',
@@ -24,9 +26,13 @@ export class LoggerService {
 		return this.http.post(`${baseUrl}`, data);
 	}
 
-	getLogs(): Observable<ILogStats> {
+	getAllRawLogs(): Observable<ISearchResultsLogs[]> {
+		return this.http.get<ISearchResultsLogs[]>(`${baseUrl}`);
+	}
+
+	getLogStats(): Observable<ILogStats> {
 		return this.http.get<ISearchResultsLogs[]>(`${baseUrl}`).pipe(
-			map((registrationData: ISearchResultsLogs[]) => ({
+			map((errorLogData: ISearchResultsLogs[]) => ({
 				totalResolved: 111,
 				unresolvedCount: 222,
 			}))
