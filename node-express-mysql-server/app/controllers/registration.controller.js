@@ -97,35 +97,26 @@ exports.create = (req, res) => {
 
 // Retrieve all Registrations from the database.
 exports.findAll = (req, res) => {
-  const user_id = req.query.user_id;
-	const lastName = req.query.user_id;
-	const email = req.query.email;
-	const passport = req.query.passport;
-	const bankAccNumber = req.query.acc_no;
-	const trustRegNumber = req.query.trust_reg_no;
-	const businessRegNumber = req.query.bus_reg_no;
-	const condition = {
-		where: {
-			[Op.or]: [
-				{ user_id: { [Op.like]: `%${user_id}%` } },
-				{ email: { [Op.like]: `%${email}%` } },
-				{ passport: { [Op.like]: `%${passport}%` } },
-				{ acc_no: { [Op.like]: `%${bankAccNumber}%` } },
-				{ trust_reg_no: { [Op.like]: `%${trustRegNumber}%` } },
-				{ bus_reg_no: { [Op.like]: `%${businessRegNumber}%` } },
-			]
-		}
-	}
+  const { user_id, lastName, email, passport, acc_no, trust_reg_no, bus_reg_no } = req.query;
+
+  const orConditions = [];
+  if (user_id) orConditions.push({ user_id: { [Op.like]: `%${user_id}%` } });
+  if (email) orConditions.push({ email: { [Op.like]: `%${email}%` } });
+  if (passport) orConditions.push({ passport: { [Op.like]: `%${passport}%` } });
+  if (acc_no) orConditions.push({ acc_no: { [Op.like]: `%${acc_no}%` } });
+  if (trust_reg_no) orConditions.push({ trust_reg_no: { [Op.like]: `%${trust_reg_no}%` } });
+  if (bus_reg_no) orConditions.push({ bus_reg_no: { [Op.like]: `%${bus_reg_no}%` } });
+  if (lastName) orConditions.push({ lastName: { [Op.like]: `%${lastName}%` } });
+
+  // If no params -> fetch all
+  const condition = orConditions.length > 0 ? { where: { [Op.or]: orConditions } } : {};
 
   Registration.findAll(condition)
-    .then(data => {
-      res.send(data);
-    })
+    .then(data => res.send(data))
     .catch(err => {
-			logger.error(`Some error occurred while retrieving registrations. ${user_id} ${passport} ${email} ${lastName}`);
+      logger.error(`Error retrieving registrations: ${err.message}`);
       res.status(500).send({
-        message:
-          err.message || "Some error occurred while retrieving registrations."
+        message: err.message || "Some error occurred while retrieving registrations."
       });
     });
 };

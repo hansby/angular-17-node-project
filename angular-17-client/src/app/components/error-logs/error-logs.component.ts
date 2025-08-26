@@ -63,4 +63,8 @@ export class ErrorLogsComponent implements OnInit {
 		if (!keyword || keyword.length <= 0) return;
 	}
 
+	goToDashboard() {
+		window.location.href = '/dashboard';
+	}
+
 }

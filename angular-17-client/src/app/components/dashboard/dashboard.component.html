@@ -1,0 +1,61 @@
+
+<div class="container">
+
+	<main class="form-signin m-auto">
+
+		<br /><br />
+
+		<h1 class="h3 mb-3 fw-normal">
+			Users
+			<button class="btn btn-primary float-end" type="button" (click)="goToApplications()">
+				View Applications
+			</button>
+		</h1>
+
+		<div class="stats" *ngIf="(_stats$ | async) as stats">
+
+			<div class="stat">
+				<h2>{{ stats.totalApplications }}</h2>
+				<p class="stat-desc">Total registered users</p>
+			</div>
+
+			<div class="stat">
+				<h2>{{ stats.registeredToday }}</h2>
+				<p class="stat-desc">Users registered today</p>
+			</div>	
+			
+			<div class="stat">
+				<h2>{{ stats.registeredYesterday }}</h2>
+				<p class="stat-desc">Users registered yesterday</p>
+			</div>
+
+		</div>
+
+		<br /><br />
+
+		<h1 class="h3 mb-3 fw-normal">
+			Errors
+			<button class="btn btn-primary float-end" type="button" (click)="goToErrorPage()">
+				View Errors
+			</button>		
+		</h1>
+
+		<div class="stats" *ngIf="(_logs$ | async) as logs">
+
+			<div class="stat">
+				<h2>{{ logs.totalResolved }}</h2>
+				<p class="stat-desc">Total resolved errors by agents</p>
+			</div>
+
+			<div class="stat">
+				<h2>{{ logs.unresolvedCount }}</h2>
+				<p class="stat-desc">User applications still needing to be resolved</p>
+			</div>
+
+		</div>
+
+		<br /><br />
+
+	</main>
+
+</div>

@@ -43,6 +43,11 @@ export class ApplicationsComponent implements OnInit {
 		this.searchBy = type;
 	}
 
+	goToDashboard() {
+		// Navigate to the dashboard page
+		window.location.href = '/dashboard';
+	}	
+
 	doSearch() {
 		this.noResultsFound = false;
 		this._UISearchResults = [];

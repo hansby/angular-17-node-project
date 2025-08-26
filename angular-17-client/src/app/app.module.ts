@@ -8,13 +8,15 @@ import { SharedModule } from './components/shared/shared.module';
 import { HomeComponent } from './components/home/home.component';
 import { ErrorLogsComponent } from './components/error-logs/error-logs.component';
 import { ApplicationsComponent } from './components/applications/applications.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
     AppComponent,
 		HomeComponent,
 		ErrorLogsComponent,
-		ApplicationsComponent
+		ApplicationsComponent,
+		DashboardComponent
   ],
   imports: [
     BrowserModule,

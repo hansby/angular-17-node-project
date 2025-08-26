@@ -1,10 +1,29 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { Registration } from '../models/registration.model';
 import { REG_TYPE } from '../components/home/home.component';
+import { map } from 'rxjs/operators';
 
 const baseUrl = 'http://localhost:8080/api/registrations';
+
+export interface IStats {
+	totalApplications: number;
+	registeredToday: number;
+	registeredYesterday: number;
+}
+
+export interface IRegistration {
+	id?: any;
+	user_id?: string;
+	email?: string;
+	passport?: string;
+	bus_reg_no?: string;
+	trust_reg_no?: string;
+	acc_no: string;
+	createdAt?: Date;
+	updatedAt?: Date;
+}
 
 export interface IRequiredQParams {
 	user_id?: string,
@@ -56,5 +75,15 @@ export class RegistrationsService {
 
 	findByTitle(title: any): Observable<Registration[]> {
 		return this.http.get<Registration[]>(`${baseUrl}?title=${title}`);
+	}
+
+	getStats(): Observable<IStats> {
+		return this.http.get<IRegistration[]>(`${baseUrl}`).pipe(
+			map((registrationData: IRegistration[]) => ({
+				registeredYesterday: 1230,
+				registeredToday: 2349,
+				totalApplications: registrationData.length ?? 0,
+			}))
+		);
 	}
 }
