@@ -83,7 +83,7 @@ exports.update = (req, res) => {
     .then(num => {
       if (num == 1) {
         res.send({
-          message: "Error log was updated successfully."
+          message: `Error log for id ${id} was updated to "resolved" successfully.`
         });
       } else {
         res.send({

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { filter, map, Observable } from 'rxjs';
 
 export interface ISearchResultsLogs {
 	id: number,
@@ -26,8 +26,19 @@ export class LoggerService {
 		return this.http.post(`${baseUrl}`, data);
 	}
 
-	getAllRawLogs(): Observable<ISearchResultsLogs[]> {
-		return this.http.get<ISearchResultsLogs[]>(`${baseUrl}`);
+	getAllRawLogs(filterByResolved: boolean = false): Observable<ISearchResultsLogs[]> {
+		return this.http.get<ISearchResultsLogs[]>(`${baseUrl}`).pipe(
+			filter((logs) => logs && logs.length > 0),
+			map((logs) => filterByResolved ? logs.filter((log) => log.is_resolved) : logs.filter((log) => !log.is_resolved))
+		);
+	}
+
+	searchLogs(keyword: string): Observable<ISearchResultsLogs[]> {
+		return this.http.get<ISearchResultsLogs[]>(`${baseUrl}?log=${keyword}`);
+	}
+
+	resolveLog(id: number): Observable<any> {
+		return this.http.put(`${baseUrl}/${id}`, { is_resolved: 1 });
 	}
 
 	getLogStats(): Observable<ILogStats> {
