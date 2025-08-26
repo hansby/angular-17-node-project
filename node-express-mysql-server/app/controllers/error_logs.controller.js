@@ -56,12 +56,15 @@ exports.findAll = (req, res) => {
   const { id, log, is_resolved } = req.query;
 
   const orConditions = [];
-	if (id) orConditions.push({ id: { [Op.eq]: id } });
+  if (id) orConditions.push({ id: { [Op.eq]: id } });
   if (log) orConditions.push({ log: { [Op.like]: `%${log}%` } });
   if (is_resolved) orConditions.push({ is_resolved: { [Op.eq]: is_resolved } });
 
-  // If no params -> fetch all
-  const condition = orConditions.length > 0 ? { where: { [Op.or]: orConditions } } : {};
+  const condition = {
+    where: orConditions.length > 0 ? { [Op.or]: orConditions } : undefined,
+    //order: [['id', 'DESC']], // Always return in reverse order
+    limit: 20                // Always limit to 20
+  };
 
   ErrorLog.findAll(condition)
     .then(data => res.send(data))
