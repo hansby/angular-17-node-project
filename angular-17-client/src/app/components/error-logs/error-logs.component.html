@@ -35,7 +35,7 @@
 			<tbody *ngIf="logData.length > 0">
 				<tr *ngFor="let data of logData; let idx = index">
 					<td scope="row">{{ idx + 1 }}</td>
-					<td scope="row">{{ data.log }}</td>
+					<td scope="row" [innerHTML]="formatDataLog(data.log)"></td>
 					<td scope="row">
 						<ng-container *ngIf="data.is_resolved == 1; else notResolved">
 							<span class="badge bg-success">Resolved</span>

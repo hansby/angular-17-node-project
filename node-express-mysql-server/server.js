@@ -3,6 +3,7 @@ const rateLimit = require("express-rate-limit");
 const slowDown = require("express-slow-down");
 const cors = require("cors");
 const { callDocumentAI } = require("./app/services/docAIservice");
+const path = require("path");
 
 // INIT WINSTON LOGGER
 const winston = require("winston");
@@ -51,6 +52,9 @@ const speedLimiter = slowDown({
   delayAfter: 3,
   delayMs: () => 5000,
 });
+
+// Serve static files from resources/static/assets/uploads
+app.use('/assets/uploads', express.static(path.join(__dirname, 'resources/static/assets/uploads')));
 
 //app.use(speedLimiter);
 //app.use(limiter);

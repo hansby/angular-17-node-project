@@ -12,7 +12,7 @@ export class ErrorLogsComponent implements OnInit {
 	searchBy: searchType | null = null;
 	form = new UntypedFormGroup({
 		search: new UntypedFormControl(''),
-	});	
+	});
 
 	_logData$: Observable<any> | null = null;
 
@@ -82,6 +82,15 @@ export class ErrorLogsComponent implements OnInit {
 
 	goToDashboard() {
 		window.location.href = '/dashboard';
+	}
+
+	formatDataLog(log: string): string {
+		const serverPath = 'http://localhost:8080/assets/uploads/';
+		if (log.includes('file=')) {
+			const filePath = log.substring(log.indexOf('file=') + 5, log.length).replace('.end','');
+			return `${log}, link: <a href="${serverPath}${filePath}" target="_blank">${filePath}</a>`;
+		}
+		return log;
 	}
 
 }
