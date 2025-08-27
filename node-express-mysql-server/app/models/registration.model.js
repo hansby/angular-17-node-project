@@ -22,6 +22,7 @@ module.exports = (sequelize, Sequelize) => {
 		file_trust: { type: Sequelize.STRING },
 		passport: { type: Sequelize.STRING },
 		citizenStatus: { type: Sequelize.STRING },
+		bank_other: { type: Sequelize.STRING },
 
   });
 

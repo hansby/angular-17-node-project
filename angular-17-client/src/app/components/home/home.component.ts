@@ -1,10 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { BehaviorSubject, catchError, combineLatest, delay, forkJoin, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, delay, forkJoin, Observable, tap } from 'rxjs';
 import {
-	FormControl, FormGroup, ReactiveFormsModule,
-	FormBuilder,
-	Validators,
+	FormControl, FormGroup, FormBuilder, Validators,
 } from '@angular/forms';
 import { IRequiredQParams, RegistrationsService } from '../../services/registrations.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -31,6 +29,7 @@ interface IRegistration {
 	acc_no: string;
 	swift_code: string;
 	iban: string;
+	bank_other: string;
 	bank: string;
 	file_id: any;
 	file_poa: any;
@@ -199,6 +198,7 @@ export class HomeComponent {
 			acc_no: new FormControl(''),
 			swift_code: new FormControl(''),
 			iban: new FormControl(''),
+			bank_other: new FormControl(''),
 			bank: new FormControl('', [Validators.required]),
 			file_id: new FormControl(''),
 			file_passport: new FormControl(''),
@@ -241,6 +241,9 @@ export class HomeComponent {
 				this.formSubmissionErrors.length = 0; // reset UI Error list
 				this.isSACitizen = status === 'c';
 				this.isForeigner = status === 'f';
+				if (status === 'f') { // update Bank list on page 2
+					this.banks = this.banks_namibia;
+				}
 				//this.isBusiness = reg_type === REG_TYPE.BUS;
 				//this.isTrust = reg_type === REG_TYPE.TRUST;
 		})		
@@ -275,6 +278,31 @@ export class HomeComponent {
 		{name: 'Standard Bank', id: 'standard_bank'},
 		{name: 'Tyme Bank', id: 'tyme_bank'},
 		{name: 'Ubank', id: 'ubank'},
+	];
+
+	banks_namibia: Array<IIdentity> = [
+		{name: 'ABSA BANK NAMIBIA LIMITED', id: 'nam_absa'},
+		{name: 'BANK WINDHOEK LIMITED', id: 'nam_windhoek' },
+		{name: 'BANK OF NAMIBIA', id: 'nam_bank_of_namibia'},
+		{name: 'CITY SAVINGS AND INVESTMENT BANK HOLDINGS LTD.', id: 'nam_city_savings'},
+		{name: 'FIRST NATIONAL BANK OF NAMIBIA LIMITED', id: 'nam_fnb'},
+		{name: 'SIMONIS STORM SECURITIES (PTY) LTD', id: 'nam_simonis'},
+		{name: 'INVESTMENT HOUSE NAMIBIA (PTY) LTD', id: 'nam_investment_house'},
+		{name: 'LETSHEGO BANK NAMIBIA LIMITED', id: 'nam_letshego'},
+		{name: 'NAMCLEAR (PTY) LIMITED', id: 'nam_namclear'},
+		{name: 'CIRRUS SECURITIES (PTY) LTD', id: 'nam_cirrus'},
+		{name: 'NEDBANK NAMIBIA LIMITED', id: 'nam_nedbank'},
+		{name: 'STANDARD BANK NAMIBIA LIMITED', id: 'nam_standard_bank'},
+		{name: 'TRUSTCO BANK NAMIBIA', id: 'nam_trustco'},
+		{name: 'BANCO PRIVADO ATLANTICO', id: 'nam_banco_privado_atlantico'},
+		{name: 'FIRST NATIONAL BANK OF NAMIBIA LIMITED', id: 'nam_fnb'},
+		{name: 'STANDARD BANK NAMIBIA LIMITED', id: 'nam_standard_bank'},
+		{name: 'IJG SECURITIES (PTY) LTD', id: 'nam_ijg_securities'},
+		{name: 'ORNATE INVESTMENT BANK TRUST', id: 'nam_ornate_investment_bank'},
+		{name: 'NAMIBIA POST LTD', id: 'nam_namibia_post'},
+		{name: 'BANK BIC NAMIBIA LIMITED', id: 'nam_bank_bic'},
+		{name: 'RMB NAMIBIA', id: 'nam_rmb'},
+		{name: 'Other', id: 'bank_other'},
 	];
 
 	updateRegType(value: string) {
@@ -686,6 +714,8 @@ export class HomeComponent {
 		const passport = ctrls['passport'].value ?? '';
 		const swift_code = ctrls['swift_code'].value ?? '';
 		const iban = ctrls['iban'].value ?? '';
+		const bank = ctrls['bank'].value ?? '';
+		const bank_other = ctrls['bank_other'].value ?? '';
 
 		// upload fields
 		const file_id = ctrls['file_id'].value ?? '';
@@ -705,7 +735,8 @@ export class HomeComponent {
 			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
 			if (file_passport.length <= 0) formSubList.push('Please Upload a copy of your Passport');
 			if (swift_code.length <= 0) formSubList.push('Please fill in your Swift Code number');
-			if (iban.length <= 0) formSubList.push('Please fill in your IBAN number');			
+			if (iban.length <= 0) formSubList.push('Please fill in your IBAN number');
+			if (bank === 'bank_other' && bank_other.length <= 0) formSubList.push('Please select your Bank from the prescribed list or enter it manually in the "Other" field');
 		}
 		
 		if (this.regType === REG_TYPE.BUS) {
@@ -901,12 +932,14 @@ export class HomeComponent {
 		const trust_reg_no = ctrls['trust_reg_no'].value ?? '';
 		const swift_code = ctrls['swift_code'].value ?? '';
 		const iban = ctrls['iban'].value ?? '';		
+		const bank = ctrls['bank'].value ?? '';
+		const bank_other = ctrls['bank_other'].value ?? '';		
 
 		if (bus_reg_no.length <= 0 && reg === REG_TYPE.BUS) formSubList.push('Please fill in your Business Registration number');
 		if (trust_reg_no.length <= 0 && reg === REG_TYPE.TRUST) formSubList.push('Please fill in your Trust Registration number');
 		if (swift_code.length <= 0 && this.isForeigner) formSubList.push('Please fill in a valid Swift Code');
 		if (iban.length <= 0 && this.isForeigner) formSubList.push('Please fill in a valid IBAN number');
-
+		if (bank === 'bank_other' && bank_other.length <= 0) formSubList.push('Please select your Bank from the prescribed list or enter it manually in the "Bank (Other)" field');
 		return formSubList.length <= 0;			
 	}	
 

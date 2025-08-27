@@ -512,8 +512,13 @@
 								<div class="col-sm-6" *ngIf="isForeigner">
 									<label for="iban" class="form-label">IBAN</label>
 									<input type="number" class="form-control" id="acc_number" placeholder="eg 0000" formControlName="iban">
-								</div>						
+								</div>
 								
+								<div class="col-sm-6" *ngIf="isForeigner && regForm.controls['bank'].value === 'bank_other'">
+									<label for="bank_other" class="form-label">Bank (Other)</label>
+									<input type="text" class="form-control" id="bank_other" placeholder="eg Bank of Spain" formControlName="bank_other">
+								</div>
+
 							<hr class="my-4">
 	
 		

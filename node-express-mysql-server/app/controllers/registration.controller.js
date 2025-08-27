@@ -58,6 +58,7 @@ exports.create = (req, res) => {
 	const passport = req.body.passport;
 	const bank = req.body.bank;
 	const citizenStatus = req.body.citizenStatus;
+	const bank_other = req.body.bank_other;
 
   /*
   if (!user_id && !passport) {
@@ -78,7 +79,7 @@ exports.create = (req, res) => {
   const registration = {
 		user_id, reg_type, firstName, lastName, bus_reg_no, trust_reg_no, cell, email, tax_no, 
 		address_1, address_2, suburb, town, postal_code, acc_holder, acc_type, acc_no, swift_code, 
-		iban, bank, file_id, file_poa, file_bus_reg, file_trust, file_passport, passport, citizenStatus
+		iban, bank, file_id, file_poa, file_bus_reg, file_trust, file_passport, passport, citizenStatus, bank_other
   };
 
   // Save Registration in the database

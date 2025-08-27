@@ -13,6 +13,7 @@ export class Registration {
 	acc_no?: string;
 	swift_code?: string;
 	iban?: string;
+	bank_other?: string;
 	bank?: string;
 	file_id?: string;
 	file_poa?: string;

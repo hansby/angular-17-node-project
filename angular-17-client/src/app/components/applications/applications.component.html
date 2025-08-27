@@ -83,7 +83,7 @@
 					<td scope="row">{{ben.cell}}</td>
 					<td scope="row">{{ben.citizenStatus === 'citizen' ? 'SA' : 'Foreigner'}}</td>
 					<td scope="row">{{ben.reg_type}}</td>
-					<td scope="row">{{ben.bank}}</td>
+					<td scope="row">{{ben.bank === 'bank_other' ? ben.bank_other : ben.bank}}</td>
 					<!--<td scope="row">{{beneficiary.acc_no}}</td>-->
 					<td scope="row">{{ben.createdAt | date:'yyyy-MM-dd'}}</td>
 				</tr>

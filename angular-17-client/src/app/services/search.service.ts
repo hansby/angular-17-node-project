@@ -19,6 +19,7 @@ export interface ISearchResults {
 	passport: string,
 	acc_no: string,
 	bank: string,
+	bank_other: string,
 	createdAt: string
 }
 
