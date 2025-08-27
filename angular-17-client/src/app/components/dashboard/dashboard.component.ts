@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { IStats, RegistrationsService } from '../../services/registrations.service';
-import { LoggerService } from '../../services/logger.service';
+import { ILogStats, LoggerService } from '../../services/logger.service';
 
 @Component({
 	selector: 'app-dashboard',
@@ -10,7 +10,7 @@ import { LoggerService } from '../../services/logger.service';
 })
 export class DashboardComponent implements OnInit {
 	_stats$: Observable<IStats> | null = null;
-	_logs$: Observable<any> | null = null;
+	_logs$: Observable<ILogStats> | null = null;
 
 	constructor(private registrationsService: RegistrationsService, private logs: LoggerService) {}
 

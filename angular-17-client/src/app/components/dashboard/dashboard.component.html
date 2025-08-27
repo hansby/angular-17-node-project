@@ -43,7 +43,7 @@
 		<div class="stats" *ngIf="(_logs$ | async) as logs">
 
 			<div class="stat">
-				<h2>{{ logs.totalResolved }}</h2>
+				<h2>{{ logs.totalResolved }} / {{ logs.total }}</h2>
 				<p class="stat-desc">Total resolved errors by agents</p>
 			</div>
 

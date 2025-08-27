@@ -80,10 +80,20 @@ export class RegistrationsService {
 	getStats(): Observable<IStats> {
 		return this.http.get<IRegistration[]>(`${baseUrl}`).pipe(
 			map((registrationData: IRegistration[]) => ({
-				registeredYesterday: 1230,
-				registeredToday: 2349,
+				registeredYesterday: getRegisteredUsersByDate(registrationData, new Date(Date.now() - 86400000)) ?? 0,
+				registeredToday: getRegisteredUsersByDate(registrationData, new Date()) ?? 0,
 				totalApplications: registrationData.length ?? 0,
 			}))
 		);
 	}
 }
+function getRegisteredUsersByDate(registrationData: IRegistration[], date: Date): number {
+	return registrationData.filter(reg => {
+		if (!reg.createdAt) return false;
+		const regDate = new Date(reg.createdAt);
+		return regDate.getDate() === date.getDate() &&
+			regDate.getMonth() === date.getMonth() &&
+			regDate.getFullYear() === date.getFullYear();
+	}).length;
+}
+
