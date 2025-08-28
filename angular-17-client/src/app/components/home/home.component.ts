@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { BehaviorSubject, catchError, delay, forkJoin, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, delay, forkJoin, Observable } from 'rxjs';
 import {
 	FormControl, FormGroup, FormBuilder, Validators,
 } from '@angular/forms';
@@ -36,15 +36,13 @@ interface IRegistration {
 	file_bus_reg: any;
 	file_trust: any;
 	file_passport: any;
+	file_bcl: any;
+	file_bcl_bustrust: any;
+	file_poa_bustrust: any;
 	passport: string;	
 	user_id: string;
 	updatedAt?: string,
 	createdAt?: string,
-}
-
-interface IFormattedFile {
-	file: File,
-	result: FileReader
 }
 
 export enum fileTypes {
@@ -54,17 +52,14 @@ export enum fileTypes {
 	BUS_REG_DOC = 'CPIC',
 	TRUST_DOC = 'TRUST',
 	BANK_CONF_LETTER = 'BCL',
+	BANK_CONF_LETTER_BUSTRUST = 'BCL_BUSTRUST',
+	PROOF_OF_ADDRESS_BUSTRUST = 'POA_BUSTRUST'
 }
 
 export enum REG_TYPE {
 	IND = 'individual',
 	BUS = 'business',
 	TRUST = 'trust'
-}
-
-enum CITIZEN_STATUS {
-	sa = 'citizen',
-	foreigner = 'foreigner'
 }
 
 interface IIdentity {
@@ -154,8 +149,6 @@ export class HomeComponent {
 	readerResult: any;
 	dbName: string = '';
 	surname: string = '';
-	//page1IsValid: boolean = true;
-	//page2IsValid: boolean = true;
 	radioPOPIModel: any;
 	radioTandCModel: any;
 	emailRegex = /^\S+@\S+\.\S+$/;
@@ -202,10 +195,16 @@ export class HomeComponent {
 			bank: new FormControl('', [Validators.required]),
 			file_id: new FormControl(''),
 			file_passport: new FormControl(''),
-			file_poa: new FormControl(''),
+			
 			file_bus_reg: new FormControl(''),
 			file_trust: new FormControl(''),
+			
 			file_bcl: new FormControl(''),
+			file_bcl_bustrust: new FormControl(''),
+
+			file_poa_bustrust: new FormControl(''),
+			file_poa: new FormControl(''),
+
 			passport: new FormControl(''),
 			citizenStatus: new FormControl('', [Validators.required])
 		}, {
@@ -240,7 +239,10 @@ export class HomeComponent {
 				this.isForeigner = status === 'f';
 				if (status === 'f') { // update Bank list on page 2
 					this.banks = this.banks_namibia;
+				} else {
+					this.banks = this.allSaBanks;
 				}
+				this.regForm.controls['bank'].reset();
 				//this.isBusiness = reg_type === REG_TYPE.BUS;
 				//this.isTrust = reg_type === REG_TYPE.TRUST;
 		})		
@@ -259,7 +261,23 @@ export class HomeComponent {
 		{name: 'Individual', id: REG_TYPE.IND},
 		{name: 'Trust', id: REG_TYPE.TRUST},
 		{name: 'Business', id: REG_TYPE.BUS},
-	]
+	];
+
+	allSaBanks: Array<IIdentity> = [
+		{name: 'Absa Bank', id: 'absa'},
+		{name: 'African Bank', id: 'african_bank' },
+		{name: 'Bidvest Bank Ltd', id: 'bidvest'},
+		{name: 'Capitec Bank', id: 'capitec'},
+		{name: 'Discovery Bank', id: 'discovery'},
+		{name: 'FirstRand Ltd', id: 'first_rand'},
+		{name: 'Investec Bank Ltd', id: 'investec'},
+		{name: 'Old Mutual Group', id: 'old_mutual'},
+		{name: 'Nedbank', id: 'nedbank'},
+		{name: 'Sasfin Bank', id: 'sasfin'},
+		{name: 'Standard Bank', id: 'standard_bank'},
+		{name: 'Tyme Bank', id: 'tyme_bank'},
+		{name: 'Ubank', id: 'ubank'},
+	];	
 
 	banks: Array<IIdentity> = [
 		{name: 'Absa Bank', id: 'absa'},
@@ -317,7 +335,6 @@ export class HomeComponent {
 	updateDBName(event: {file: File, result: FileReader}, fileType: fileTypes) {
 		if (event.file) {
 			const ctrl = this.regForm.controls;
-			//console.log('event emitter value: ', file);
 			const name = ctrl['firstName'].value;
 			const surname = ctrl['lastName'].value;
 			const id = ctrl['user_id'].value;
@@ -345,11 +362,14 @@ export class HomeComponent {
 				case fileTypes.TRUST_DOC: ctrl['file_trust'].setValue(myNewFile);
 					break;
 				case fileTypes.PROOF_OF_ADDRESS: ctrl['file_poa'].setValue(myNewFile);
-					break;									
+					break;	
+				case fileTypes.PROOF_OF_ADDRESS_BUSTRUST: ctrl['file_poa_bustrust'].setValue(myNewFile);
+					break;													
 				case fileTypes.BANK_CONF_LETTER: ctrl['file_bcl'].setValue(myNewFile);
-					break;																	
+					break;		
+				case fileTypes.BANK_CONF_LETTER_BUSTRUST: ctrl['file_bcl_bustrust'].setValue(myNewFile);
+					break;																				
 			}
-
 		}
 	}
 
@@ -368,148 +388,71 @@ export class HomeComponent {
 		if (!this.page3IsValid()) {
 			errList.push(TEXT_ENSURE_ALL_DOCS);
 			this.isLoading = false;
-			return;			
+			return;
 		}
 
-		/** ====================================================
-		 *  API REFS --- BANK CONFIRMATION LETTER VALIDATION
-		 * 	====================================================
-		 * 		
-		const errMsg_bcl = `Please upload a copy of your Bank Confirmation Letter`;
-		const getCtrl_BCL = this.regForm.controls['file_bcl'].value;
-		let result_bcl = getCtrl_BCL.result;
-		if (!result_bcl || typeof result_bcl === "undefined") {
-			this.formSubmissionErrors_PAGE3.push(errMsg_bcl);
-			this.isLoading = false;
-			return;
-		}	*/	
-
-
-		/** =================================================
-		 *  API REFS --- FOREIGNER / PASSPORT
-		 * 	=================================================
-		 * */ 
-
-		if (this.isForeigner) {
-			const errMsg = `Please upload a copy of your Passport`;
-			const getCtrl_PASSPORT = this.regForm.controls['file_passport'].value;
-			let result_passport = getCtrl_PASSPORT.result;
-			if (!result_passport || typeof result_passport === "undefined") {
-				this.formSubmissionErrors_PAGE3.push(errMsg);
-				this.isLoading = false;
-				return;
+		/** =========================================================================
+		 *  NEW UPLOAD DOC STRUCTURE - LEFT COLUMN: FOR BUS and TRUST UPLOAD FIELDS
+		 * 	=========================================================================
+		 * */
+		if (this.regType === REG_TYPE.BUS || this.regType === REG_TYPE.TRUST) {
+			this.fileUploadValidationTemplate('file_bcl_bustrust', 'Bank confirmation letter', fileTypes.BANK_CONF_LETTER, user, this.runValidationLogic_BusReg_BCL);
+			this.fileUploadValidationTemplate('file_poa_bustrust', `Proof of Address (${this.regType})`, fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_BusReg_POA);
+			this.fileUploadValidationTemplate('file_poa', 'Proof of Address (individual)', fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_Individual_POA);
+			if (this.isSACitizen) {
+				this.fileUploadValidationTemplate('file_id', 'ID', fileTypes.ID, user, this.runValidationLogic_Individual_ID);
 			}
-			const googleDocObj_PASS: IGoogleDoc = {
-				skipHumanReview: true,
-				rawDocument: {
-					mimeType: getCtrl_PASSPORT.file.type,
-					content: result_passport.toString().includes('base64') ? result_passport.split('base64,')[1] : result_passport
-				}
-			}
-			const docAI_PASSPORT = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_PASS, fileTypes.PASSPORT).pipe(
-				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - PASSPORT: ${user}`))
-			);
-			this.forkJoinRunner([docAI_PASSPORT], this.runValidationLogic_Passport.bind(this));
+			if (this.isForeigner) {
+				this.fileUploadValidationTemplate('file_passport', 'Passport', fileTypes.PASSPORT, user, this.runValidationLogic_Passport);
+			}			
+		}
+		if (this.regType === REG_TYPE.BUS) {
+			this.fileUploadValidationTemplate('file_bus_reg', 'Business Registration', fileTypes.PASSPORT, user, this.runValidationLogic_BusReg);
+		}
+		if (this.regType === REG_TYPE.TRUST) {
+			this.fileUploadValidationTemplate('file_trust', 'Letter of authority', fileTypes.TRUST_DOC, user, this.runValidationLogic_Trust);
 		}		
 
-		/** =================================================
-		 *  API REFS --- TYPE: "INDIVIDUAL" - SA CITIZEN
-		 * 	=================================================
-		 * */ 
-
-		if(this.regType === REG_TYPE.IND && this.isSACitizen) {
-			const getCtrl_POA = this.regForm.controls['file_poa'].value;
-			let result_poa = getCtrl_POA.result;
-			if (!result_poa || typeof result_poa === "undefined") {
-				this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Proof of Address document before continuing`);
-				this.isLoading = false;
-				return;
-			}				
-			const googleDocObj_POA: IGoogleDoc = {
-				skipHumanReview: true,
-				rawDocument: {
-					mimeType: getCtrl_POA.file.type,
-					content: result_poa.toString().includes('base64') ? result_poa.split('base64,')[1] : result_poa
-				}
-			}
-			const getCtrl_ID = this.regForm.controls['file_id'].value;
-			let result_id = getCtrl_ID.result;
-			if (!result_id || typeof result_id === "undefined") {
-				this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your ID document before continuing`);
-				this.isLoading = false;
-				return;
-			}				
-			const googleDocObj_ID: IGoogleDoc = {
-				skipHumanReview: true,
-				rawDocument: {
-					mimeType: getCtrl_ID.file.type,
-					content: result_id.toString().includes('base64') ? result_id.split('base64,')[1] : result_id
-				}
-			}		
-			const docAI_POA = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_POA, fileTypes.PROOF_OF_ADDRESS).pipe(
-				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - PROOF OF ADDRESS: ${user}`))
-			);
-			const docAI_ID = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_ID, fileTypes.ID).pipe(
-				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ID: ${user}`))
-			);
-			this.forkJoinRunner([docAI_POA, docAI_ID], this.runValidationLogic_Individual.bind(this));
-			return;
-		}
-
-
-		/** =================================================
-		 *  API REFS --- TYPE: "BUSINESS"
-		 * 	=================================================
+		/** =========================================================================
+		 *  NEW UPLOAD DOC STRUCTURE - RIGHT COLUMN: FOR IND UPLOAD FIELDS
+		 * 	=========================================================================
 		 * */
 
-		if(this.regType === REG_TYPE.TRUST) {
-			const getCtrl_TRUST = this.regForm.controls['file_trust'].value;
-			let result_trust = getCtrl_TRUST.result;
-			if (!result_trust || typeof result_trust === "undefined") {
-				this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Trust document before continuing`);
-				this.isLoading = false;
-				return;
-			}			
-			const googleDocObj_TRUST: IGoogleDoc = {
-				skipHumanReview: true,
-				rawDocument: {
-					mimeType: getCtrl_TRUST.file.type,
-					content: result_trust.toString().includes('base64') ? result_trust.split('base64,')[1] : result_trust
-				}
-			}			
-			const docAI_TRUST = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_TRUST, fileTypes.TRUST_DOC).pipe(
-				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - TRUST: ${user}`))
-			);		
-			this.forkJoinRunner([docAI_TRUST], this.runValidationLogic_Trust.bind(this));
-		}
-
-
-		/** =================================================
-		 *  API REFS --- TYPE: "TRUST"
-		 * 	=================================================
-		 * */		
-
-		if(this.regType === REG_TYPE.BUS) {
-			const getCtrl_BUS = this.regForm.controls['file_bus_reg'].value;
-			let result_bus_reg = getCtrl_BUS.result;
-			if (!result_bus_reg || typeof result_bus_reg === "undefined") {
-				this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Business Registration document before continuing`);
-				this.isLoading = false;
-				return;
+		if (this.regType === REG_TYPE.IND) {
+			this.fileUploadValidationTemplate('file_bcl', 'Bank confirmation letter', fileTypes.BANK_CONF_LETTER, user, this.runValidationLogic_Individual_BCL);
+			this.fileUploadValidationTemplate('file_poa', 'Proof of Address', fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_Individual_POA);
+			if (this.isSACitizen) {
+				this.fileUploadValidationTemplate('file_id', 'ID', fileTypes.ID, user, this.runValidationLogic_Individual_ID);
 			}
-			const googleDocObj_BUS: IGoogleDoc = {
-				skipHumanReview: true,
-				rawDocument: {
-					mimeType: getCtrl_BUS.file.type,
-					content: result_bus_reg.toString().includes('base64') ? result_bus_reg.split('base64,')[1] : result_bus_reg
-				}
-			}				
-			const docAI_BUS_REG = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj_BUS, fileTypes.BUS_REG_DOC).pipe(
-				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - BUS REG DOC: ${user}`))
-			);
-			this.forkJoinRunner([docAI_BUS_REG], this.runValidationLogic_BusReg.bind(this));
+			if (this.isForeigner) {
+				this.fileUploadValidationTemplate('file_passport', 'Passport', fileTypes.PASSPORT, user, this.runValidationLogic_Passport);
+			}			
 		}
 		
+	}
+
+	/** NEW GENERIC VALIDATION TEMPLATE */
+	fileUploadValidationTemplate(ctrl: string, errorTag: string, fileType: fileTypes, user: any, cb: Function) {
+		const ctrlValue = this.regForm.controls[ctrl].value;
+		let result = ctrlValue.result;
+		if (!result || typeof result === "undefined") {
+			this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your ${errorTag} document before continuing`);
+			this.isLoading = false;
+			return;
+		}			
+		const googleDocObj: IGoogleDoc = {
+			skipHumanReview: true,
+			rawDocument: {
+				mimeType: ctrlValue.file.type,
+				content: result.toString().includes('base64') ? result.split('base64,')[1] : result
+			}
+		}			
+		const docAI = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj, fileType).pipe(
+			catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ${errorTag}: ${user}`))
+		);		
+		if (this.formSubmissionErrors_PAGE3.length <= 0) { // if no errors so far, run the docAI call
+			this.forkJoinRunner([docAI], cb.bind(this));
+		}		
 	}
 
 	forkJoinRunner(obsToRun: Array<Observable<any>>, cb: Function) {
@@ -530,82 +473,43 @@ export class HomeComponent {
 	}
 
 	runValidationLogic_Passport(response: any) {
-		//this.dbDupeCheckAndRegistrationPost();	
-		let formSubList = this.formSubmissionErrors_PAGE3;
-		const response_Passport = response[0];
-		const errTag = 'Passport Doc';
-		if (response_Passport && response_Passport.document) {
-			const isDocValid = this.isDocValid(response_Passport.document, fileTypes.PASSPORT);
-			if (!isDocValid) {
-				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
-				this.isLoading = false;
-				return;
-			}
-			// Do DB Dupe Check and Create registration if PASS = True
-			this.dbDupeCheckAndRegistrationPost();	
-		} else {
-			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
-			return;	
-		}	
+		this.runValidationLogicHelper('Passport Doc', response[0], fileTypes.PASSPORT);
 	}
 
 	runValidationLogic_BusReg(response: any){
-		//this.dbDupeCheckAndRegistrationPost();	
-		let formSubList = this.formSubmissionErrors_PAGE3;
-		const response_Trust = response[0];
-		const errTag = 'Business Registration Doc';
-		if (response_Trust && response_Trust.document) {
-			const isDocValid = this.isDocValid(response_Trust.document.text, fileTypes.BUS_REG_DOC);
-			if (!isDocValid) {
-				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
-				this.isLoading = false;
-				return;
-			}
-			// Do DB Dupe Check and Create registration if PASS = True
-			this.dbDupeCheckAndRegistrationPost();	
-		} else {
-			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
-			return;	
-		}		
+		this.runValidationLogicHelper('Business Registration Doc', response[0], fileTypes.BUS_REG_DOC);	
 	}	
 
 	runValidationLogic_Trust(response: any){
-		//this.dbDupeCheckAndRegistrationPost();	
-		let formSubList = this.formSubmissionErrors_PAGE3;
-		const response_Trust = response[0];
-		const errTag = 'Letter of authority';
-		if (response_Trust && response_Trust.document) {
-			const isDocValid = this.isDocValid(response_Trust.document.text, fileTypes.TRUST_DOC);
-			if (!isDocValid) {
-				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
-				this.isLoading = false;
-				return;
-			}
-			// Do DB Dupe Check and Create registration if PASS = True
-			this.dbDupeCheckAndRegistrationPost();	
-		} else {
-			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
-			return;	
-		}		
+		this.runValidationLogicHelper('Letter of authority', response[0], fileTypes.TRUST_DOC);
 	}
 
-	runValidationLogic_Individual(response: any){
-		//this.dbDupeCheckAndRegistrationPost();	
-		//let formSubList = this.formSubmissionErrors;
-		let formSubList = this.formSubmissionErrors_PAGE3;
-		const response_POA = response[0];
-		const response_ID = response[1];
-		const errTag = 'Proof of address';
+	runValidationLogic_Individual_BCL(response: any){
+		this.runValidationLogicHelper('Bank confirmation letter', response[0], fileTypes.BANK_CONF_LETTER);
+	}	
 
-		if (response_POA && response_POA.document && response_ID && response_ID.document) {
-			const isValidPOA = this.isDocValid(response_POA.document.text, fileTypes.PROOF_OF_ADDRESS);
-			const isValidID =  this.isDocValid(response_ID.document, fileTypes.ID);
-			if (!isValidPOA) {
+	runValidationLogic_BusReg_BCL(response: any){
+		this.runValidationLogicHelper('Bank confirmation letter', response[0], fileTypes.BANK_CONF_LETTER);
+	}	
+
+	runValidationLogic_BusReg_POA(response: any){
+		this.runValidationLogicHelper('Proof of address', response[0], fileTypes.PROOF_OF_ADDRESS);
+	}	
+
+	runValidationLogic_Individual_POA(response: any){
+		this.runValidationLogicHelper('Proof of address', response[0], fileTypes.PROOF_OF_ADDRESS);
+	}
+
+	runValidationLogic_Individual_ID(response: any){
+		this.runValidationLogicHelper('ID', response[0], fileTypes.ID);
+	}	
+
+	runValidationLogicHelper(errTag: string, response: any, fileType: fileTypes){
+		let formSubList = this.formSubmissionErrors_PAGE3;
+		if (response && response.document) {
+			const isValid = this.isDocValid(response.document.text, fileType);
+			if (!isValid) {
 				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
-				this.isLoading = false;
-				return;
-			} else if (!isValidID) {
-				formSubList.push(`Your ${fileTypes.ID} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
 				return;
 			} else {
@@ -615,7 +519,7 @@ export class HomeComponent {
 		} else {
 			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
 			return;	
-		}		
+		}			
 	}
 
 	isDocValid(dataText: any, fileType: fileTypes): boolean {
@@ -700,53 +604,6 @@ export class HomeComponent {
 		return invalid;
 	}
 
-	fieldValidationChecker() {
-		let formSubList = this.formSubmissionErrors;
-
-		/* Check for Validation of Fields first */
-		const ctrls = this.regForm.controls;
-		const user_id = ctrls['user_id'].value ?? '';
-		const bus_reg_no = ctrls['bus_reg_no'].value ?? '';
-		const trust_reg_no = ctrls['trust_reg_no'].value ?? '';
-		const passport = ctrls['passport'].value ?? '';
-		const swift_code = ctrls['swift_code'].value ?? '';
-		const iban = ctrls['iban'].value ?? '';
-		const bank = ctrls['bank'].value ?? '';
-		const bank_other = ctrls['bank_other'].value ?? '';
-
-		// upload fields
-		const file_id = ctrls['file_id'].value ?? '';
-		const file_passport = ctrls['file_passport'].value ?? '';
-		const file_bus_reg = ctrls['file_bus_reg'].value ?? '';
-		const file_trust = ctrls['file_trust'].value ?? '';
-		const file_poa = ctrls['file_poa'].value ?? '';
-
-		if (this.isSACitizen) {
-			if (user_id.length <= 0) formSubList.push('Please fill in your ID number');
-			if (user_id.length > 0 && !checkID(user_id)) formSubList.push('Your ID number is invalid');
-			if (file_id.length <= 0) formSubList.push('Please Upload a copy of your ID');
-			if (file_poa.length <= 0) formSubList.push('Please Upload a copy of your Proof of Address');
-		}
-
-		if (this.isForeigner) {
-			if (passport.length <= 0) formSubList.push('Please fill in your Passport number');
-			if (file_passport.length <= 0) formSubList.push('Please Upload a copy of your Passport');
-			if (swift_code.length <= 0) formSubList.push('Please fill in your Swift Code number');
-			if (iban.length <= 0) formSubList.push('Please fill in your IBAN number');
-			if (bank === 'bank_other' && bank_other.length <= 0) formSubList.push('Please select your Bank from the prescribed list or enter it manually in the "Other" field');
-		}
-		
-		if (this.regType === REG_TYPE.BUS) {
-			if (bus_reg_no.length <= 0) formSubList.push('Please fill in your Business Registration number');
-			if (file_bus_reg.length <= 0) formSubList.push('Please Upload a copy of your Business Registration Document');
-		}
-
-		if (this.regType === REG_TYPE.TRUST) {
-			if (trust_reg_no.length <= 0) formSubList.push('Please fill in your Trust Registration number');
-			if (file_trust.length <= 0) formSubList.push('Please Upload a copy of your Letter of Authority');
-		}		
-	}
-
 	dbDupeCheckAndRegistrationPost() {
 		if (this.formSubmissionErrors_PAGE3.length > 0) {
 			return;
@@ -782,7 +639,12 @@ export class HomeComponent {
 			if(typeof body.file_passport === 'object') body.file_passport = body.file_passport.file.name;
 			if(typeof body.file_bus_reg === 'object') body.file_bus_reg = body.file_bus_reg.file.name;
 			if(typeof body.file_trust === 'object') body.file_trust = body.file_trust.file.name;
-			if(typeof body.file_poa === 'object') body.file_poa = body.file_poa.file.name;	
+			if(typeof body.file_poa === 'object') body.file_poa = body.file_poa.file.name;
+			
+			if(typeof body.file_bcl === 'object') body.file_bcl = body.file_bcl.file.name;
+			if(typeof body.file_bcl_bustrust === 'object') body.file_bcl_bustrust = body.file_bcl_bustrust.file.name;
+			if(typeof body.file_poa_bustrust === 'object') body.file_poa_bustrust = body.file_poa_bustrust.file.name;
+			
 			
 			// BLOCKERS AND CHECKS ALL DONE --- CREATE RECORD!
 			this.regService.create(body).pipe(

@@ -20,10 +20,13 @@ module.exports = (sequelize, Sequelize) => {
 		file_poa: { type: Sequelize.STRING },
 		file_bus_reg: { type: Sequelize.STRING },
 		file_trust: { type: Sequelize.STRING },
+		file_passport: { type: Sequelize.STRING },
 		passport: { type: Sequelize.STRING },
 		citizenStatus: { type: Sequelize.STRING },
+		file_bcl: { type: Sequelize.STRING },
+		file_poa_bustrust: { type: Sequelize.STRING },
+		file_bcl_bustrust: { type: Sequelize.STRING },
 		bank_other: { type: Sequelize.STRING },
-
   });
 
   return Registration;

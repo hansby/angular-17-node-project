@@ -487,7 +487,6 @@
 
 							<hr class="my-4">
 	
-		
 							<h4 class="mb-1">Upload Documents</h4>
 
 							<hr class="my-4" *ngIf="regType === 'trust' || regType === 'business'">
@@ -495,8 +494,6 @@
 							<ng-container *ngIf="regForm.controls['firstName'].value.length <= 0 || regForm.controls['lastName'].value.length <= 0">
 								<p>**Please fill in your name, surname and ID or Passport before completing this section.</p>
 							</ng-container>
-
-							<!-- {{ regType === 'trust' ? 'Trust' : 'Business' }} -->
 	
 							<!-- FILE UPLOAD FIELDS -->
 							<ng-container *ngIf="regForm.controls['firstName'].value.length > 0 && regForm.controls['lastName'].value.length > 0">
@@ -514,15 +511,15 @@
 										<ng-container>
 											<app-file-upload 
 												[fileName]="'Upload Bank Confirmation Letter'" 
-												[fileType]="fileTypes.BANK_CONF_LETTER" 
-												(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER)"></app-file-upload>								
+												[fileType]="fileTypes.BANK_CONF_LETTER_BUSTRUST" 
+												(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER_BUSTRUST)"></app-file-upload>								
 										</ng-container>													
 
 										<!-- PROOF OF ADDRESS FOR BUSINESS/TRUST --- DEV NOTE: NEEDS TO BE TWEAKED -->
 										<app-file-upload 
 											[fileName]="proofOfAddressLabelText" 
-											[fileType]="fileTypes.PROOF_OF_ADDRESS" 
-											(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>	
+											[fileType]="fileTypes.PROOF_OF_ADDRESS_BUSTRUST" 
+											(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS_BUSTRUST)"></app-file-upload>	
 
 
 										<ng-container *ngIf="regType === 'business'">

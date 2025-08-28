@@ -52,9 +52,12 @@ exports.create = (req, res) => {
 	const iban = req.body.iban;
 	const file_id = req.body.file_id;
 	const file_poa = req.body.file_poa;
+	const file_poa_bustrust = req.body.file_poa_bustrust;
 	const file_bus_reg = req.body.file_bus_reg;
 	const file_trust = req.body.file_trust;
 	const file_passport = req.body.file_passport;
+	const file_bcl = req.body.file_bcl;
+	const file_bcl_bustrust = req.body.file_bcl_bustrust;
 	const passport = req.body.passport;
 	const bank = req.body.bank;
 	const citizenStatus = req.body.citizenStatus;
@@ -79,7 +82,8 @@ exports.create = (req, res) => {
   const registration = {
 		user_id, reg_type, firstName, lastName, bus_reg_no, trust_reg_no, cell, email, tax_no, 
 		address_1, address_2, suburb, town, postal_code, acc_holder, acc_type, acc_no, swift_code, 
-		iban, bank, file_id, file_poa, file_bus_reg, file_trust, file_passport, passport, citizenStatus, bank_other
+		iban, bank, file_id, file_poa, file_bus_reg, file_trust, file_passport, passport, citizenStatus,
+		file_bcl, file_poa_bustrust, file_bcl_bustrust, bank_other
   };
 
   // Save Registration in the database

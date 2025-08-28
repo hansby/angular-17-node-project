@@ -17,8 +17,11 @@ export class Registration {
 	bank?: string;
 	file_id?: string;
 	file_poa?: string;
+	file_poa_bustrust?: string;
 	file_bus_reg?: string;
 	file_trust?: string;
+	file_bcl?: string;
+	file_bcl_bustrust?: string;
 	passport?: string;	
 	user_id?: string;
 }
