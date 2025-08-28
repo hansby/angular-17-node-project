@@ -56,3 +56,9 @@ hr {
 .justify-space-around { justify-content: space-around;}
 
 .search-inpt { min-width: 400px; }
+
+.upload-docs-container {
+	display: flex;
+	justify-content: space-between;
+	gap: 20px;	
+}

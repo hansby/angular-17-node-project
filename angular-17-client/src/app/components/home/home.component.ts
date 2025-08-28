@@ -222,17 +222,14 @@ export class HomeComponent {
 				this.formSubmissionErrors.length = 0; // reset UI Error list
 				this.regType = reg_type;
 				this.proofOfAddressLabelText = 'Upload Proof of Address';
-				switch(this.regType) {
+				/*switch(this.regType) {
 					case 't': 
 						this.proofOfAddressLabelText += ' (for Trust)';
 						break;
 					case 'b': 
 						this.proofOfAddressLabelText += ' (for Business)';
 						break;						
-				}
-				//this.isSACitizen = reg_type === REG_TYPE.IND;
-				//this.isBusiness = reg_type === REG_TYPE.BUS;
-				//this.isTrust = reg_type === REG_TYPE.TRUST;
+				}*/
 		})
 
 		const listener_CitizenStatus$ = ctrls['citizenStatus'].valueChanges;
