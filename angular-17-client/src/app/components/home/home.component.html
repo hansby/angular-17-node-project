@@ -508,19 +508,6 @@
 										<hr class="my-4">
 
 										<!-- BANK CONFIRMATION LETTER BUSINESS/TRUST --- DEV NOTE: NEEDS TO BE TWEAKED -->
-										<ng-container>
-											<app-file-upload 
-												[fileName]="'Upload Bank Confirmation Letter'" 
-												[fileType]="fileTypes.BANK_CONF_LETTER_BUSTRUST" 
-												(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER_BUSTRUST)"></app-file-upload>								
-										</ng-container>													
-
-										<!-- PROOF OF ADDRESS FOR BUSINESS/TRUST --- DEV NOTE: NEEDS TO BE TWEAKED -->
-										<app-file-upload 
-											[fileName]="proofOfAddressLabelText" 
-											[fileType]="fileTypes.PROOF_OF_ADDRESS_BUSTRUST" 
-											(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS_BUSTRUST)"></app-file-upload>	
-
 
 										<ng-container *ngIf="regType === 'business'">
 											<app-file-upload 
@@ -535,6 +522,19 @@
 												[fileType]="fileTypes.TRUST_DOC"
 												(dbName)="updateDBName($event, fileTypes.TRUST_DOC)"></app-file-upload>
 										</ng-container>
+																				
+										<ng-container>
+											<app-file-upload 
+												[fileName]="'Upload Bank Confirmation Letter'" 
+												[fileType]="fileTypes.BANK_CONF_LETTER_BUSTRUST" 
+												(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER_BUSTRUST)"></app-file-upload>								
+										</ng-container>													
+
+										<!-- PROOF OF ADDRESS FOR BUSINESS/TRUST --- DEV NOTE: NEEDS TO BE TWEAKED -->
+										<app-file-upload 
+											[fileName]="proofOfAddressLabelText" 
+											[fileType]="fileTypes.PROOF_OF_ADDRESS_BUSTRUST" 
+											(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS_BUSTRUST)"></app-file-upload>	
 
 
 									</div>
@@ -549,13 +549,6 @@
 
 				
 										<!-- BANK CONFIRMATION LETTER PERSONAL --- DEV NOTE: NEEDS TO BE TWEAKED -->
-										<ng-container *ngIf="regType === 'individual'">
-											<app-file-upload 
-												[fileName]="'Upload Bank Confirmation Letter'" 
-												[fileType]="fileTypes.BANK_CONF_LETTER" 
-												(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER)"></app-file-upload>								
-										</ng-container>											
-
 										<ng-container *ngIf="isSACitizen">
 											<app-file-upload 
 												[fileName]="'Upload ID'" 
@@ -569,6 +562,13 @@
 												[fileType]="fileTypes.PASSPORT" 
 												(dbName)="updateDBName($event, fileTypes.PASSPORT)"></app-file-upload>								
 										</ng-container>	
+
+										<ng-container *ngIf="regType === 'individual'">
+											<app-file-upload 
+												[fileName]="'Upload Bank Confirmation Letter'" 
+												[fileType]="fileTypes.BANK_CONF_LETTER" 
+												(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER)"></app-file-upload>								
+										</ng-container>																					
 
 										<!-- PROOF OF ADDRESS FOR PERSONAL --- DEV NOTE: NEEDS TO BE TWEAKED -->
 										<app-file-upload 

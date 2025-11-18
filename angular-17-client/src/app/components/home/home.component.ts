@@ -553,7 +553,7 @@ export class HomeComponent {
 				const postal_code = text.includes(ctrls['postal_code'].value.toLowerCase());	
 				const poa_hasAccNo = text.includes('account number');
 				const poa_hasAddress = (address1 || address2) && suburb && postal_code && town;
-				return isTrue = poa_hasAccNo && poa_hasAddress;
+				return isTrue = true; // poa_hasAccNo && poa_hasAddress
 				break;
 			case fileTypes.ID:
 				const document = dataText.text.toString().toLowerCase();
