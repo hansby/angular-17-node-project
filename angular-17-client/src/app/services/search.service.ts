@@ -6,6 +6,12 @@ import { REG_TYPE } from '../components/home/home.component';
 
 const baseUrl = 'http://localhost:8080/api/search';
 
+export interface ISearchResultsSurtieDB {
+	idpassport: string,
+	firstName: string,
+	lastName: string,
+}
+
 export interface ISearchResults {
 	user_id: string,
 	bus_reg_no: string,
@@ -59,4 +65,14 @@ export class SearchService {
 		const query = p.map((p) => `${p[0]}=${p[1]}`).join('&');
 		return this.http.get<ISearchResults[]>(`${baseUrl}?${query}`);
 	}
+
+	getBySearchFilterSurtieDB(value: string): Observable<ISearchResultsSurtieDB[]> {
+		const p: [string, string|number|boolean|undefined][] = [
+			['idpassport', value],
+			['firstName', value],
+			['lastName', value],
+		];
+		const query = p.map((p) => `${p[0]}=${p[1]}`).join('&');
+		return this.http.get<ISearchResultsSurtieDB[]>(`${baseUrl}?${query}`);
+	}	
 }

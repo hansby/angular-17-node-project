@@ -43,6 +43,7 @@ export class LoginComponent {
 					lastName: response.lastName,
 					idpassport: response.idpassport,
 					userCanProceed: true,
+					isForeignerMode: false,
 				}).subscribe(() => {
 					console.log('User data stored in local storage');
 					this.router.navigate(['/application']);

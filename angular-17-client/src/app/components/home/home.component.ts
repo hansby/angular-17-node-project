@@ -630,12 +630,12 @@ export class HomeComponent {
 
 		const $ = this.regService.getAll(qParams, this.regType, this.isSACitizen).subscribe((responseData) => {
 
-			// ***NB: BLOCK registration if data already exists in DB!
+			/* ***NB: BLOCK registration if data already exists in DB!
 			if (responseData.length > 0) {
 				this.recordAlreadyExists = true;
 				this.isLoading = false;
 				return;
-			}
+			}*/
 
 			/**
 			 * !!!NB: We need to re-format the file_*** form fields
@@ -667,7 +667,7 @@ export class HomeComponent {
 					const trustObj: File = bodyCopyForFileUploads.file_trust.file;
 					const myNewFile_trust = new File([trustObj], trustObj.name, {type: trustObj.type});
 					this.fileUploadService.upload(myNewFile_trust).subscribe((resp) => {
-						this.loggerService.sendLog(`TRUST DOC UPLOAD FILE SUCCESS!: ${qParams}`);
+						this.loggerService.sendLog(`TRUST DOC UPLOAD FILE SUCCESS!: ${qParams}`, 1);
 						this.applicationInProgress = false;
 						this.isLoading = false;						
 					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`TRUST DOC UPLOAD FILE ERROR!: ${qParams}`));
@@ -677,7 +677,7 @@ export class HomeComponent {
 					const busObj: File = bodyCopyForFileUploads.file_bus_reg.file;
 					const myNewFile_bus = new File([busObj], busObj.name, {type: busObj.type});
 					this.fileUploadService.upload(myNewFile_bus).subscribe((resp) => {
-						this.loggerService.sendLog(`BUS DOC UPLOAD FILE SUCCESS!: ${qParams}`);
+						this.loggerService.sendLog(`BUS DOC UPLOAD FILE SUCCESS!: ${qParams}`, 1);
 						this.applicationInProgress = false;
 						this.isLoading = false;						
 					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`BUS DOC UPLOAD FILE ERROR!: ${qParams}`));
@@ -695,7 +695,7 @@ export class HomeComponent {
 					forkJoin(([API_POA, API_ID])).subscribe((resp) => {
 						this.applicationInProgress = false;
 						this.isLoading = false;						
-						this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE SUCCESS!: ${qParams}`);
+						this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE SUCCESS!: ${qParams}`, 1);
 					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE Failed: ${qParams}`));			
 				}
 
@@ -706,7 +706,7 @@ export class HomeComponent {
 					forkJoin(([API_PASSPORT])).subscribe((resp) => {
 						this.applicationInProgress = false;
 						this.isLoading = false;
-						this.loggerService.sendLog(`Passport UPLOAD FILE SUCCESS!: ${qParams}`);
+						this.loggerService.sendLog(`Passport UPLOAD FILE SUCCESS!: ${qParams}`, 1);
 					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Passport UPLOAD FILE FAILED!: ${qParams}`));	
 				}
 

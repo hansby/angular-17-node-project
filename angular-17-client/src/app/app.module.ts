@@ -8,6 +8,7 @@ import { SharedModule } from './components/shared/shared.module';
 import { HomeComponent } from './components/home/home.component';
 import { ErrorLogsComponent } from './components/error-logs/error-logs.component';
 import { ApplicationsComponent } from './components/applications/applications.component';
+import { SurtieTableComponent } from './components/surtie-table/surtie-table.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 @NgModule({
@@ -16,6 +17,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 		HomeComponent,
 		ErrorLogsComponent,
 		ApplicationsComponent,
+		SurtieTableComponent,
 		DashboardComponent
   ],
   imports: [

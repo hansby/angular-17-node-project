@@ -7,6 +7,7 @@ export interface IStoredUser {
 	lastName: string,
 	idpassport: string,
 	userCanProceed: boolean,
+	isForeignerMode: boolean,
 }
 
 @Injectable({

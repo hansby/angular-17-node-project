@@ -1,0 +1,16 @@
+.form-signin {
+    max-width: 330px;
+    padding: 10rem 1rem;
+}
+
+.form-signin input {
+	margin-bottom: 6px;
+}
+
+.search {
+	margin-bottom: 20px;
+}
+
+.dropdown {
+	margin-right: 10px;
+}

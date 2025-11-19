@@ -23,8 +23,8 @@ export class LoggerService {
   
   constructor(private http: HttpClient) {}
 
-	sendLog(data: string) {
-		return this.http.post(`${baseUrl}`, { is_resolved: 0, log: data });
+	sendLog(data: string, isResolved: number = 0): Observable<any> {
+		return this.http.post(`${baseUrl}`, { is_resolved: isResolved, log: data });
 	}
 
 	getAllRawLogs(filterByResolved: boolean = false): Observable<ISearchResultsLogs[]> {

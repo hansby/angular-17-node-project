@@ -1,0 +1,72 @@
+
+<div class="container" *ngIf="!isLoggedIn">
+
+	<main class="form-signin m-auto">
+		<form>
+			<h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+			<div class="form-floating">
+				<input type="text" 
+					[(ngModel)]="inpt_username" 
+					[ngModelOptions]="{standalone: true}"
+					class="form-control" id="floatingInput" placeholder="john doe"> <label for="floatingInput">Username</label> </div>
+			<div class="form-floating">
+				<input type="password" 
+				[(ngModel)]="inpt_password" 
+				[ngModelOptions]="{standalone: true}"
+				class="form-control" id="floatingPassword" placeholder="Password"> <label for="floatingPassword">Password</label> </div>
+			<button class="btn btn-primary w-100 py-2" type="submit" (click)="login()">Sign in</button> 
+		</form>
+	</main>
+
+</div>
+
+<div class="container" *ngIf="isLoggedIn">
+
+	<button class="btn btn-primary float-end mt-4" type="button" (click)="goToDashboard()">Dashboard</button>
+
+	<div class="py-4">
+		<br />
+		<h2>Surtie Database</h2>
+	</div>
+
+	<div class="py-4">
+
+    <form class="form-inline search" [formGroup]="form">
+      <input class="form-control mr-sm-2 search-inpt" 
+				type="search" 
+				[placeholder]="'Search by Name, Surname or ID/Passport'"  
+				aria-label="Search"
+				formControlName="search">
+      <button class="btn btn-outline-success my-2 my-sm-0" 
+				type="submit" 
+				(click)="doSearch()">Search</button>
+    </form>		
+
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th scope="col">Name</th>
+					<th scope="col">Surname</th>
+					<th scope="col">ID/PASSPORT</th>
+					<th scope="col">&nbsp;</th>
+				</tr>
+			</thead>
+			<tbody *ngIf="_UISearchResults.length > 0">
+				<tr *ngFor="let ben of _UISearchResults">
+					<td scope="row">{{ben.firstName}}</td>
+					<td scope="row">{{ben.lastName}}</td>
+					<td scope="row">{{ben.idpassport}}</td>
+					<td scope="row">&nbsp;</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p class="text-center" *ngIf="noResultsFound">
+			<br /><br /><br />
+			No search results found. Please try a different keyword
+		</p>
+
+	</div>
+
+</div>
