@@ -1,0 +1,56 @@
+
+<div>
+	<div class="container">
+
+			<ng-container>
+				<div class="row center-auto">
+					<div class="py-4 text-center center-auto">
+						<br />
+						<h2>FICA Registration form</h2>
+					</div>
+
+					<hr class="my-4">
+
+					<div class="col-lg-12">
+		
+						<main class="form-signin w-100 m-auto">
+							<form>
+								<h3 class="h3 mb-3 fw-normal">Please provide the following details</h3> 
+								<div class="julz">
+									<select 
+										class="form-select" 
+										id="floatingSelect" 
+										aria-label="Floating label select example"
+										[(ngModel)]="selectedNationality"
+										[ngModelOptions]="{standalone: true}"> 
+										<option selected>Nationality</option> 
+										<option value="1">SA Citizen</option> 
+										<option value="2">Namibian</option>
+									</select>
+								</div> 
+								<div class="julz"> 
+									<input type="text" 
+										class="form-control" 
+										id="floatingPassword" 
+										placeholder="ID/Passport Number" 
+										[(ngModel)]="idpassport"
+										[ngModelOptions]="{standalone: true}"> 
+								</div> 
+								<button 
+									(click)="performLogin()"
+									class="btn btn-primary w-100 py-2"
+									[disabled]="selectedNationality.length <= 0 || idpassport.length <= 0 || selectedNationality === 'Nationality'">
+										{{ isLoading ? 'Please wait...' : 'Sign in'}}</button> 
+
+								<p *ngIf="errorMsg">The information provided cannot be verified on our system. Please try again or contact support.</p>
+							</form> 
+						</main>
+								
+						<hr class="my-4">
+					
+					</div>
+				</div>				
+
+			</ng-container>
+	</div>
+</div>

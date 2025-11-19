@@ -9,8 +9,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { IGoogleDoc, UploadGoogleDocService } from '../../services/upload-google-doc.service';
 import { FileUploadService } from '../../services/file-upload.service';
 import { LoggerService } from '../../services/logger.service';
+import { Router } from '@angular/router';
 
-const LS_KEY = 'owiqsjdh09192';
+const LS_KEY_FORM_COMPLETE = 'owiqsjdh09192';
+const LS_KEY_USER = 'user_';
 
 const TEXT_ENSURE_ALL_DOCS = `Please ensure all required documents are uploaded before submitting your application`;
 
@@ -129,7 +131,7 @@ function isNumber(n: string) {
 	styleUrl: './home.component.css',
 })
 export class HomeComponent {
-	page: number = 2; // when all said and done this final value will be = 1
+	page: number = 1; // when all said and done this final value will be = 1
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -160,13 +162,18 @@ export class HomeComponent {
 		private uploadGoogleDoc: UploadGoogleDocService,
 		private fileUploadService: FileUploadService,
 		@Inject(DOCUMENT) private document: Document,
-		private loggerService: LoggerService
+		private loggerService: LoggerService,
+		private router: Router
 	){
 
 		this.localStore = document.defaultView?.localStorage;
-		if (this.localStore && this.localStore.getItem(LS_KEY)) {
-			const getLS = this.localStore.getItem(LS_KEY);
-			//this.applicationInProgress = getLS === '1' ? false : true;
+		if (this.localStore) {
+			const getCompletedApplicationformKey = this.localStore.getItem(LS_KEY_FORM_COMPLETE);
+			//this.applicationInProgress = getCompletedApplicationformKey === '1' ? false : true;
+			const getLSUser = this.localStore.getItem(LS_KEY_USER);
+			if (!getLSUser) {
+				this.router.navigate(['/']);
+			}
 		}
 
 		this.regForm = new FormGroup({
