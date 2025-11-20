@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ISearchResults, ISearchResultsSurtieDB, SearchService, searchType } from '../../services/search.service';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { debounceTime, distinctUntilKeyChanged, map, startWith } from 'rxjs';
+import { ISearchResultsSurtieDB, SearchService, searchType } from '../../services/search.service';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ISurtieDBRecord, RegistrationsService } from '../../services/registrations.service';
+import { LoginService } from '../../services/login.service';
 
 const USERNAME = 'raymond001';
 const PASSWORD = 'AccessApps001';
@@ -30,11 +30,18 @@ export class SurtieTableComponent implements OnInit {
 	allRecords: Array<ISurtieDBRecord> = [];
 
 
-	constructor(private search: SearchService, private registrationsService: RegistrationsService) {}
+	constructor(
+		private search: SearchService, 
+		private registrationsService: RegistrationsService,
+		private loginservice: LoginService
+	) {}
 
 	ngOnInit(): void {
 		this.registrationsService.getAllSurtieDBRecords().subscribe(records => {
-			this.allRecords = records;
+			this.allRecords = records.map(r => ({
+				...r,
+				original_id_number: r.id_number
+			}));
 		});
 		
 		/*this.form.controls['search'].valueChanges.pipe(
@@ -93,5 +100,18 @@ export class SurtieTableComponent implements OnInit {
 	login() {
 		this.isLoggedIn = this.inpt_username === USERNAME && this.inpt_password === PASSWORD;
 	}
+
+	updateRecord(ben: ISurtieDBRecord) {
+		this.loginservice.getUserCredentials(ben.id_number).subscribe(credentials => {
+			alert('This ID Number already exists in the system. Please use a different ID Number.');
+			ben.id_number = ben.original_id_number!;
+		}, (error) => {
+			this.registrationsService.updateSurtieDBRecord(ben.original_id_number!, ben).subscribe((res) => {
+				alert('Record updated successfully!');
+			}, (error) => {
+				console.error('Error updating record: ', error);
+			});			
+		});
+	}	
 
 }

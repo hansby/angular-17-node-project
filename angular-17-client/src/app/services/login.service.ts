@@ -18,7 +18,7 @@ export class LoginService {
 
 	getUserCredentials(idpassport: string): Observable<IUser> {
 		return this.http.get<IUser>(`${baseUrl}/idsearch?id_number=${idpassport}`).pipe(
-			delay(4000)
+			delay(1000)
 		);
 	}
 }

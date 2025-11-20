@@ -45,7 +45,7 @@ exports.create = (req, res) => {
     .catch(err => {
 			logger.error(`Error on Create Reg API - User ID: ${user_id} ${passport} ${email} ${lastName}`);
       res.status(500).send({
-        message:
+        error_message:
           err.message || "Some error occurred while creating the Registration."
       });
     });
@@ -72,7 +72,7 @@ exports.findAll = (req, res) => {
     .catch(err => {
       logger.error(`Error retrieving registrations: ${err.message}`);
       res.status(500).send({
-        message: err.message || "Some error occurred while retrieving registrations."
+        error_message: err.message || "Some error occurred while retrieving registrations."
       });
     });
 };
@@ -92,39 +92,34 @@ exports.findOne = (req, res) => {
       } else {
 				logger.error(`ID does not exist: ${id_number}`);
         res.status(404).send({
-          message: `Cannot find ID with id_number=${id_number}.`
+          error_message: `Cannot find ID with id_number=${id_number}.`
         });
       }
     })
     .catch(err => {
 			logger.error(`Error retrieving Registration: ${id_number}`);
       res.status(500).send({
-        message: "Error retrieving Registration with id_number=" + id_number
+        error_message: "Error retrieving Registration with id_number=" + id_number
       });
     });
 };
 
 // Update a Registration by the id in the request
 exports.update = (req, res) => {
-  const id = req.params.id;
+  const originalId = req.params.id;   // original id_number in the URL
+  const updates = req.body;           // contains new id_number + other fields
 
-  RegistrationSurtie.update(req.body, {
-    where: { id: id }
+  RegistrationSurtie.update(updates, {
+    where: { id_number: originalId }
   })
-    .then(num => {
-      if (num == 1) {
-        res.send({
-          message: "Registration was updated successfully."
-        });
-      } else {
-        res.send({
-          message: `Cannot update Registration with id=${id}. Maybe Registration was not found or req.body is empty!`
-        });
-      }
+    .then(([affectedRows]) => {
+			res.send({
+				message: "Record was updated successfully."
+			});
     })
     .catch(err => {
       res.status(500).send({
-        message: "Error updating Registration with id=" + id
+        error_message: "Error updating Registration with id_number=" + originalId
       });
     });
 };

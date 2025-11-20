@@ -11,6 +11,7 @@ export interface ISurtieDBRecord {
 	id_number: string,
 	first_name: string,
 	last_name: string,
+	original_id_number?: string
 }
 
 export interface IStats {
@@ -48,6 +49,15 @@ export class RegistrationsService {
 
 	getAllSurtieDBRecords(): Observable<ISurtieDBRecord[]> {
 		return this.http.get<ISurtieDBRecord[]>(`http://localhost:8080/api/registrations_surtiedb`);
+	}
+
+	updateSurtieDBRecord(originalID: string, data: ISurtieDBRecord): Observable<any> {
+		const { first_name, last_name, id_number } = data;
+		return this.http.put(`http://localhost:8080/api/registrations_surtiedb/${originalID}`, {
+			first_name, last_name, id_number
+		}).pipe(
+			tap(() => console.log(`Updated SurtieDB Record with id_number=${originalID}`))
+		);
 	}
 
 	getAll(params: IRequiredQParams, regType: string, saCitizen: boolean): Observable<Registration[]> {
