@@ -351,13 +351,15 @@ export class HomeComponent {
 		this.regForm.controls['acc_type'].setValue(value);
 	}
 
-	updateDBName(event: {file: File, result: FileReader}, fileType: fileTypes) {
+	updateDBName(event: {file: File, result: FileReader}, fileType: fileTypes, optTextPrefix: string = '') {
 		if (event.file) {
 			const ctrl = this.regForm.controls;
 			const name = ctrl['firstName'].value;
 			const surname = ctrl['lastName'].value;
 			const id = ctrl['user_id'].value;
 			const passport = ctrl['passport'].value;
+			const bus_reg_no = ctrl['bus_reg_no'].value;
+			const trust_reg_no = ctrl['trust_reg_no'].value;
 
 			let type = event.file.type;
 			let finalType = type.slice(type.indexOf('/') + 1, type.length);
@@ -365,9 +367,30 @@ export class HomeComponent {
 			if (finalType.includes('presentation')) finalType = 'pptx';
 			if (finalType.includes('document')) finalType = 'doc';
 
-			const DBName = `${surname} ${name} - ${fileType === fileTypes.TRUST_DOC ? 'LOA' : fileType} - ${this.isSACitizen ? id : passport}.${finalType}`;
+			let DBName = '';
+			switch (fileType) {
+				case fileTypes.ID: DBName = `${optTextPrefix.toUpperCase()}${optTextPrefix.length > 0 ? ' - ' : ''}${surname} ${name} - ID - ${this.isSACitizen ? id : passport}.${finalType}`;
+					break;
+				case fileTypes.PASSPORT: DBName = `${optTextPrefix.toUpperCase()}${optTextPrefix.length > 0 ? ' - ' : ''}${surname} ${name} - PASSPORT - ${this.isSACitizen ? id : passport}.${finalType}`;
+					break;					
+				case fileTypes.BUS_REG_DOC: DBName = `BUS - CPIC - ${bus_reg_no}.${finalType}`;
+					break;	
+				case fileTypes.TRUST_DOC: DBName = `TRUST - LOA - ${trust_reg_no}.${finalType}`;
+					break;
+				case fileTypes.PROOF_OF_ADDRESS: DBName = `${optTextPrefix.toUpperCase()}${optTextPrefix.length > 0 ? ' - ' : ''}${surname} ${name} - PROOF OF ADDRESS - ${this.isSACitizen ? id : passport}.${finalType}`;
+					break;	
+				case fileTypes.PROOF_OF_ADDRESS_BUSTRUST: DBName = `${this.regType === REG_TYPE.BUS ? 'BUS' : 'TRUST'} - PROOF OF ADDRESS - ${this.regType === REG_TYPE.BUS ? bus_reg_no : trust_reg_no}.${finalType}`;
+					break;													
+				case fileTypes.BANK_CONF_LETTER: DBName = `${surname} ${name} - BCL - ${this.isSACitizen ? id : passport}.${finalType}`;
+					break;		
+				case fileTypes.BANK_CONF_LETTER_BUSTRUST: DBName = `${this.regType === REG_TYPE.BUS ? 'BUS' : 'TRUST'} - BCL - ${this.regType === REG_TYPE.BUS ? bus_reg_no : trust_reg_no}.${finalType}`;
+					break;																				
+			}			
+			
 			this.dbName = DBName;
 			this.surname = surname;
+
+			console.log('----------------->>>> DBName generated: ', DBName);
 
 			const myNewFile = { file: new File([event.file], DBName, {type: event.file.type}), result: event.result };
 

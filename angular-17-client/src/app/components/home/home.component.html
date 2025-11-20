@@ -551,14 +551,14 @@
 											<app-file-upload 
 												[fileName]="'Upload ID'" 
 												[fileType]="fileTypes.ID" 
-												(dbName)="updateDBName($event, fileTypes.ID)"></app-file-upload>								
+												(dbName)="updateDBName($event, fileTypes.ID, regType !== 'individual' ? regType : '')"></app-file-upload>								
 										</ng-container>
 
 										<ng-container *ngIf="isForeigner">
 											<app-file-upload 
 												[fileName]="'Upload Passport'" 
 												[fileType]="fileTypes.PASSPORT" 
-												(dbName)="updateDBName($event, fileTypes.PASSPORT)"></app-file-upload>								
+												(dbName)="updateDBName($event, fileTypes.PASSPORT, regType !== 'individual' ? regType : '')"></app-file-upload>								
 										</ng-container>	
 
 										<ng-container *ngIf="regType === 'individual'">
@@ -572,7 +572,7 @@
 										<app-file-upload 
 											[fileName]="proofOfAddressLabelText" 
 											[fileType]="fileTypes.PROOF_OF_ADDRESS" 
-											(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS)"></app-file-upload>										
+											(dbName)="updateDBName($event, fileTypes.PROOF_OF_ADDRESS, regType !== 'individual' ? regType : '')"></app-file-upload>										
 
 									</div>								
 								</div>					
