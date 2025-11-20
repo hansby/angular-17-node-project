@@ -5,9 +5,9 @@ import { delay, Observable, of } from 'rxjs';
 const baseUrl = 'http://localhost:8080/api';
 
 export interface IUser {
-	firstName: string,
-	lastName: string,
-	idpassport: string,
+	first_name: string,
+	last_name: string,
+	id_number: string,
 }
 
 @Injectable({

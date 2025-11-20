@@ -39,9 +39,9 @@ export class LoginComponent {
 				console.log('Login successful', response);
 				this.isLoading = false;
 				this.localStorageService.storeUserData({
-					firstName: response.firstName,
-					lastName: response.lastName,
-					idpassport: response.idpassport,
+					firstName: response.first_name,
+					lastName: response.last_name,
+					idpassport: response.id_number,
 					userCanProceed: true,
 					isForeignerMode: false,
 				}).subscribe(() => {

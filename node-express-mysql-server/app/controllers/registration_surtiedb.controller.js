@@ -84,7 +84,11 @@ exports.findOne = (req, res) => {
   RegistrationSurtie.findOne({ where: { id_number: id_number } }) //{ [Op.eq]: id_number }
     .then(data => {
       if (data) {
-        res.send(data);
+        res.send({
+					first_name: data.first_name,
+					last_name: data.last_name,
+					id_number: data.id_number,					
+				});
       } else {
 				logger.error(`ID does not exist: ${id_number}`);
         res.status(404).send({
