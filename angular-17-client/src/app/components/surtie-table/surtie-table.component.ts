@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ISearchResults, ISearchResultsSurtieDB, SearchService, searchType } from '../../services/search.service';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilKeyChanged, map, startWith } from 'rxjs';
+import { ISurtieDBRecord, RegistrationsService } from '../../services/registrations.service';
 
 const USERNAME = 'raymond001';
 const PASSWORD = 'AccessApps001';
@@ -26,10 +27,16 @@ export class SurtieTableComponent implements OnInit {
 	_UISearchResults: Array<ISearchResultsSurtieDB> = [];
 	noResultsFound: boolean = false;
 
+	allRecords: Array<ISurtieDBRecord> = [];
 
-	constructor(private search: SearchService) {}
+
+	constructor(private search: SearchService, private registrationsService: RegistrationsService) {}
 
 	ngOnInit(): void {
+		this.registrationsService.getAllSurtieDBRecords().subscribe(records => {
+			this.allRecords = records;
+		});
+		
 		/*this.form.controls['search'].valueChanges.pipe(
 			map((val) => ({ ...val, hash: JSON.stringify(val) })),
 			distinctUntilKeyChanged('hash'),

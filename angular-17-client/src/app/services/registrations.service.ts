@@ -7,6 +7,12 @@ import { map } from 'rxjs/operators';
 
 const baseUrl = 'http://localhost:8080/api/registrations';
 
+export interface ISurtieDBRecord {
+	id_number: string,
+	first_name: string,
+	last_name: string,
+}
+
 export interface IStats {
 	totalApplications: number;
 	registeredToday: number;
@@ -39,6 +45,10 @@ export interface IRequiredQParams {
 })
 export class RegistrationsService {
 	constructor(private http: HttpClient) {}
+
+	getAllSurtieDBRecords(): Observable<ISurtieDBRecord[]> {
+		return this.http.get<ISurtieDBRecord[]>(`http://localhost:8080/api/registrations_surtiedb`);
+	}
 
 	getAll(params: IRequiredQParams, regType: string, saCitizen: boolean): Observable<Registration[]> {
     const p: [string, string|number|boolean|undefined][] = [

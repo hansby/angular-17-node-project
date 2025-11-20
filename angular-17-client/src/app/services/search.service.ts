@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Registration } from '../models/registration.model';
-import { REG_TYPE } from '../components/home/home.component';
 
 const baseUrl = 'http://localhost:8080/api/search';
 
