@@ -21,5 +21,6 @@ db.sequelize = sequelize;
 
 db.registrations = require("./registration.model.js")(sequelize, Sequelize);
 db.error_logs = require("./error_logs.model.js")(sequelize, Sequelize);
+db.surties = require("./registration_surtiedb.model.js")(sequelize, Sequelize);
 
 module.exports = db;

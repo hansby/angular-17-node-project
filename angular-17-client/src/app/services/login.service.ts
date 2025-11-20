@@ -17,9 +17,8 @@ export class LoginService {
 	constructor(private http: HttpClient) {}
 
 	getUserCredentials(idpassport: string): Observable<IUser> {
-		return of({firstName: 'John', lastName: 'Doe', idpassport} as IUser).pipe(
+		return this.http.get<IUser>(`${baseUrl}/idsearch?id_number=${idpassport}`).pipe(
 			delay(4000)
 		);
-		//return this.http.post<IUser>(`${baseUrl}/login`, { idpassport });
 	}
 }

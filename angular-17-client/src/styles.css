@@ -89,3 +89,7 @@ hr {
 .form-signin input[type="password"] {
   margin-bottom: 10px;
 }
+
+.red-text {
+	color: red;
+}

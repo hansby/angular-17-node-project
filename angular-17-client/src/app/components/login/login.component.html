@@ -42,7 +42,10 @@
 									[disabled]="selectedNationality.length <= 0 || idpassport.length <= 0 || selectedNationality === 'Nationality'">
 										{{ isLoading ? 'Please wait...' : 'Sign in'}}</button> 
 
-								<p *ngIf="errorMsg">The information provided cannot be verified on our system. Please try again or contact support.</p>
+									<ng-container *ngIf="errorMsg">
+										<br /><br />
+										<p class="red-text">The information provided cannot be verified on our system. Please try again or contact support.</p>
+									</ng-container>
 							</form> 
 						</main>
 								
