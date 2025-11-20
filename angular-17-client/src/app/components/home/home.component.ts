@@ -131,7 +131,7 @@ function isNumber(n: string) {
 	styleUrl: './home.component.css',
 })
 export class HomeComponent {
-	page: number = 1; // when all said and done this final value will be = 1
+	page: number = 2; // when all said and done this final value will be = 1
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -165,16 +165,6 @@ export class HomeComponent {
 		private loggerService: LoggerService,
 		private router: Router
 	){
-
-		this.localStore = document.defaultView?.localStorage;
-		if (this.localStore) {
-			const getCompletedApplicationformKey = this.localStore.getItem(LS_KEY_FORM_COMPLETE);
-			//this.applicationInProgress = getCompletedApplicationformKey === '1' ? false : true;
-			const getLSUser = this.localStore.getItem(LS_KEY_USER);
-			if (!getLSUser) {
-				this.router.navigate(['/']);
-			}
-		}
 
 		this.regForm = new FormGroup({
 			reg_type: new FormControl('', [Validators.required]),
@@ -221,6 +211,28 @@ export class HomeComponent {
 		});
 
 		const ctrls = this.regForm.controls;
+
+
+		this.localStore = document.defaultView?.localStorage;
+		if (this.localStore) {
+			const getCompletedApplicationformKey = this.localStore.getItem(LS_KEY_FORM_COMPLETE);
+			//this.applicationInProgress = getCompletedApplicationformKey === '1' ? false : true;
+			const getLSUser = this.localStore.getItem(LS_KEY_USER);
+			if (!getLSUser) {
+				this.router.navigate(['/']);
+			} else {
+				const parsedLSUser = JSON.parse(getLSUser);
+				if (parsedLSUser && parsedLSUser.isForeignerMode === false) {
+					setTimeout(() => {
+						this.regForm.controls['citizenStatus'].setValue('citizen');
+						this.regForm.controls['user_id'].setValue(parsedLSUser.idpassport);
+						this.regForm.controls['user_id'].disable();
+					}, 400);
+				} else {
+					setTimeout(() => { this.regForm.controls['citizenStatus'].setValue('foreigner') }, 400);
+				}
+			}
+		}		
 
 		const listener_RegType$ = ctrls['reg_type'].valueChanges;
 		const $_regType = listener_RegType$

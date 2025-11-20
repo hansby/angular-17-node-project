@@ -117,10 +117,8 @@
 								<hr class="my-4">
 	
 								<ng-container>
-	
-									<h5 class="mb-3">I am</h5>
 			
-									<div class="my-3">
+									<div class="my-3" style="visibility: hidden; height: 0;">
 										<div class="col-sm-6">
 										<div class="form-check">
 											<input id="citizen" 
@@ -522,7 +520,7 @@
 												[fileType]="fileTypes.TRUST_DOC"
 												(dbName)="updateDBName($event, fileTypes.TRUST_DOC)"></app-file-upload>
 										</ng-container>
-																				
+
 										<ng-container>
 											<app-file-upload 
 												[fileName]="'Upload Bank Confirmation Letter'" 
