@@ -10,6 +10,12 @@ export interface ISearchResultsSurtieDB {
 	lastName: string,
 }
 
+export interface ISearchResultsSurtieDBAlt {
+	id_number: string,
+	first_name: string,
+	last_name: string,
+}
+
 export interface ISearchResults {
 	user_id: string,
 	bus_reg_no: string,
@@ -64,13 +70,7 @@ export class SearchService {
 		return this.http.get<ISearchResults[]>(`${baseUrl}?${query}`);
 	}
 
-	getBySearchFilterSurtieDB(value: string): Observable<ISearchResultsSurtieDB[]> {
-		const p: [string, string|number|boolean|undefined][] = [
-			['idpassport', value],
-			['firstName', value],
-			['lastName', value],
-		];
-		const query = p.map((p) => `${p[0]}=${p[1]}`).join('&');
-		return this.http.get<ISearchResultsSurtieDB[]>(`${baseUrl}?${query}`);
+	getBySearchFilterSurtieDB(value: string): Observable<ISearchResultsSurtieDBAlt[]> {
+		return this.http.get<ISearchResultsSurtieDBAlt[]>(`${baseUrl}/surtiedb?keyword=${value}`);
 	}	
 }

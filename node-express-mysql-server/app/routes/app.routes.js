@@ -48,7 +48,8 @@ module.exports = app => {
 	/**
 	 * SEARCH
 	 */
-  router_search.get("/", search.findAll);
+  router_search.get("/", search.findAll); // Registrations ONLY
+	router_search.get("/surtiedb", search.findOne); // SurtieDB search ONLY
 
 	/**
 	 * ERROR LOGS

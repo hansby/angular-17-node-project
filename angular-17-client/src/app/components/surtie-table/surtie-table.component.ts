@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ISearchResultsSurtieDB, SearchService, searchType } from '../../services/search.service';
+import { ISearchResultsSurtieDB, ISearchResultsSurtieDBAlt, SearchService, searchType } from '../../services/search.service';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ISurtieDBRecord, RegistrationsService } from '../../services/registrations.service';
 import { LoginService } from '../../services/login.service';
@@ -24,7 +24,7 @@ export class SurtieTableComponent implements OnInit {
   });	
 
 	searchType = searchType;
-	_UISearchResults: Array<ISearchResultsSurtieDB> = [];
+	_UISearchResults: Array<ISearchResultsSurtieDBAlt> = [];
 	noResultsFound: boolean = false;
 
 	allRecords: Array<ISurtieDBRecord> = [];
@@ -71,26 +71,8 @@ export class SurtieTableComponent implements OnInit {
 		this.search.getBySearchFilterSurtieDB(keyword).subscribe((searchResults) => {
 			console.log('lets see searchResults: ', searchResults);
 			if (searchResults.length > 0) {
-				this._UISearchResults = searchResults;
-				/**
-				 *.map((result) => {
-					let formattedNo = null;
-					switch(this.searchBy) {
-						case searchType.id:
-							formattedNo = result.
-						break;
-						case y:
-							// code block
-						break;
-						default:
-							// code block						
-					}
-					return {
-						...result,
-
-					}
-				}) 
-				 */
+				//this._UISearchResults = searchResults;
+				this.allRecords = searchResults;
 			} else {
 				this.noResultsFound = true;
 			}

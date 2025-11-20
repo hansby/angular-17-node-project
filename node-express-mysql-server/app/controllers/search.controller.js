@@ -23,6 +23,7 @@ const logger = winston.createLogger({
 });
 const db = require("../models");
 const Registration = db.registrations;
+const RegistrationSurtie = db.surties;
 const Op = db.Sequelize.Op;
 
 // Retrieve all Registrations from the database.
@@ -63,29 +64,40 @@ exports.findAll = (req, res) => {
     });
 };
 
-// Find a single Registration with an id
+// Find a single SURTIEDB RECORD with an id
 exports.findOne = (req, res) => {
-  const id = req.params.id;
-	const user_id = req.params.user_id;
-	const passport = req.params.passport;
-	const email = req.params.email;
-	const lastName = req.params.lastName;
 
-  Registration.findOne({ where: { user_id: id } })
+  const key = req.query.keyword;
+
+	const condition = {
+		where: {
+			[Op.or]: [
+				{ id_number: { [Op.like]: `%${key}%` } },
+				{ first_name: { [Op.like]: `%${key}%` } },
+				{ last_name: { [Op.like]: `%${key}%` } },
+			]
+		}
+	}	
+
+  // If no params -> fetch all
+  //const condition = orConditions.length > 0 ? { where: { [Op.or]: orConditions } } : {};
+
+	// SURTIEDB only - no Registrations
+  RegistrationSurtie.findAll(condition)
     .then(data => {
       if (data) {
         res.send(data);
       } else {
-				logger.error(`Cannot find Registration: ${id} ${user_id} ${passport} ${email} ${lastName}`);
+				logger.error(`Cannot find Registration:`);
         res.status(404).send({
-          message: `Cannot find Registration with id=${id}.`
+          message: `Cannot find Registration with id=.`
         });
       }
     })
     .catch(err => {
-			logger.error(`Error retrieving Registration: ${id} ${user_id} ${passport} ${email} ${lastName}`);
+			logger.error(`Error retrieving Registration:`);
       res.status(500).send({
-        message: "Error retrieving Registration with id=" + id
+        message: "Error retrieving Registration with id="
       });
     });
 };
