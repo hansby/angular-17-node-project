@@ -67,12 +67,10 @@ export class SurtieTableComponent implements OnInit {
 		this._UISearchResults = [];
 		const keyword = this.form.controls['search'].value;
 		if (!keyword || keyword.length <= 0) return;
-		console.log('keyword from search: ', keyword);
 		this.search.getBySearchFilterSurtieDB(keyword).subscribe((searchResults) => {
 			console.log('lets see searchResults: ', searchResults);
 			if (searchResults.length > 0) {
-				//this._UISearchResults = searchResults;
-				this.allRecords = searchResults;
+				this._UISearchResults = searchResults;
 			} else {
 				this.noResultsFound = true;
 			}

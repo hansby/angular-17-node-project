@@ -1,8 +1,11 @@
 
 const projectId = '522083403925';
 const location = 'us';
-const processorId = '5b018beea92e33bf' // Proof of Address Processor ID
+const processorId = '1450436d1aa73a' // Proof of Address Processor ID
 const filePath = __basedir + "/resources/static/assets/uploads/";
+
+
+//https://us-documentai.googleapis.com/v1/projects/522083403925/locations/us/processors//processorVersions/pretrained-foundation-model-v1.5-pro-2025-06-20:process
 
 const { DocumentProcessorServiceClient } = require('@google-cloud/documentai').v1;
 

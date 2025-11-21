@@ -472,8 +472,8 @@ export class HomeComponent {
 		 * */
 
 		if (this.regType === REG_TYPE.IND) {
-			this.fileUploadValidationTemplate('file_bcl', 'Bank confirmation letter', fileTypes.BANK_CONF_LETTER, user, this.runValidationLogic_Individual_BCL);
 			this.fileUploadValidationTemplate('file_poa', 'Proof of Address', fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_Individual_POA);
+			this.fileUploadValidationTemplate('file_bcl', 'Bank confirmation letter', fileTypes.BANK_CONF_LETTER, user, this.runValidationLogic_Individual_BCL);
 			if (this.isSACitizen) {
 				this.fileUploadValidationTemplate('file_id', 'ID', fileTypes.ID, user, this.runValidationLogic_Individual_ID);
 			}
