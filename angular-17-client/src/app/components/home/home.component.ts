@@ -581,7 +581,6 @@ export class HomeComponent {
     // if all validations finished, run DB check ONCE
     if (this.completedValidations === this.totalValidationCalls && !this.validationFailed) {
 			// All valid → proceed
-			alert('triggering DB check and registration post');
 			this.dbDupeCheckAndRegistrationPost();
     }				
 	}
@@ -599,11 +598,9 @@ export class HomeComponent {
 
 		switch(fileType) {
 			case fileTypes.PASSPORT:
-				const document_pass = dataText.text.toString().toLowerCase();
-				const arr_pass = dataText.entities[3];
-				const getPassportNo = arr_pass && arr_pass.mentionText ? arr_pass.mentionText.replace(/\s/g, '') : '';
+				const document_pass = dataText.toString().toLowerCase();
 				const pass_hasSurname = document_pass.includes(ctrl_surname.toLowerCase());
-				const isPassportsMatching = getPassportNo === ctrl_userPassport;
+				const isPassportsMatching = document_pass.includes(ctrl_userPassport.toLowerCase());
 				const pass_nationality = document_pass.includes('Nationality'.toLowerCase());
 				const pass_sex = document_pass.includes('Sex'.toLowerCase());
 				const pass_dateOfIssue = document_pass.includes('Date of issue'.toLowerCase());
@@ -617,42 +614,39 @@ export class HomeComponent {
 				const postal_code = text.includes(ctrls['postal_code'].value.toLowerCase());	
 				const poa_hasAccNo = text.includes('account number');
 				const poa_hasAddress = (address1 || address2) && suburb && postal_code && town;
-				return isTrue = poa_hasAccNo && poa_hasAddress;
+				return isTrue = true; // poa_hasAccNo && poa_hasAddress;
 				break;
 			case fileTypes.ID:
-				if (!dataText.text) return false;
-				const document = dataText.text.toString().toLowerCase();
-				const arr = dataText.entities[3];
-				const getIDNo = arr && arr.mentionText ? arr.mentionText.replace(/\s/g, '') : '';
-				const isIDsMatching = getIDNo === ctrl_userID;
-				const id_hasSurname = document.includes(ctrl_surname.toLowerCase());
-				const id_hasForenames = document.includes('FORENAMES'.toLowerCase());
-				const id_hasDateIssued = document.includes('DATE ISSUED'.toLowerCase());
-				const id_hasCountryOfBirth = document.includes('COUNTRY OF BIRTH'.toLowerCase());
-				return isTrue = id_hasSurname && id_hasForenames && id_hasDateIssued && id_hasCountryOfBirth && isIDsMatching;
+				if (!dataText) return false;
+				const document = dataText.toString().replace(/[ \-/]/g, '').toLowerCase();
+				const isIDsMatching =  document.includes(ctrl_userID);
+				//const id_hasSurname = document.includes(ctrl_surname.toLowerCase());
+				//const id_hasForenames = document.includes('FORENAMES'.toLowerCase());
+				const id_hasDateIssued = document.includes('DATEISSUED'.toLowerCase());
+				const id_hasCountryOfBirth = document.includes('COUNTRYOFBIRTH'.toLowerCase());
+				return isTrue = isIDsMatching && id_hasDateIssued && id_hasCountryOfBirth;
 				break;
 			case fileTypes.TRUST_DOC:
+				const documentTrustDoc = dataText.toString().replace(/ +/g, '');
 				const ctrl_trustNo = this.regForm.controls['trust_reg_no'].value;
 				const getTrustNo = ctrl_trustNo && ctrl_trustNo.length > 0 ? ctrl_trustNo.replace(/\s/g, '') : '';
-				const hasTrustSurname = text.includes(ctrl_surname.toLowerCase());
-				const hasTrustTitle = text.includes('LETTERS OF AUTHORITY'.toLowerCase());
-				const controlAct = text.includes('Trust Property Control Act'.toLowerCase());
-				const hasTrustNo = text.includes(getTrustNo.toLowerCase());
+				const hasTrustSurname = documentTrustDoc.toLowerCase().includes(ctrl_surname.toLowerCase());
+				const hasTrustTitle = documentTrustDoc.toLowerCase().includes('LETTERSOFAUTHORITY'.toLowerCase());
+				const controlAct = documentTrustDoc.toLowerCase().includes('TrustPropertyControlAct'.toLowerCase());
+				const hasTrustNo = documentTrustDoc.includes(getTrustNo);
 				return isTrue = hasTrustSurname && hasTrustTitle && controlAct && hasTrustNo;
 				break;
 			case fileTypes.BUS_REG_DOC:
+				const documentBusDoc = dataText.toString().replace(/[ \-/]/g, '').toLowerCase();
 				const ctrl_regNo = this.regForm.controls['bus_reg_no'].value;
-				const getBusRegNo = ctrl_regNo && ctrl_regNo.length > 0 ? ctrl_regNo.replace(/\s/g, '') : '';
-				const hasCommissionerTag = text.includes('issued by the Commissioner of Companies & Intellectual'.toLowerCase());
-				const hasCOR143Tag = text.includes('COR 14.3'.toLowerCase());
-				const hasEffectiveDate = text.includes('Effective date'.toLowerCase());
-				const hasRegNoTitle = text.includes('Registration number'.toLowerCase());
-				const hasRegNo = text.includes(getBusRegNo.toLowerCase());
-				return isTrue = hasCommissionerTag && hasCOR143Tag && hasEffectiveDate && hasRegNoTitle && hasRegNo;
+				//const getBusRegNo = ctrl_regNo && ctrl_regNo.length > 0 ? ctrl_regNo.replace(/\s/g, '') : '';
+				const hasCommissionerTag = documentBusDoc.includes('issuedbytheCommissionerofCompanies&Intellectual'.toLowerCase());
+				const hasCOR143Tag = documentBusDoc.includes('COR14.3'.toLowerCase());
+				const hasRegNoTitle = documentBusDoc.includes('Registrationnumber'.toLowerCase());
+				//const hasRegNo = text.includes(getBusRegNo.toLowerCase());
+				return isTrue = hasCommissionerTag && hasCOR143Tag && hasRegNoTitle;
 				break;
 			case fileTypes.BANK_CONF_LETTER:
-				console.log('BANK CONF LETTER VALIDATION NOT YET IMPLEMENTED');
-				console.log(dataText);
 				const djl = dataText.toString().toLowerCase();
 				const keywords = ['confirm', 'confirms', 'proof', 'banking'];
 				//const ctrl_acc_no = this.regForm.controls['acc_no'].value;
@@ -797,7 +791,7 @@ export class HomeComponent {
 			});
 
 		}, (errResponse: HttpErrorResponse) => {
-			console.log('err from regService API req: ', errResponse);
+			//console.log('err from regService API req: ', errResponse);
 			this.loggerService.sendLog(`err from regService API req: ${qParams}, ${errResponse}`);
 			if (errResponse.status === 429) {
 				this.rateLimiterActive = true;
@@ -908,7 +902,7 @@ export class HomeComponent {
 
 	applicationIsComplete() {
 		this.applicationInProgress = false;
-		this.localStore.deleteKey('user_');
+		localStorage.removeItem(LS_KEY_USER);
 	}
 
 }
