@@ -31,4 +31,11 @@ export class LocalStorageService {
 			delay(1000)
 		);
 	}
+
+	deleteKey(key: string): Observable<boolean> {
+		localStorage.removeItem(key);
+		return of(true).pipe(
+			delay(500)
+		);
+	}
 }

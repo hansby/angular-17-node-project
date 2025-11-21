@@ -156,6 +156,10 @@ export class HomeComponent {
 	emailRegex = /^\S+@\S+\.\S+$/;
 	proofOfAddressLabelText: string = 'Upload Proof of Address';
 
+	totalValidationCalls: number = 0;
+	completedValidations = 0;
+	validationFailed = false;
+
 	constructor(
 		private fb: FormBuilder, 
 		private regService: RegistrationsService,
@@ -390,8 +394,6 @@ export class HomeComponent {
 			this.dbName = DBName;
 			this.surname = surname;
 
-			console.log('----------------->>>> DBName generated: ', DBName);
-
 			const myNewFile = { file: new File([event.file], DBName, {type: event.file.type}), result: event.result };
 
 			switch (fileType) {
@@ -437,22 +439,31 @@ export class HomeComponent {
 		 *  NEW UPLOAD DOC STRUCTURE - LEFT COLUMN: FOR BUS and TRUST UPLOAD FIELDS
 		 * 	=========================================================================
 		 * */
-		if (this.regType === REG_TYPE.BUS || this.regType === REG_TYPE.TRUST) {
+		if (this.regType === REG_TYPE.BUS) {
 			this.fileUploadValidationTemplate('file_bcl_bustrust', 'Bank confirmation letter', fileTypes.BANK_CONF_LETTER, user, this.runValidationLogic_BusReg_BCL);
 			this.fileUploadValidationTemplate('file_poa_bustrust', `Proof of Address (${this.regType})`, fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_BusReg_POA);
-			this.fileUploadValidationTemplate('file_poa', 'Proof of Address (individual)', fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_Individual_POA);
+			this.fileUploadValidationTemplate('file_poa', 'Proof of Address (individual)', fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_Individual_POA);			
+			this.fileUploadValidationTemplate('file_bus_reg', 'Business Registration', fileTypes.PASSPORT, user, this.runValidationLogic_BusReg);
 			if (this.isSACitizen) {
 				this.fileUploadValidationTemplate('file_id', 'ID', fileTypes.ID, user, this.runValidationLogic_Individual_ID);
 			}
 			if (this.isForeigner) {
 				this.fileUploadValidationTemplate('file_passport', 'Passport', fileTypes.PASSPORT, user, this.runValidationLogic_Passport);
-			}			
-		}
-		if (this.regType === REG_TYPE.BUS) {
-			this.fileUploadValidationTemplate('file_bus_reg', 'Business Registration', fileTypes.PASSPORT, user, this.runValidationLogic_BusReg);
+			}					
+			this.totalValidationCalls = 5; // ID/Passport, POA, BCL, Bus Reg
 		}
 		if (this.regType === REG_TYPE.TRUST) {
+			this.fileUploadValidationTemplate('file_bcl_bustrust', 'Bank confirmation letter', fileTypes.BANK_CONF_LETTER, user, this.runValidationLogic_BusReg_BCL);
+			this.fileUploadValidationTemplate('file_poa_bustrust', `Proof of Address (${this.regType})`, fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_BusReg_POA);
+			this.fileUploadValidationTemplate('file_poa', 'Proof of Address (individual)', fileTypes.PROOF_OF_ADDRESS, user, this.runValidationLogic_Individual_POA);			
 			this.fileUploadValidationTemplate('file_trust', 'Letter of authority', fileTypes.TRUST_DOC, user, this.runValidationLogic_Trust);
+			if (this.isSACitizen) {
+				this.fileUploadValidationTemplate('file_id', 'ID', fileTypes.ID, user, this.runValidationLogic_Individual_ID);
+			}
+			if (this.isForeigner) {
+				this.fileUploadValidationTemplate('file_passport', 'Passport', fileTypes.PASSPORT, user, this.runValidationLogic_Passport);
+			}
+			this.totalValidationCalls = 5; // ID/Passport, POA, BCL, Trust Doc
 		}		
 
 		/** =========================================================================
@@ -469,6 +480,7 @@ export class HomeComponent {
 			if (this.isForeigner) {
 				this.fileUploadValidationTemplate('file_passport', 'Passport', fileTypes.PASSPORT, user, this.runValidationLogic_Passport);
 			}			
+			this.totalValidationCalls = 3; // ID/Passport, POA, BCL
 		}
 		
 	}
@@ -489,10 +501,11 @@ export class HomeComponent {
 				content: result.toString().includes('base64') ? result.split('base64,')[1] : result
 			}
 		}			
-		const docAI = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj, fileType).pipe(
-			catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ${errorTag}: ${user}`))
-		);		
-		if (this.formSubmissionErrors_PAGE3.length <= 0) { // if no errors so far, run the docAI call
+		if (this.formSubmissionErrors_PAGE3.length <= 0) { // if no errors so far, run the docAI call	
+			alert('filetype coming in here: ' + fileType);	
+			const docAI = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj, fileType).pipe(
+				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ${errorTag}: ${user}`))
+			);		
 			this.forkJoinRunner([docAI], cb.bind(this));
 		}		
 	}
@@ -553,15 +566,24 @@ export class HomeComponent {
 			if (!isValid) {
 				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
+				this.validationFailed = true;
 				return;
-			} else {
-				// Do DB Dupe Check and Create registration if PASS = True
-				this.dbDupeCheckAndRegistrationPost();	
 			}
 		} else {
 			formSubList.push(`We could not verify your ${errTag} document. Please reach out to your contact or try again later`);
+			this.validationFailed = true;
 			return;	
 		}			
+
+    // mark this validation as complete
+    this.completedValidations++;
+
+    // if all validations finished, run DB check ONCE
+    if (this.completedValidations === this.totalValidationCalls && !this.validationFailed) {
+			// All valid → proceed
+			alert('triggering DB check and registration post');
+			this.dbDupeCheckAndRegistrationPost();
+    }				
 	}
 
 	isDocValid(dataText: any, fileType: fileTypes): boolean {
@@ -595,9 +617,10 @@ export class HomeComponent {
 				const postal_code = text.includes(ctrls['postal_code'].value.toLowerCase());	
 				const poa_hasAccNo = text.includes('account number');
 				const poa_hasAddress = (address1 || address2) && suburb && postal_code && town;
-				return isTrue = true; // poa_hasAccNo && poa_hasAddress
+				return isTrue = poa_hasAccNo && poa_hasAddress;
 				break;
 			case fileTypes.ID:
+				if (!dataText.text) return false;
 				const document = dataText.text.toString().toLowerCase();
 				const arr = dataText.entities[3];
 				const getIDNo = arr && arr.mentionText ? arr.mentionText.replace(/\s/g, '') : '';
@@ -626,7 +649,16 @@ export class HomeComponent {
 				const hasRegNoTitle = text.includes('Registration number'.toLowerCase());
 				const hasRegNo = text.includes(getBusRegNo.toLowerCase());
 				return isTrue = hasCommissionerTag && hasCOR143Tag && hasEffectiveDate && hasRegNoTitle && hasRegNo;
-				break;								
+				break;
+			case fileTypes.BANK_CONF_LETTER:
+				console.log('BANK CONF LETTER VALIDATION NOT YET IMPLEMENTED');
+				console.log(dataText);
+				const djl = dataText.toString().toLowerCase();
+				const keywords = ['confirm', 'confirms', 'proof', 'banking'];
+				//const ctrl_acc_no = this.regForm.controls['acc_no'].value;
+				const basics = djl.includes('account') && djl.includes('branch'); // && djl.includes(ctrl_acc_no)
+				isTrue = basics && keywords.filter(kw => djl.includes(kw)).length > 0;
+				break;	
 		}
 		return isTrue
 	}
@@ -650,6 +682,13 @@ export class HomeComponent {
 		if (this.formSubmissionErrors_PAGE3.length > 0) {
 			return;
 		}		
+
+		// all validations passed - proceed to DB dupe check and registration post
+
+		this.totalValidationCalls = 0;
+		this.completedValidations = 0;
+		this.validationFailed = false;
+
 		const { localStore } = this;
 		const body: IRegistration = this.regForm.value;
 		const bodyCopyForFileUploads = Object.assign({}, body);
@@ -703,7 +742,7 @@ export class HomeComponent {
 					const myNewFile_trust = new File([trustObj], trustObj.name, {type: trustObj.type});
 					this.fileUploadService.upload(myNewFile_trust).subscribe((resp) => {
 						this.loggerService.sendLog(`TRUST DOC UPLOAD FILE SUCCESS!: ${qParams}`, 1);
-						this.applicationInProgress = false;
+						this.applicationIsComplete();
 						this.isLoading = false;						
 					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`TRUST DOC UPLOAD FILE ERROR!: ${qParams}`));
 				}
@@ -713,7 +752,7 @@ export class HomeComponent {
 					const myNewFile_bus = new File([busObj], busObj.name, {type: busObj.type});
 					this.fileUploadService.upload(myNewFile_bus).subscribe((resp) => {
 						this.loggerService.sendLog(`BUS DOC UPLOAD FILE SUCCESS!: ${qParams}`, 1);
-						this.applicationInProgress = false;
+						this.applicationIsComplete();
 						this.isLoading = false;						
 					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`BUS DOC UPLOAD FILE ERROR!: ${qParams}`));
 				}		
@@ -728,7 +767,7 @@ export class HomeComponent {
 					const API_ID = this.fileUploadService.upload(myNewFile_ID);
 		
 					forkJoin(([API_POA, API_ID])).subscribe((resp) => {
-						this.applicationInProgress = false;
+						this.applicationIsComplete();
 						this.isLoading = false;						
 						this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE SUCCESS!: ${qParams}`, 1);
 					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE Failed: ${qParams}`));			
@@ -739,7 +778,7 @@ export class HomeComponent {
 					const myNewFile_PASSPORT = new File([Obj_PASSPORT], Obj_PASSPORT.name, {type: Obj_PASSPORT.type});
 					const API_PASSPORT = this.fileUploadService.upload(myNewFile_PASSPORT);
 					forkJoin(([API_PASSPORT])).subscribe((resp) => {
-						this.applicationInProgress = false;
+						this.applicationIsComplete();
 						this.isLoading = false;
 						this.loggerService.sendLog(`Passport UPLOAD FILE SUCCESS!: ${qParams}`, 1);
 					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Passport UPLOAD FILE FAILED!: ${qParams}`));	
@@ -753,7 +792,7 @@ export class HomeComponent {
 					this.rateLimiterActive = false;
 				}
 				this.isLoading = false;
-				this.applicationInProgress = false;
+				this.applicationIsComplete();
 				return;
 			});
 
@@ -762,7 +801,7 @@ export class HomeComponent {
 			this.loggerService.sendLog(`err from regService API req: ${qParams}, ${errResponse}`);
 			if (errResponse.status === 429) {
 				this.rateLimiterActive = true;
-				this.applicationInProgress = false;
+				this.applicationIsComplete();
 			} else {
 				this.formSubmissionErrors_PAGE3.push('System error: We could not connect to our services. Please try again later.')
 			}
@@ -865,6 +904,11 @@ export class HomeComponent {
 
 	previousPage(){
 		this.page--;
+	}
+
+	applicationIsComplete() {
+		this.applicationInProgress = false;
+		this.localStore.deleteKey('user_');
 	}
 
 }
