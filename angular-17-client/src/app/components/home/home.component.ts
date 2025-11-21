@@ -905,5 +905,9 @@ export class HomeComponent {
 		localStorage.removeItem(LS_KEY_USER);
 	}
 
+	displayProvisionalDocText(): any {
+	 return this.formSubmissionErrors_PAGE3.filter(error => error.includes('Please')).length <= 0;
+	}	
+
 }
 
