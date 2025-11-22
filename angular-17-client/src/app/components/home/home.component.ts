@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { BehaviorSubject, catchError, delay, forkJoin, Observable } from 'rxjs';
+import { BehaviorSubject, catchError, delay, forkJoin, Observable, of } from 'rxjs';
 import {
 	FormControl, FormGroup, FormBuilder, Validators,
 } from '@angular/forms';
@@ -502,9 +502,11 @@ export class HomeComponent {
 			}
 		}			
 		if (this.formSubmissionErrors_PAGE3.length <= 0) { // if no errors so far, run the docAI call	
-			alert('filetype coming in here: ' + fileType);	
 			const docAI = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj, fileType).pipe(
-				catchError((err: HttpErrorResponse) => this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ${errorTag}: ${user}`))
+				catchError((err: HttpErrorResponse) => {
+					this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ${errorTag}: ${user}`);
+					return of(err);
+				})
 			);		
 			this.forkJoinRunner([docAI], cb.bind(this));
 		}		
@@ -567,6 +569,25 @@ export class HomeComponent {
 				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
 				this.validationFailed = true;
+
+				// SEND PROVISIONAL UPLOAD TO FILE SERVER
+
+				const body: IRegistration = this.regForm.value;
+				const bodyCopyForFileUploads = Object.assign({}, body);
+
+				if (this.regType === REG_TYPE.TRUST) {
+					this.fileUploadHelper(bodyCopyForFileUploads.file_trust, false, fileTypes.TRUST_DOC, true);
+				}
+				if (this.regType === REG_TYPE.BUS) {
+					this.fileUploadHelper(bodyCopyForFileUploads.file_bus_reg, false, fileTypes.BUS_REG_DOC, true);
+				}
+				if (this.isForeigner) {
+					this.fileUploadHelper(bodyCopyForFileUploads.file_passport, false, fileTypes.PASSPORT, true);
+				}				
+				if (this.isSACitizen && this.regType === REG_TYPE.IND) {
+					this.fileUploadHelper(bodyCopyForFileUploads.file_id, false, fileTypes.ID, true);
+					this.fileUploadHelper(bodyCopyForFileUploads.file_poa, false, fileTypes.PROOF_OF_ADDRESS, true);
+				}
 				return;
 			}
 		} else {
@@ -732,23 +753,27 @@ export class HomeComponent {
 				// Form is Successfully stored in DB ... NOW we can upload Files
 
 				if (this.regType === REG_TYPE.TRUST) {
+					/*
 					const trustObj: File = bodyCopyForFileUploads.file_trust.file;
 					const myNewFile_trust = new File([trustObj], trustObj.name, {type: trustObj.type});
 					this.fileUploadService.upload(myNewFile_trust).subscribe((resp) => {
 						this.loggerService.sendLog(`TRUST DOC UPLOAD FILE SUCCESS!: ${qParams}`, 1);
 						this.applicationIsComplete();
 						this.isLoading = false;						
-					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`TRUST DOC UPLOAD FILE ERROR!: ${qParams}`));
+					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`TRUST DOC UPLOAD FILE ERROR!: ${qParams}`));*/
+					this.fileUploadHelper(bodyCopyForFileUploads.file_trust, true, 'TRUST DOC');
 				}
 		
 				if (this.regType === REG_TYPE.BUS) {
+					/*
 					const busObj: File = bodyCopyForFileUploads.file_bus_reg.file;
 					const myNewFile_bus = new File([busObj], busObj.name, {type: busObj.type});
 					this.fileUploadService.upload(myNewFile_bus).subscribe((resp) => {
 						this.loggerService.sendLog(`BUS DOC UPLOAD FILE SUCCESS!: ${qParams}`, 1);
 						this.applicationIsComplete();
 						this.isLoading = false;						
-					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`BUS DOC UPLOAD FILE ERROR!: ${qParams}`));
+					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`BUS DOC UPLOAD FILE ERROR!: ${qParams}`));*/
+					this.fileUploadHelper(bodyCopyForFileUploads.file_bus_reg, true, 'BUS DOC');
 				}		
 		
 				if (this.isSACitizen && this.regType === REG_TYPE.IND) {
@@ -768,14 +793,16 @@ export class HomeComponent {
 				}
 
 				if (this.isForeigner) {
-					const Obj_PASSPORT: File = bodyCopyForFileUploads.file_passport.file;
+					/*const Obj_PASSPORT: File = bodyCopyForFileUploads.file_passport.file;
 					const myNewFile_PASSPORT = new File([Obj_PASSPORT], Obj_PASSPORT.name, {type: Obj_PASSPORT.type});
-					const API_PASSPORT = this.fileUploadService.upload(myNewFile_PASSPORT);
+					const API_PASSPORT = this.fileUploadService.upload(myNewFile_PASSPORT);*/
+					/*
 					forkJoin(([API_PASSPORT])).subscribe((resp) => {
 						this.applicationIsComplete();
 						this.isLoading = false;
 						this.loggerService.sendLog(`Passport UPLOAD FILE SUCCESS!: ${qParams}`, 1);
-					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Passport UPLOAD FILE FAILED!: ${qParams}`));	
+					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Passport UPLOAD FILE FAILED!: ${qParams}`));	*/
+					this.fileUploadHelper(bodyCopyForFileUploads.file_passport, true, 'PASSPORT DOC');
 				}
 
 			}, (err: HttpErrorResponse) => {
@@ -801,6 +828,18 @@ export class HomeComponent {
 			}
 			this.isLoading = false;
 		})		
+	}
+
+	fileUploadHelper(fileUploadObj: any, completeApplication: boolean = true, tag: string = '', isProvisional: boolean = false) {
+			const obj: File = fileUploadObj.file;
+			const newFile = new File([obj],( isProvisional ? `PROVISIONAL_${obj.name}` : obj.name), {type: obj.type});
+			this.fileUploadService.upload(newFile).subscribe((resp) => {
+				this.loggerService.sendLog(`${tag} DOC UPLOAD FILE SUCCESS!:`, 1);
+				if (completeApplication) {
+					this.applicationIsComplete();
+				}
+				this.isLoading = false;						
+			}, (err: HttpErrorResponse) => this.loggerService.sendLog(`${tag} DOC UPLOAD FILE ERROR!:`));
 	}
 
 	page2IsValid(){

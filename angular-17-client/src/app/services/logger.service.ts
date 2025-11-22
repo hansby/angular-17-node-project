@@ -27,10 +27,10 @@ export class LoggerService {
 		return this.http.post(`${baseUrl}`, { is_resolved: isResolved, log: data });
 	}
 
-	getAllRawLogs(filterByResolved: boolean = false): Observable<ISearchResultsLogs[]> {
+	getAllRawLogs(filterByUnResolved: boolean = false): Observable<ISearchResultsLogs[]> {
 		return this.http.get<ISearchResultsLogs[]>(`${baseUrl}`).pipe(
 			filter((logs) => logs && logs.length > 0),
-			map((logs) => filterByResolved ? logs.filter((log) => log.is_resolved) : logs.filter((log) => !log.is_resolved))
+			map((logs) => filterByUnResolved ? logs.filter((log) => !log.is_resolved) : logs.filter((log) => log.is_resolved))
 		);
 	}
 

@@ -27,7 +27,9 @@ export class ErrorLogsComponent implements OnInit {
 	constructor(private search: SearchService, private logs: LoggerService) {}
 
 	ngOnInit(): void {
-		this._logData$ = this.logs.getAllRawLogs();
+		this._logData$ = this.logs.getAllRawLogs(true).pipe(
+			tap((logs) => console.log('fetched logs: ', logs))
+		);
 	}
 
 	updateSearchBy(type: searchType) {
