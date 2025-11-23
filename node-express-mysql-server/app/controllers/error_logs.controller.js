@@ -62,11 +62,11 @@ exports.findAll = (req, res) => {
 
   const condition = {
     where: orConditions.length > 0 ? { [Op.or]: orConditions } : undefined,
-    order: [
-      ['is_resolved', 'DESC'], // Unresolved (0) last
-      ['id', 'ASC']          // Optional: latest logs inside each group
-    ],
-    limit: 40                // Always limit to 40
+    //order: [
+      //['is_resolved', 'DESC'], // Unresolved (0) last
+      //['id', 'ASC']          // Optional: latest logs inside each group
+    //],
+    //limit: 40                // Always limit to 40
   };
 
   ErrorLog.findAll(condition)

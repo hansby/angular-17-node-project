@@ -85,8 +85,8 @@ export class ErrorLogsComponent implements OnInit {
 	formatDataLog(log: string): string {
 		const serverPath = 'http://localhost:8080/assets/uploads/';
 		if (log.includes('file=')) {
-			const filePath = log.substring(log.indexOf('file=') + 5, log.length).replace('.end','');
-			return `${log}, link: <a href="${serverPath}${filePath}" target="_blank">${filePath}</a>`;
+			const filePath = log.substring(log.indexOf('file=') + 5, log.length);
+			return `link: <a href="${serverPath}${filePath}" target="_blank">${filePath}</a>`;
 		}
 		return log;
 	}

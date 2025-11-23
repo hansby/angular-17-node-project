@@ -16,6 +16,13 @@ const LS_KEY_USER = 'user_';
 
 const TEXT_ENSURE_ALL_DOCS = `Please ensure all required documents are uploaded before submitting your application`;
 
+interface IUser {
+	name: string;
+	user_id: string;
+	bus_reg_no: string;
+	trust_reg_no: string;
+}
+
 interface IRegistration {
 	id: string;
 	reg_type: string;
@@ -486,7 +493,7 @@ export class HomeComponent {
 	}
 
 	/** NEW GENERIC VALIDATION TEMPLATE */
-	fileUploadValidationTemplate(ctrl: string, errorTag: string, fileType: fileTypes, user: any, cb: Function) {
+	fileUploadValidationTemplate(ctrl: string, errorTag: string, fileType: fileTypes, user: IUser, cb: Function) {
 		const ctrlValue = this.regForm.controls[ctrl].value;
 		let result = ctrlValue.result;
 		if (!result || typeof result === "undefined") {
@@ -504,7 +511,8 @@ export class HomeComponent {
 		if (this.formSubmissionErrors_PAGE3.length <= 0) { // if no errors so far, run the docAI call	
 			const docAI = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj, fileType).pipe(
 				catchError((err: HttpErrorResponse) => {
-					this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ${errorTag}: ${user}`);
+					const {user_id, bus_reg_no, trust_reg_no} = user;
+					this.loggerService.sendLog(`verifyGoogleAIDoc API ERROR - ${errorTag}: ${user_id}, ${bus_reg_no}, ${trust_reg_no}`);
 					return of(err);
 				})
 			);		
@@ -830,16 +838,23 @@ export class HomeComponent {
 		})		
 	}
 
+	getLink(text: string) {
+		return `http://localhost:8080/assets/uploads/${text}`;
+	}
+
 	fileUploadHelper(fileUploadObj: any, completeApplication: boolean = true, tag: string = '', isProvisional: boolean = false) {
 			const obj: File = fileUploadObj.file;
 			const newFile = new File([obj],( isProvisional ? `PROVISIONAL_${obj.name}` : obj.name), {type: obj.type});
 			this.fileUploadService.upload(newFile).subscribe((resp) => {
-				this.loggerService.sendLog(`${tag} DOC UPLOAD FILE SUCCESS!:`, 1);
+				this.loggerService.sendLog(
+					`file=${isProvisional ? `PROVISIONAL_${obj.name}` : obj.name}`, 
+					isProvisional ? 0 : 1
+				).subscribe();
 				if (completeApplication) {
 					this.applicationIsComplete();
 				}
 				this.isLoading = false;						
-			}, (err: HttpErrorResponse) => this.loggerService.sendLog(`${tag} DOC UPLOAD FILE ERROR!:`));
+			}, (err: HttpErrorResponse) => this.loggerService.sendLog(`file=${isProvisional ? `PROVISIONAL_${obj.name}` : obj.name}`, isProvisional ? 0 : 1).subscribe());
 	}
 
 	page2IsValid(){
