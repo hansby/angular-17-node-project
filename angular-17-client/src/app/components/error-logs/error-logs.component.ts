@@ -38,20 +38,18 @@ export class ErrorLogsComponent implements OnInit {
 
 	confirmResolve() {
 		this.apiIsLoading = true;
-		console.log('resolving log with ID: ', this.currentResolveID);
 		if (!this.currentResolveID) return;
 		this.logs.resolveLog(this.currentResolveID).subscribe((res) => {
-			console.log('log resolved: ', res);
-			
 			// data-dismiss="modal"
 			// @ts-ignore
 			$('#modal_tandcs').modal('hide');
 
 			this.apiIsLoading = false;
 
-			this._logData$ = this.logs.getAllRawLogs().pipe(
+			this._logData$ = this.logs.getAllRawLogs(true).pipe(
 				tap((logs) => {
 					if (logs.length <= 0) this.noResultsFound = true;
+					console.log('fetched logs after resolve: ', logs);
 				})
 			);
 		}, (error) => {
@@ -64,12 +62,10 @@ export class ErrorLogsComponent implements OnInit {
 		this.noResultsFound = false;
 		const keyword = this.searchText;
 		if (!keyword || keyword.length <= 0) {
-			this._logData$ = this.logs.getAllRawLogs();
+			this._logData$ = this.logs.getAllRawLogs(true);
 			return;
 		}
-		console.log('do API call for keyword: ', keyword);
 		this.logs.searchLogs(keyword).subscribe((results) => {
-			console.log('search results: ', results);
 			if (results.length > 0) {
 				this._logData$ = of(results);
 			} else {
