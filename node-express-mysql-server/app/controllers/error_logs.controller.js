@@ -58,7 +58,19 @@ exports.findAll = (req, res) => {
   const orConditions = [];
   if (id) orConditions.push({ id: { [Op.eq]: id } });
   if (log) orConditions.push({ log: { [Op.like]: `%${log}%` } });
-  if (is_resolved) orConditions.push({ is_resolved: { [Op.eq]: is_resolved } });
+  // --- Convert is_resolved correctly ---
+  if (is_resolved !== undefined) {
+    // convert "true"/"false"/1/0 to actual boolean or numeric
+    const resolvedValue =
+      is_resolved === "true" ? true :
+      is_resolved === "false" ? false :
+      is_resolved === "1" ? true :
+      is_resolved === "0" ? false :
+      is_resolved; // fallback
+
+    orConditions.push({ is_resolved: { [Op.eq]: resolvedValue } });
+  }
+
 
   const condition = {
     where: orConditions.length > 0 ? { [Op.or]: orConditions } : undefined,

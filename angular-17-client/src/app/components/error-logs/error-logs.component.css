@@ -1,0 +1,19 @@
+.top-tools {
+	display: flex;
+	gap: 40px;
+}
+
+.filter-by {
+	width: 220px;
+	display: flex;
+	align-items: center;
+}
+
+	.filter-by span {
+		width: 200px;
+	}
+
+	.right-buttons {
+		display: flex;
+		gap: 10px;		
+	}

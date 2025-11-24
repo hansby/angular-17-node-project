@@ -34,6 +34,10 @@ export class LoggerService {
 		);
 	}
 
+	filterLogsBy(keyword: boolean = false): Observable<ISearchResultsLogs[]> {
+		return this.http.get<ISearchResultsLogs[]>(`${baseUrl}?is_resolved=${keyword}`)
+	}	
+
 	searchLogs(keyword: string): Observable<ISearchResultsLogs[]> {
 		return this.http.get<ISearchResultsLogs[]>(`${baseUrl}?log=${keyword}`);
 	}

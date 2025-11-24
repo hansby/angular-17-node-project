@@ -97,3 +97,7 @@ hr {
 .green-text { 
 	color: green;
 }
+
+.form-check-input[type=checkbox] {
+	font-size: 1.2em;
+}

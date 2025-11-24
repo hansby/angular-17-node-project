@@ -11,16 +11,40 @@
 
 	<div class="py-4">
 
-    <form class="form-inline search">
-      <input class="form-control mr-sm-2 search-inpt" 
-				type="search" 
-				[placeholder]="'Search by keyword'"  
-				aria-label="Search"
-				[(ngModel)]="searchText" [ngModelOptions]="{standalone: true}">
-      <button class="btn btn-outline-success my-2 my-sm-0" 
-				type="submit" 
-				(click)="doSearch()">Search</button>
-    </form>
+		<div class="top-tools">
+
+			<form class="form-inline search">
+				<input class="form-control mr-sm-2 search-inpt" 
+					type="search" 
+					[placeholder]="'Search by keyword'"  
+					aria-label="Search"
+					[(ngModel)]="searchText" [ngModelOptions]="{standalone: true}">
+				<button class="btn btn-outline-success my-2 my-sm-0" 
+					type="submit" 
+					(click)="doSearch()">Search</button>
+			</form>
+
+			<div class="filter-by">
+				<span>Filter by:</span>
+				<select class="form-select filter-select" aria-label="Filter by status" (change)="filterByStatus($event)">
+					<option value="all" selected>All</option>
+					<option value="resolved">Resolved</option>
+				</select>
+			</div>		
+
+			<ng-container *ngIf="activeFilter === 'unresolved'">
+				<div class="right-buttons">
+					<button class="btn btn-primary" type="button" (click)="bulkEditIsActive = !bulkEditIsActive">
+						{{ bulkEditIsActive ? 'Cancel Bulk Edit' : 'Bulk Edit' }}
+					</button>
+					<button 
+						*ngIf="bulkEditIsActive"
+						class="btn btn-secondary bg-success" 
+						type="button" (click)="resolveSelectedItems()">Resolve All</button>
+				</div>
+			</ng-container>
+		</div>
+
 
 		<br /><br />
 
@@ -41,8 +65,21 @@
 							<span class="badge bg-success">Resolved</span>
 						</ng-container>
 						<ng-template #notResolved>
-							<button class="btn btn-info" data-toggle="modal" data-target="#modal_tandcs" (click)="currentResolveID = data.id">Resolve</button>
+							<button 
+								*ngIf="!bulkEditIsActive"
+								class="btn btn-info" 
+								data-toggle="modal" 
+								data-target="#modal_tandcs" (click)="currentResolveID = data.id">Resolve</button>
 						</ng-template>
+
+						<ng-container *ngIf="bulkEditIsActive && data.is_resolved == 0">
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" [value]="data.id" id="flexCheckDefault">
+								<label class="form-check-label" for="flexCheckDefault">
+									&nbsp;
+								</label>
+							</div>							
+						</ng-container>
 					</td>
 				</tr>
 			</tbody>

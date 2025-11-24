@@ -23,6 +23,8 @@ export class ErrorLogsComponent implements OnInit {
 	_logResults: Array<any> = [];
 	noResultsFound: boolean = false;
 	apiIsLoading: boolean = false;
+	bulkEditIsActive: boolean = false;
+	activeFilter: string = 'unresolved';
 
 	constructor(private search: SearchService, private logs: LoggerService) {}
 
@@ -77,6 +79,50 @@ export class ErrorLogsComponent implements OnInit {
 			this.noResultsFound = true;
 		});
 	}
+
+	filterByStatus($event: Event) {
+		const selectElement = $event.target as HTMLSelectElement;
+		const filterValue = selectElement.value;
+		if (filterValue === 'resolved') {
+			this._logData$ = this.logs.filterLogsBy(true);
+			this.activeFilter = 'resolved';
+			this.bulkEditIsActive = false;
+		} else {
+			this._logData$ = this.logs.getAllRawLogs(true);
+			this.activeFilter = 'unresolved';
+			this.bulkEditIsActive = true;
+		}
+	}	
+
+	resolveSelectedItems() {
+		// check if any of 'logData' checkboxes are checked
+		const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+		if (checkboxes.length === 0) {
+			alert('Please select at least one item to resolve.');
+			return;
+		}
+		const idsToResolve: number[] = [];
+		checkboxes.forEach((checkbox) => {
+			const id = parseInt((checkbox as HTMLInputElement).value, 10);
+			if (!isNaN(id)) {
+				idsToResolve.push(id);
+			}
+		});
+		idsToResolve.forEach((id) => {
+			this.logs.resolveLog(id).subscribe((res) => {
+				console.log(`Resolved log with ID: ${id}`);
+			}, (error) => {
+				console.error(`Error resolving log with ID ${id}: `, error);
+			});
+		});
+		// After all resolutions, refresh the log data
+		setTimeout(() => {
+			alert('Selected items have been successfully resolved.');
+			this.activeFilter = 'unresolved';
+			this._logData$ = this.logs.getAllRawLogs(true);
+			this.bulkEditIsActive = false;
+		}, 1000); // Delay to ensure all requests are processed
+	}	
 
 	goToDashboard() {
 		window.location.href = '/dashboard';

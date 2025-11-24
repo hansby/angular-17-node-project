@@ -384,17 +384,17 @@ export class HomeComponent {
 					break;
 				case fileTypes.PASSPORT: DBName = `${optTextPrefix.toUpperCase()}${optTextPrefix.length > 0 ? ' - ' : ''}${surname} ${name} - PASSPORT - ${this.isSACitizen ? id : passport}.${finalType}`;
 					break;					
-				case fileTypes.BUS_REG_DOC: DBName = `BUS - CPIC - ${bus_reg_no}.${finalType}`;
+				case fileTypes.BUS_REG_DOC: DBName = `BUS - CPIC - ${bus_reg_no.toString().replaceAll('/','')}.${finalType}`;
 					break;	
-				case fileTypes.TRUST_DOC: DBName = `TRUST - LOA - ${trust_reg_no}.${finalType}`;
+				case fileTypes.TRUST_DOC: DBName = `TRUST - LOA - ${trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
 					break;
 				case fileTypes.PROOF_OF_ADDRESS: DBName = `${optTextPrefix.toUpperCase()}${optTextPrefix.length > 0 ? ' - ' : ''}${surname} ${name} - PROOF OF ADDRESS - ${this.isSACitizen ? id : passport}.${finalType}`;
 					break;	
-				case fileTypes.PROOF_OF_ADDRESS_BUSTRUST: DBName = `${this.regType === REG_TYPE.BUS ? 'BUS' : 'TRUST'} - PROOF OF ADDRESS - ${this.regType === REG_TYPE.BUS ? bus_reg_no : trust_reg_no}.${finalType}`;
+				case fileTypes.PROOF_OF_ADDRESS_BUSTRUST: DBName = `${this.regType === REG_TYPE.BUS ? 'BUS' : 'TRUST'} - PROOF OF ADDRESS - ${this.regType === REG_TYPE.BUS ? bus_reg_no.toString().replaceAll('/','') : trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
 					break;													
 				case fileTypes.BANK_CONF_LETTER: DBName = `${surname} ${name} - BCL - ${this.isSACitizen ? id : passport}.${finalType}`;
 					break;		
-				case fileTypes.BANK_CONF_LETTER_BUSTRUST: DBName = `${this.regType === REG_TYPE.BUS ? 'BUS' : 'TRUST'} - BCL - ${this.regType === REG_TYPE.BUS ? bus_reg_no : trust_reg_no}.${finalType}`;
+				case fileTypes.BANK_CONF_LETTER_BUSTRUST: DBName = `${this.regType === REG_TYPE.BUS ? 'BUS' : 'TRUST'} - BCL - ${this.regType === REG_TYPE.BUS ? bus_reg_no.toString().replaceAll('/','') : trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
 					break;																				
 			}			
 			
@@ -579,23 +579,7 @@ export class HomeComponent {
 				this.validationFailed = true;
 
 				// SEND PROVISIONAL UPLOAD TO FILE SERVER
-
-				const body: IRegistration = this.regForm.value;
-				const bodyCopyForFileUploads = Object.assign({}, body);
-
-				if (this.regType === REG_TYPE.TRUST) {
-					this.fileUploadHelper(bodyCopyForFileUploads.file_trust, false, fileTypes.TRUST_DOC, true);
-				}
-				if (this.regType === REG_TYPE.BUS) {
-					this.fileUploadHelper(bodyCopyForFileUploads.file_bus_reg, false, fileTypes.BUS_REG_DOC, true);
-				}
-				if (this.isForeigner) {
-					this.fileUploadHelper(bodyCopyForFileUploads.file_passport, false, fileTypes.PASSPORT, true);
-				}				
-				if (this.isSACitizen && this.regType === REG_TYPE.IND) {
-					this.fileUploadHelper(bodyCopyForFileUploads.file_id, false, fileTypes.ID, true);
-					this.fileUploadHelper(bodyCopyForFileUploads.file_poa, false, fileTypes.PROOF_OF_ADDRESS, true);
-				}
+				this.sendDocumentsToServer(false, true);
 				return;
 			}
 		} else {
@@ -759,59 +743,7 @@ export class HomeComponent {
 				if (localStore) localStore.setItem('owiqsjdh09192', '1');
 
 				// Form is Successfully stored in DB ... NOW we can upload Files
-
-				if (this.regType === REG_TYPE.TRUST) {
-					/*
-					const trustObj: File = bodyCopyForFileUploads.file_trust.file;
-					const myNewFile_trust = new File([trustObj], trustObj.name, {type: trustObj.type});
-					this.fileUploadService.upload(myNewFile_trust).subscribe((resp) => {
-						this.loggerService.sendLog(`TRUST DOC UPLOAD FILE SUCCESS!: ${qParams}`, 1);
-						this.applicationIsComplete();
-						this.isLoading = false;						
-					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`TRUST DOC UPLOAD FILE ERROR!: ${qParams}`));*/
-					this.fileUploadHelper(bodyCopyForFileUploads.file_trust, true, 'TRUST DOC');
-				}
-		
-				if (this.regType === REG_TYPE.BUS) {
-					/*
-					const busObj: File = bodyCopyForFileUploads.file_bus_reg.file;
-					const myNewFile_bus = new File([busObj], busObj.name, {type: busObj.type});
-					this.fileUploadService.upload(myNewFile_bus).subscribe((resp) => {
-						this.loggerService.sendLog(`BUS DOC UPLOAD FILE SUCCESS!: ${qParams}`, 1);
-						this.applicationIsComplete();
-						this.isLoading = false;						
-					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`BUS DOC UPLOAD FILE ERROR!: ${qParams}`));*/
-					this.fileUploadHelper(bodyCopyForFileUploads.file_bus_reg, true, 'BUS DOC');
-				}		
-		
-				if (this.isSACitizen && this.regType === REG_TYPE.IND) {
-					const Obj_POA: File = bodyCopyForFileUploads.file_poa.file;
-					const Obj_ID: File = bodyCopyForFileUploads.file_id.file;
-					const myNewFile_POA = new File([Obj_POA], Obj_POA.name, {type: Obj_POA.type});
-					const myNewFile_ID = new File([Obj_ID], Obj_ID.name, {type: Obj_ID.type});
-		
-					const API_POA = this.fileUploadService.upload(myNewFile_POA);
-					const API_ID = this.fileUploadService.upload(myNewFile_ID);
-		
-					forkJoin(([API_POA, API_ID])).subscribe((resp) => {
-						this.applicationIsComplete();
-						this.isLoading = false;						
-						this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE SUCCESS!: ${qParams}`, 1);
-					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Proof of Address / ID doc UPLOAD FILE Failed: ${qParams}`));			
-				}
-
-				if (this.isForeigner) {
-					/*const Obj_PASSPORT: File = bodyCopyForFileUploads.file_passport.file;
-					const myNewFile_PASSPORT = new File([Obj_PASSPORT], Obj_PASSPORT.name, {type: Obj_PASSPORT.type});
-					const API_PASSPORT = this.fileUploadService.upload(myNewFile_PASSPORT);*/
-					/*
-					forkJoin(([API_PASSPORT])).subscribe((resp) => {
-						this.applicationIsComplete();
-						this.isLoading = false;
-						this.loggerService.sendLog(`Passport UPLOAD FILE SUCCESS!: ${qParams}`, 1);
-					}, (err: HttpErrorResponse) => this.loggerService.sendLog(`Passport UPLOAD FILE FAILED!: ${qParams}`));	*/
-					this.fileUploadHelper(bodyCopyForFileUploads.file_passport, true, 'PASSPORT DOC');
-				}
+				this.sendDocumentsToServer(true, false);
 
 			}, (err: HttpErrorResponse) => {
 				if (err.status === 429) {
@@ -826,7 +758,6 @@ export class HomeComponent {
 			});
 
 		}, (errResponse: HttpErrorResponse) => {
-			//console.log('err from regService API req: ', errResponse);
 			this.loggerService.sendLog(`err from regService API req: ${qParams}, ${errResponse}`);
 			if (errResponse.status === 429) {
 				this.rateLimiterActive = true;
@@ -842,7 +773,35 @@ export class HomeComponent {
 		return `http://localhost:8080/assets/uploads/${text}`;
 	}
 
-	fileUploadHelper(fileUploadObj: any, completeApplication: boolean = true, tag: string = '', isProvisional: boolean = false) {
+	sendDocumentsToServer(completeApplication: boolean = false, isProvisional: boolean) {
+		const body: IRegistration = this.regForm.value;
+		const bodyCopyForFileUploads = Object.assign({}, body);
+
+		if (this.regType === REG_TYPE.TRUST) {
+			this.fileUploadHelper(bodyCopyForFileUploads.file_trust, completeApplication, fileTypes.TRUST_DOC, isProvisional);
+			this.fileUploadHelper(bodyCopyForFileUploads.file_poa, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);
+			this.fileUploadHelper(bodyCopyForFileUploads.file_poa_bustrust, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);
+			this.fileUploadHelper(bodyCopyForFileUploads.file_bcl_bustrust, completeApplication, fileTypes.BANK_CONF_LETTER_BUSTRUST, isProvisional);					
+		}
+		if (this.regType === REG_TYPE.BUS) {
+			this.fileUploadHelper(bodyCopyForFileUploads.file_bus_reg, completeApplication, fileTypes.BUS_REG_DOC, isProvisional);
+			this.fileUploadHelper(bodyCopyForFileUploads.file_bcl_bustrust, completeApplication, fileTypes.BANK_CONF_LETTER_BUSTRUST, isProvisional);
+			this.fileUploadHelper(bodyCopyForFileUploads.file_poa_bustrust, completeApplication, fileTypes.PROOF_OF_ADDRESS_BUSTRUST, isProvisional);
+			this.fileUploadHelper(bodyCopyForFileUploads.file_poa, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);
+		}		
+		if (this.regType === REG_TYPE.IND) {
+			this.fileUploadHelper(bodyCopyForFileUploads.file_bcl, completeApplication, fileTypes.BANK_CONF_LETTER, isProvisional);
+			this.fileUploadHelper(bodyCopyForFileUploads.file_poa, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);
+			if(this.isSACitizen) {
+				this.fileUploadHelper(bodyCopyForFileUploads.file_id, completeApplication, fileTypes.ID, isProvisional);
+			}
+			if (this.isForeigner) {
+				this.fileUploadHelper(bodyCopyForFileUploads.file_passport, completeApplication, fileTypes.PASSPORT, isProvisional);
+			}					
+		}
+	}
+
+	fileUploadHelper(fileUploadObj: any, completeApplication: boolean, tag: string = '', isProvisional: boolean = false) {
 			const obj: File = fileUploadObj.file;
 			const newFile = new File([obj],( isProvisional ? `PROVISIONAL_${obj.name}` : obj.name), {type: obj.type});
 			this.fileUploadService.upload(newFile).subscribe((resp) => {
