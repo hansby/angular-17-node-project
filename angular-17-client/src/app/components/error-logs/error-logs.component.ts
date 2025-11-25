@@ -86,11 +86,9 @@ export class ErrorLogsComponent implements OnInit {
 		if (filterValue === 'resolved') {
 			this._logData$ = this.logs.filterLogsBy(true);
 			this.activeFilter = 'resolved';
-			this.bulkEditIsActive = false;
 		} else {
 			this._logData$ = this.logs.getAllRawLogs(true);
 			this.activeFilter = 'unresolved';
-			this.bulkEditIsActive = true;
 		}
 	}	
 
