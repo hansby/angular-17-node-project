@@ -79,6 +79,7 @@
 						<th scope="col">Name</th>
 						<th scope="col">Surname</th>
 						<th scope="col">ID/PASSPORT</th>
+						<th scope="col">Allow</th>
 					</tr>
 				</thead>
 				<tbody *ngIf="allRecords.length > 0 && !noResultsFound">
@@ -95,7 +96,30 @@
 									class="btn btn-primary" 
 									style="margin-left: 10px;" 
 									(click)="updateRecord(ben)"
-									[disabled]="!ben.id_number">Update</button>							
+									[disabled]="!ben.id_number">Update</button>	
+						</td>
+						<td>
+									<div class="radios">
+										<div class="radio">
+											<input type="radio" 
+												name="allow_{{ben.id_number}}" 
+												[value]="true" 
+												[(ngModel)]="ben.allow">
+											<label for="allow_yes_{{ben.id_number}}"> Yes</label>
+										</div>
+										<div class="radio">
+											<input type="radio" 
+												name="allow_{{ben.id_number}}" 
+												[value]="false" 
+												[(ngModel)]="ben.allow">
+											<label for="allow_no_{{ben.id_number}}"> No</label>
+										</div>
+										<button 
+											class="btn btn-primary" 
+											style="margin-left: 10px;" 
+											(click)="updateAllow(ben)"
+											[disabled]="ben.allow === undefined">Update</button>
+									</div>							
 						</td>
 					</tr>
 				</tbody>

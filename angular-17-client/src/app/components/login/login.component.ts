@@ -16,7 +16,7 @@ export class LoginComponent {
 	idpassport: string = '';
 	isLoading: boolean = false;
 	errorMsg: boolean = false;
-	selectedNationality: string = '';
+	selectedNationality: string = 'Nationality';
 
 
 	constructor(

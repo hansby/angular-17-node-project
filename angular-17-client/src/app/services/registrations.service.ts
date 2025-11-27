@@ -8,6 +8,7 @@ import { map } from 'rxjs/operators';
 const baseUrl = 'http://localhost:8080/api/registrations';
 
 export interface ISurtieDBRecord {
+	allow?: boolean;
 	id_number: string,
 	first_name: string,
 	last_name: string,
@@ -52,9 +53,9 @@ export class RegistrationsService {
 	}
 
 	updateSurtieDBRecord(originalID: string, data: ISurtieDBRecord): Observable<any> {
-		const { first_name, last_name, id_number } = data;
+		const { first_name, last_name, id_number, allow } = data;
 		return this.http.put(`http://localhost:8080/api/registrations_surtiedb/${originalID}`, {
-			first_name, last_name, id_number
+			first_name, last_name, id_number, allow
 		}).pipe(
 			tap(() => console.log(`Updated SurtieDB Record with id_number=${originalID}`))
 		);

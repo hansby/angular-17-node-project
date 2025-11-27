@@ -191,7 +191,7 @@
 									</div>
 								</div>
 		
-								<div class="col-sm-6">
+								<div class="col-sm-6" *ngIf="regType === 'individual'">
 									<label for="address" class="form-label">Tax number</label>
 									<div class="input-group has-validation width-420">
 										<span class="input-group-text">
@@ -426,7 +426,8 @@
 		
 		
 								<div class="col-sm-6">
-									<label for="acc_holder" class="form-label">Account Name / Holder</label>
+									<label for="acc_holder" *ngIf="regType === 'individual'" class="form-label">Account Name / Holder</label>
+									<label for="acc_holder" *ngIf="regType !== 'individual'" class="form-label">Name of {{regType === 'business' ? 'Business' : 'Trust'}}</label>
 									<input type="text" class="form-control" id="acc_holder" placeholder="eg John Smith" formControlName="acc_holder" required>
 								</div>
 								<div class="col-sm-6">
@@ -598,8 +599,7 @@
 									<ng-container *ngIf="displayProvisionalDocText()">
 										<p class="mt-3"><strong>Note:</strong> 
 											If you are 100% sure that you have submitted <strong>all required documents</strong> above 
-											and that the information is 100% correct then please contact your support team as the system has sent provisional 
-											documentation through to them for verification.</p>
+											and that the information is 100% correct you may stop this registration - we will contact you to complete the process.</p>
 									</ng-container>
 								</div>
 							</ng-container>

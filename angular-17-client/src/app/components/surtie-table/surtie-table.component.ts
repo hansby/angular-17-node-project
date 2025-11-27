@@ -94,4 +94,13 @@ export class SurtieTableComponent implements OnInit {
 		});
 	}	
 
+	updateAllow(benData: ISurtieDBRecord) {
+		console.log('Updating allow for record: ', benData);
+		this.registrationsService.updateSurtieDBRecord(benData.original_id_number!, benData).subscribe((res) => {
+			alert('Record updated successfully!');
+		}, (error) => {
+			console.error('Error updating record: ', error);
+		});
+	}	
+
 }

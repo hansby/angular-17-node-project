@@ -1,11 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { BehaviorSubject, catchError, delay, forkJoin, Observable, of } from 'rxjs';
+import { BehaviorSubject, catchError, concat, concatMap, delay, forkJoin, last, Observable, of, take } from 'rxjs';
 import {
 	FormControl, FormGroup, FormBuilder, Validators,
 } from '@angular/forms';
 import { IRequiredQParams, RegistrationsService } from '../../services/registrations.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
 import { IGoogleDoc, UploadGoogleDocService } from '../../services/upload-google-doc.service';
 import { FileUploadService } from '../../services/file-upload.service';
 import { LoggerService } from '../../services/logger.service';
@@ -421,10 +421,15 @@ export class HomeComponent {
 				case fileTypes.BANK_CONF_LETTER_BUSTRUST: ctrl['file_bcl_bustrust'].setValue(myNewFile);
 					break;																				
 			}
+
+			console.log('regform ', this.regForm.value);
 		}
 	}
 
 	submitForm() {
+		this.validationFailed = false;
+		this.completedValidations = 0;
+		this.totalValidationCalls = 0;
 		this.isLoading = true;
 		this.recordAlreadyExists = false;
 		const errList = this.formSubmissionErrors_PAGE3;
@@ -457,7 +462,7 @@ export class HomeComponent {
 			if (this.isForeigner) {
 				this.fileUploadValidationTemplate('file_passport', 'Passport', fileTypes.PASSPORT, user, this.runValidationLogic_Passport);
 			}					
-			this.totalValidationCalls = 5; // ID/Passport, POA, BCL, Bus Reg
+			this.totalValidationCalls = 3; // ID/Passport, POA, BCL, Bus Reg
 		}
 		if (this.regType === REG_TYPE.TRUST) {
 			this.fileUploadValidationTemplate('file_bcl_bustrust', 'Bank confirmation letter', fileTypes.BANK_CONF_LETTER, user, this.runValidationLogic_BusReg_BCL);
@@ -470,7 +475,7 @@ export class HomeComponent {
 			if (this.isForeigner) {
 				this.fileUploadValidationTemplate('file_passport', 'Passport', fileTypes.PASSPORT, user, this.runValidationLogic_Passport);
 			}
-			this.totalValidationCalls = 5; // ID/Passport, POA, BCL, Trust Doc
+			this.totalValidationCalls = 3; // ID/Passport, POA, BCL, Trust Doc
 		}		
 
 		/** =========================================================================
@@ -487,7 +492,7 @@ export class HomeComponent {
 			if (this.isForeigner) {
 				this.fileUploadValidationTemplate('file_passport', 'Passport', fileTypes.PASSPORT, user, this.runValidationLogic_Passport);
 			}			
-			this.totalValidationCalls = 3; // ID/Passport, POA, BCL
+			this.totalValidationCalls = 2; // ID/Passport, POA, BCL
 		}
 		
 	}
@@ -508,7 +513,7 @@ export class HomeComponent {
 				content: result.toString().includes('base64') ? result.split('base64,')[1] : result
 			}
 		}			
-		if (this.formSubmissionErrors_PAGE3.length <= 0) { // if no errors so far, run the docAI call	
+		if (this.formSubmissionErrors_PAGE3.length <= 0 && fileType !== fileTypes.PROOF_OF_ADDRESS && fileType !== fileTypes.PROOF_OF_ADDRESS_BUSTRUST) { // if no errors so far, run the docAI call	
 			const docAI = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj, fileType).pipe(
 				catchError((err: HttpErrorResponse) => {
 					const {user_id, bus_reg_no, trust_reg_no} = user;
@@ -595,7 +600,9 @@ export class HomeComponent {
     if (this.completedValidations === this.totalValidationCalls && !this.validationFailed) {
 			// All valid → proceed
 			this.dbDupeCheckAndRegistrationPost();
-    }				
+    } else {
+			console.log(`Validation completed ${this.completedValidations} / ${this.totalValidationCalls}`);
+		}
 	}
 
 	isDocValid(dataText: any, fileType: fileTypes): boolean {
@@ -635,9 +642,9 @@ export class HomeComponent {
 				const isIDsMatching =  document.includes(ctrl_userID);
 				//const id_hasSurname = document.includes(ctrl_surname.toLowerCase());
 				//const id_hasForenames = document.includes('FORENAMES'.toLowerCase());
-				const id_hasDateIssued = document.includes('DATEISSUED'.toLowerCase());
+				//const id_hasDateIssued = document.includes('DATEISSUED'.toLowerCase());
 				const id_hasCountryOfBirth = document.includes('COUNTRYOFBIRTH'.toLowerCase());
-				return isTrue = isIDsMatching && id_hasDateIssued && id_hasCountryOfBirth;
+				return isTrue = isIDsMatching && id_hasCountryOfBirth;
 				break;
 			case fileTypes.TRUST_DOC:
 				const documentTrustDoc = dataText.toString().replace(/ +/g, '');
@@ -698,7 +705,7 @@ export class HomeComponent {
 
 		const { localStore } = this;
 		const body: IRegistration = this.regForm.value;
-		const bodyCopyForFileUploads = Object.assign({}, body);
+		//const bodyCopyForFileUploads = Object.assign({}, body);
 
 		const qParams: IRequiredQParams = {
 			user_id: body.user_id,
@@ -722,7 +729,7 @@ export class HomeComponent {
 			 * !!!NB: We need to re-format the file_*** form fields
 			 *  because at this point it has the entire file payload in it
 			 * where all the DB table (and APIs) really need is the [simple file name] format
-			 */
+			 
 			if(typeof body.file_id === 'object') body.file_id = body.file_id.file.name;
 			if(typeof body.file_passport === 'object') body.file_passport = body.file_passport.file.name;
 			if(typeof body.file_bus_reg === 'object') body.file_bus_reg = body.file_bus_reg.file.name;
@@ -731,11 +738,28 @@ export class HomeComponent {
 			
 			if(typeof body.file_bcl === 'object') body.file_bcl = body.file_bcl.file.name;
 			if(typeof body.file_bcl_bustrust === 'object') body.file_bcl_bustrust = body.file_bcl_bustrust.file.name;
-			if(typeof body.file_poa_bustrust === 'object') body.file_poa_bustrust = body.file_poa_bustrust.file.name;
+			if(typeof body.file_poa_bustrust === 'object') body.file_poa_bustrust = body.file_poa_bustrust.file.name;*/
+
+
+			const julzId = this.regForm.controls['user_id'].value;
+
+
+			const newBody = Object.assign({}, {
+				...body,
+				user_id: this.getPrefixedID(julzId),
+				file_id: typeof body.file_id === 'object' ? body.file_id.file.name : '',
+				file_passport: typeof body.file_passport === 'object' ? body.file_passport.file.name : '',
+				file_bus_reg: typeof body.file_bus_reg === 'object' ? body.file_bus_reg.file.name : '',
+				file_trust: typeof body.file_trust === 'object' ? body.file_trust.file.name : '',
+				file_poa: typeof body.file_poa === 'object' ? body.file_poa.file.name : '',
+				file_bcl: typeof body.file_bcl === 'object' ? body.file_bcl.file.name : '',
+				file_bcl_bustrust: typeof body.file_bcl_bustrust === 'object' ? body.file_bcl_bustrust.file.name : '',
+				file_poa_bustrust: typeof body.file_poa_bustrust === 'object' ? body.file_poa_bustrust.file.name : '',
+			});
 			
 			
 			// BLOCKERS AND CHECKS ALL DONE --- CREATE RECORD!
-			this.regService.create(body).pipe(
+			this.regService.create(newBody).pipe(
 				delay(4000),
 			)
 			.subscribe(res => {
@@ -777,6 +801,8 @@ export class HomeComponent {
 		const body: IRegistration = this.regForm.value;
 		const bodyCopyForFileUploads = Object.assign({}, body);
 
+		console.log('bodyCopyForFileUploads: ', bodyCopyForFileUploads);
+
 		if (this.regType === REG_TYPE.TRUST) {
 			this.fileUploadHelper(bodyCopyForFileUploads.file_trust, completeApplication, fileTypes.TRUST_DOC, isProvisional);
 			this.fileUploadHelper(bodyCopyForFileUploads.file_poa, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);
@@ -801,19 +827,28 @@ export class HomeComponent {
 		}
 	}
 
-	fileUploadHelper(fileUploadObj: any, completeApplication: boolean, tag: string = '', isProvisional: boolean = false) {
+	fileUploadHelper(fileUploadObj: { file: File }, completeApplication: boolean, tag: string = '', isProvisional: boolean = false) {
 			const obj: File = fileUploadObj.file;
 			const newFile = new File([obj],( isProvisional ? `PROVISIONAL_${obj.name}` : obj.name), {type: obj.type});
-			this.fileUploadService.upload(newFile).subscribe((resp) => {
-				this.loggerService.sendLog(
-					`file=${isProvisional ? `PROVISIONAL_${obj.name}` : obj.name}`, 
-					isProvisional ? 0 : 1
-				).subscribe();
-				if (completeApplication) {
-					this.applicationIsComplete();
-				}
-				this.isLoading = false;						
-			}, (err: HttpErrorResponse) => this.loggerService.sendLog(`file=${isProvisional ? `PROVISIONAL_${obj.name}` : obj.name}`, isProvisional ? 0 : 1).subscribe());
+			this.fileUploadService.upload(newFile).pipe(
+				last(),	
+				concatMap((event) => {
+					this.loggerService.sendLog(
+						`file=${isProvisional ? `PROVISIONAL_${obj.name}` : obj.name}`, 
+						isProvisional ? 0 : 1
+					).subscribe();
+					if (completeApplication) {
+						this.applicationIsComplete();
+					}
+					this.isLoading = false;	
+					return of(event);
+				}),
+				catchError((err: HttpErrorResponse) => {
+					this.isLoading = false;
+					this.loggerService.sendLog(`file upload error for file=${isProvisional ? `PROVISIONAL_${obj.name}` : obj.name}`, isProvisional ? 0 : 1);
+					return of(err);
+				})
+			).subscribe();
 	}
 
 	page2IsValid(){
@@ -922,5 +957,18 @@ export class HomeComponent {
 	 return this.formSubmissionErrors_PAGE3.filter(error => error.includes('Please')).length <= 0;
 	}	
 
+	getPrefixedID(user_id: string): string | undefined {
+		if (this.regType === REG_TYPE.IND) {
+			return user_id;
+		} else if (this.regType === REG_TYPE.BUS) {
+			return `${user_id}-03`;
+		} else if (this.regType === REG_TYPE.TRUST) {
+			return `${user_id}-02`;
+		}
+		return undefined;
+	}	
+
 }
+
+
 

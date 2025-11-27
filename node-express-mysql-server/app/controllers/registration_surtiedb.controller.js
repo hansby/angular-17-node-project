@@ -31,10 +31,11 @@ exports.create = (req, res) => {
 	const first_name = req.body.first_name;
 	const last_name = req.body.last_name;
 	const id_number = req.body.id_number;
+	const allow = req.body.allow;
 
   // Create a Registration
   const registration = {
-		first_name, last_name, id_number
+		first_name, last_name, id_number, allow
   };
 
   // Save Registration in the database
@@ -43,7 +44,7 @@ exports.create = (req, res) => {
       res.send(data);
     })
     .catch(err => {
-			logger.error(`Error on Create Reg API - User ID: ${user_id} ${passport} ${email} ${lastName}`);
+			logger.error(`Error on Create Reg API - User ID: ${first_name, last_name, id_number}`);
       res.status(500).send({
         error_message:
           err.message || "Some error occurred while creating the Registration."
@@ -53,13 +54,14 @@ exports.create = (req, res) => {
 
 // Retrieve all Registrations from the database.
 exports.findAll = (req, res) => {
-  const { first_name, last_name, id_number } = req.query;
+  const { first_name, last_name, id_number, allow } = req.query;
 
   const orConditions = [];
   //if (user_id) orConditions.push({ user_id: { [Op.like]: `%${user_id}%` } });
 	if (first_name) orConditions.push({ first_name: { [Op.like]: `%${first_name}%` } });
   if (last_name) orConditions.push({ last_name: { [Op.like]: `%${last_name}%` } });
 	if (id_number) orConditions.push({ id_number: { [Op.like]: `%${id_number}%` } });
+	if (allow) orConditions.push({ allow: { [Op.like]: `%${allow}%` } });
 
   // If no params -> fetch all
   const condition = orConditions.length > 0 ? { where: { [Op.or]: orConditions } } : {};
@@ -87,7 +89,8 @@ exports.findOne = (req, res) => {
         res.send({
 					first_name: data.first_name,
 					last_name: data.last_name,
-					id_number: data.id_number,					
+					id_number: data.id_number,
+					allow: data.allow					
 				});
       } else {
 				logger.error(`ID does not exist: ${id_number}`);
