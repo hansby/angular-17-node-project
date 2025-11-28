@@ -371,6 +371,7 @@ export class HomeComponent {
 			const passport = ctrl['passport'].value;
 			const bus_reg_no = ctrl['bus_reg_no'].value;
 			const trust_reg_no = ctrl['trust_reg_no'].value;
+			const acc_holder = ctrl['acc_holder'].value;
 
 			let type = event.file.type;
 			let finalType = type.slice(type.indexOf('/') + 1, type.length);
@@ -380,21 +381,21 @@ export class HomeComponent {
 
 			let DBName = '';
 			switch (fileType) {
-				case fileTypes.ID: DBName = `${optTextPrefix.toUpperCase()}${optTextPrefix.length > 0 ? ' - ' : ''}${surname} ${name} - ID - ${this.isSACitizen ? id : passport}.${finalType}`;
+				case fileTypes.ID: DBName = `${this.regType !== REG_TYPE.IND ? acc_holder+ ' - ' : ''}${surname} ${name} - ID - ${this.isSACitizen ? id : passport}.${finalType}`;
 					break;
 				case fileTypes.PASSPORT: DBName = `${optTextPrefix.toUpperCase()}${optTextPrefix.length > 0 ? ' - ' : ''}${surname} ${name} - PASSPORT - ${this.isSACitizen ? id : passport}.${finalType}`;
 					break;					
-				case fileTypes.BUS_REG_DOC: DBName = `BUS - CPIC - ${bus_reg_no.toString().replaceAll('/','')}.${finalType}`;
+				case fileTypes.BUS_REG_DOC: DBName = `${acc_holder} - CPIC - ${bus_reg_no.toString().replaceAll('/','')}.${finalType}`;
 					break;	
-				case fileTypes.TRUST_DOC: DBName = `TRUST - LOA - ${trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
+				case fileTypes.TRUST_DOC: DBName = `${acc_holder} - LOA - ${trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
 					break;
-				case fileTypes.PROOF_OF_ADDRESS: DBName = `${optTextPrefix.toUpperCase()}${optTextPrefix.length > 0 ? ' - ' : ''}${surname} ${name} - PROOF OF ADDRESS - ${this.isSACitizen ? id : passport}.${finalType}`;
+				case fileTypes.PROOF_OF_ADDRESS: DBName = `${this.regType !== REG_TYPE.IND ? acc_holder+ ' - ' : ''}${surname} ${name} - PROOF OF ADDRESS - ${this.isSACitizen ? id : passport}.${finalType}`;
 					break;	
-				case fileTypes.PROOF_OF_ADDRESS_BUSTRUST: DBName = `${this.regType === REG_TYPE.BUS ? 'BUS' : 'TRUST'} - PROOF OF ADDRESS - ${this.regType === REG_TYPE.BUS ? bus_reg_no.toString().replaceAll('/','') : trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
+				case fileTypes.PROOF_OF_ADDRESS_BUSTRUST: DBName = `${acc_holder} - PROOF OF ADDRESS - ${this.regType === REG_TYPE.BUS ? bus_reg_no.toString().replaceAll('/','') : trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
 					break;													
 				case fileTypes.BANK_CONF_LETTER: DBName = `${surname} ${name} - BCL - ${this.isSACitizen ? id : passport}.${finalType}`;
 					break;		
-				case fileTypes.BANK_CONF_LETTER_BUSTRUST: DBName = `${this.regType === REG_TYPE.BUS ? 'BUS' : 'TRUST'} - BCL - ${this.regType === REG_TYPE.BUS ? bus_reg_no.toString().replaceAll('/','') : trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
+				case fileTypes.BANK_CONF_LETTER_BUSTRUST: DBName = `${acc_holder} - BCL - ${this.regType === REG_TYPE.BUS ? bus_reg_no.toString().replaceAll('/','') : trust_reg_no.toString().replaceAll('/','')}.${finalType}`;
 					break;																				
 			}			
 			
@@ -518,7 +519,7 @@ export class HomeComponent {
 		}			
 
 		/** ------------- DO ONE LAST CHECK FOR PROOF OF ADDRESS UPLOAD FIELDS BEFORE HITTING GOOGLE DOC API */
-		
+
 		// IND
 		if ((!ctrl_POA || typeof ctrl_POA === "undefined")) {
 			this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Proof of Address (Individual) document before continuing`);
