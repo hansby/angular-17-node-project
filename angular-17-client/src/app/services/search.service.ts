@@ -30,7 +30,9 @@ export interface ISearchResults {
 	acc_no: string,
 	bank: string,
 	bank_other: string,
-	createdAt: string
+	createdAt: string,
+	original_passport?: string,
+	original_user_id?: string,
 }
 
 export enum searchType {

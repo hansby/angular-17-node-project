@@ -155,35 +155,49 @@ exports.findOne = (req, res) => {
 
 // Update a Registration by the id in the request
 exports.update = (req, res) => {
-  const id = req.params.id;
+  const param = req.params.id;
+
+  // Determine which field to update by
+  let condition = {};
+
+  // Example logic for detection:
+  if (/^[A-Za-z]/.test(param)) {
+    condition = { passport: param };     // passport begins with a letter
+  } else if (/^\d+$/.test(param)) {
+    condition = { user_id: param };      // user_id is numeric
+  } else {
+    condition = { passport: param };     // fallback
+  }
 
   Registration.update(req.body, {
-    where: { id: id }
+    where: {
+			[Op.or]: [
+				{ user_id: param },
+				{ passport: param }
+			]						
+		}
   })
-    .then(num => {
-      if (num == 1) {
-        res.send({
-          message: "Registration was updated successfully."
-        });
-      } else {
-        res.send({
-          message: `Cannot update Registration with id=${id}. Maybe Registration was not found or req.body is empty!`
-        });
-      }
-    })
+		.then(([num]) => {
+			res.send({ message: "Registration was updated successfully." });
+		})
     .catch(err => {
       res.status(500).send({
-        message: "Error updating Registration with id=" + id
+        message: "Error updating Registration."
       });
     });
 };
 
 // Delete a Registration with the specified id in the request
 exports.delete = (req, res) => {
-  const id = req.params.id;
+  const param = req.params.id;
 
   Registration.destroy({
-    where: { id: id }
+    where: {
+			[Op.or]: [
+				{ user_id: param },
+				{ passport: param }
+			]			
+		}
   })
     .then(num => {
       if (num == 1) {

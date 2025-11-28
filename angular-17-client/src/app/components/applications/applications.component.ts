@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ISearchResults, SearchService, searchType } from '../../services/search.service';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { debounceTime, distinctUntilKeyChanged, map, startWith } from 'rxjs';
+import { RegistrationsService } from '../../services/registrations.service';
+import { Registration } from '../../models/registration.model';
+import { error } from 'jquery';
 
 const USERNAME = 'raymond001';
 const PASSWORD = 'AccessApps001';
@@ -27,16 +29,9 @@ export class ApplicationsComponent implements OnInit {
 	noResultsFound: boolean = false;
 
 
-	constructor(private search: SearchService) {}
+	constructor(private search: SearchService, private registrationService: RegistrationsService) {}
 
 	ngOnInit(): void {
-		/*this.form.controls['search'].valueChanges.pipe(
-			map((val) => ({ ...val, hash: JSON.stringify(val) })),
-			distinctUntilKeyChanged('hash'),
-			debounceTime(300),			
-		).subscribe((keyword) => {
-			console.log('keyword from search: ', keyword);
-		})*/
 	}
 
 	updateSearchBy(type: searchType) {
@@ -53,34 +48,39 @@ export class ApplicationsComponent implements OnInit {
 		this._UISearchResults = [];
 		const keyword = this.form.controls['search'].value;
 		if (!keyword || keyword.length <= 0) return;
-		console.log('keyword from search: ', keyword);
 		this.search.getBySearchFilter(keyword).subscribe((searchResults) => {
-			console.log('lets see searchResults: ', searchResults);
 			if (searchResults.length > 0) {
-				this._UISearchResults = searchResults;
-				/**
-				 *.map((result) => {
-					let formattedNo = null;
-					switch(this.searchBy) {
-						case searchType.id:
-							formattedNo = result.
-						break;
-						case y:
-							// code block
-						break;
-						default:
-							// code block						
-					}
-					return {
-						...result,
-
-					}
-				}) 
-				 */
+				this._UISearchResults = searchResults.map((r) => ({
+					...r,
+					original_user_id: r.user_id,
+					original_passport: r.passport
+				}));
 			} else {
 				this.noResultsFound = true;
 			}
 		})
+	}
+
+	updateRecord(beneficiary: ISearchResults, id: string, isPassport: boolean) {
+		let _localObj = {};
+		let _originalId = '';
+		if (isPassport) {
+			_localObj = {
+				passport: id
+			};
+			_originalId = beneficiary.original_passport || '';
+		} else {
+			_localObj = {
+				user_id: id
+			};
+			_originalId = beneficiary.original_user_id || '';
+		}
+		console.log('updateRecord called with beneficiary: ', beneficiary);
+		this.registrationService.update(_originalId, _localObj).subscribe((resp) => {
+			alert('Record updated successfully!');
+		}, (error) => {
+			alert('Error updating record. Please try again.');
+		});
 	}
 
 	login() {

@@ -101,3 +101,11 @@ hr {
 .form-check-input[type=checkbox] {
 	font-size: 1.2em;
 }
+
+.input-text-row {
+	display: flex;
+}
+
+	.input-text-row input {
+		width: 135px;
+	}

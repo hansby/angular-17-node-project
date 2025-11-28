@@ -77,7 +77,34 @@
 			<tbody *ngIf="_UISearchResults.length > 0">
 				<tr *ngFor="let ben of _UISearchResults">
 					<td scope="row">{{ben.firstName}} {{ben.lastName}}</td>
-					<td scope="row">{{ben.user_id && ben.user_id.length > 0 ? ben.user_id : ben.passport}}</td>
+					<td scope="row" class="input-text-row">
+						<!--{{ben.user_id && ben.user_id.length > 0 ? ben.user_id : ben.passport}}-->
+
+						<ng-container *ngIf="ben.user_id && ben.user_id.length > 0; else showPassport">
+							<input 
+								type="text" 
+								[(ngModel)]="ben.user_id"
+								name="id_{{ben.user_id}}">
+							<button 
+								class="btn btn-primary" 
+								style="margin-left: 10px;" 
+								(click)="updateRecord(ben, ben.user_id, false)"
+								[disabled]="!ben.user_id">Update</button>									
+						</ng-container>
+						<ng-template #showPassport>
+							<input 
+								type="text" 
+								[(ngModel)]="ben.passport"
+								name="passport_{{ben.passport}}">
+							<button 
+								class="btn btn-primary" 
+								style="margin-left: 10px;" 
+								(click)="updateRecord(ben, ben.passport, true)"
+								[disabled]="!ben.passport">Update</button>									
+						</ng-template>
+						
+			
+					</td>
 					<td scope="row">{{ben.bus_reg_no}}</td>
 					<td scope="row">{{ben.trust_reg_no}}</td>
 					<td scope="row">{{ben.cell}}</td>

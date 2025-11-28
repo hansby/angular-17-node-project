@@ -500,6 +500,9 @@ export class HomeComponent {
 	/** NEW GENERIC VALIDATION TEMPLATE */
 	fileUploadValidationTemplate(ctrl: string, errorTag: string, fileType: fileTypes, user: IUser, cb: Function) {
 		const ctrlValue = this.regForm.controls[ctrl].value;
+		const ctrl_POA = this.regForm.controls['file_poa'].value;
+		const ctrl_POABUSTRUST = this.regForm.controls['file_poa_bustrust'].value;
+
 		let result = ctrlValue.result;
 		if (!result || typeof result === "undefined") {
 			this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your ${errorTag} document before continuing`);
@@ -513,6 +516,23 @@ export class HomeComponent {
 				content: result.toString().includes('base64') ? result.split('base64,')[1] : result
 			}
 		}			
+
+		/** ------------- DO ONE LAST CHECK FOR PROOF OF ADDRESS UPLOAD FIELDS BEFORE HITTING GOOGLE DOC API */
+		
+		// IND
+		if ((!ctrl_POA || typeof ctrl_POA === "undefined")) {
+			this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Proof of Address (Individual) document before continuing`);
+			this.isLoading = false;
+			return;
+		}
+
+		// BUS/TRUST
+		if ((this.regType == REG_TYPE.BUS || this.regType == REG_TYPE.TRUST) && (!ctrl_POABUSTRUST || typeof ctrl_POABUSTRUST === "undefined")) {
+			this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Proof of Address (${this.regType}) document before continuing`);
+			this.isLoading = false;
+			return;
+		}
+
 		if (this.formSubmissionErrors_PAGE3.length <= 0 && fileType !== fileTypes.PROOF_OF_ADDRESS && fileType !== fileTypes.PROOF_OF_ADDRESS_BUSTRUST) { // if no errors so far, run the docAI call	
 			const docAI = this.uploadGoogleDoc.verifyGoogleAIDoc(googleDocObj, fileType).pipe(
 				catchError((err: HttpErrorResponse) => {
@@ -808,12 +828,24 @@ export class HomeComponent {
 			this.fileUploadHelper(bodyCopyForFileUploads.file_poa, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);
 			this.fileUploadHelper(bodyCopyForFileUploads.file_poa_bustrust, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);
 			this.fileUploadHelper(bodyCopyForFileUploads.file_bcl_bustrust, completeApplication, fileTypes.BANK_CONF_LETTER_BUSTRUST, isProvisional);					
+			if(this.isSACitizen) {
+				this.fileUploadHelper(bodyCopyForFileUploads.file_id, completeApplication, fileTypes.ID, isProvisional);
+			}
+			if (this.isForeigner) {
+				this.fileUploadHelper(bodyCopyForFileUploads.file_passport, completeApplication, fileTypes.PASSPORT, isProvisional);
+			}				
 		}
 		if (this.regType === REG_TYPE.BUS) {
 			this.fileUploadHelper(bodyCopyForFileUploads.file_bus_reg, completeApplication, fileTypes.BUS_REG_DOC, isProvisional);
 			this.fileUploadHelper(bodyCopyForFileUploads.file_bcl_bustrust, completeApplication, fileTypes.BANK_CONF_LETTER_BUSTRUST, isProvisional);
 			this.fileUploadHelper(bodyCopyForFileUploads.file_poa_bustrust, completeApplication, fileTypes.PROOF_OF_ADDRESS_BUSTRUST, isProvisional);
 			this.fileUploadHelper(bodyCopyForFileUploads.file_poa, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);
+			if(this.isSACitizen) {
+				this.fileUploadHelper(bodyCopyForFileUploads.file_id, completeApplication, fileTypes.ID, isProvisional);
+			}
+			if (this.isForeigner) {
+				this.fileUploadHelper(bodyCopyForFileUploads.file_passport, completeApplication, fileTypes.PASSPORT, isProvisional);
+			}				
 		}		
 		if (this.regType === REG_TYPE.IND) {
 			this.fileUploadHelper(bodyCopyForFileUploads.file_bcl, completeApplication, fileTypes.BANK_CONF_LETTER, isProvisional);
