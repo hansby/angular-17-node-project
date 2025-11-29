@@ -688,11 +688,29 @@ export class HomeComponent {
 				return isTrue = hasCommissionerTag && hasCOR143Tag && hasRegNoTitle && hasRegNo;
 				break;
 			case fileTypes.BANK_CONF_LETTER:
+				const regex = /\b(\d{2}\/\d{2}\/\d{4}|[12]\d{3}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4}|[12]\d{3}\/\d{2}\/\d{2}|(?:0?[1-9]|[12]\d|3[01])\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(19|20)\d{2})\b/g;
+				const dateMatches = dataText.toString().match(regex);
+				const hasDate = dateMatches && dateMatches.length > 0;
+				// check if date is within last 3 months
+				let dateIsValid = false;
+				if (hasDate) {
+					const now = new Date();
+					const threeMonthsAgo = new Date();
+					threeMonthsAgo.setMonth(now.getMonth() - 3);
+					for (let dateStr of dateMatches) {
+						let parsedDate = new Date(dateStr);
+						if (parsedDate.toString() !== 'Invalid Date') {
+							if (parsedDate >= threeMonthsAgo && parsedDate <= now) {
+								dateIsValid = true;
+								break;
+							}
+						}
+					}
+				}
 				const djl = dataText.toString().toLowerCase();
 				const keywords = ['confirm', 'confirms', 'proof', 'banking'];
-				//const ctrl_acc_no = this.regForm.controls['acc_no'].value;
-				const basics = djl.includes('account') && djl.includes('branch'); // && djl.includes(ctrl_acc_no)
-				isTrue = basics && keywords.filter(kw => djl.includes(kw)).length > 0;
+				const basics = djl.includes('account') && djl.includes('branch');
+				isTrue = basics && keywords.filter(kw => djl.includes(kw)).length > 0 && dateIsValid;
 				break;	
 		}
 		return isTrue
@@ -739,12 +757,12 @@ export class HomeComponent {
 
 		const $ = this.regService.getAll(qParams, this.regType, this.isSACitizen).subscribe((responseData) => {
 
-			/* ***NB: BLOCK registration if data already exists in DB!
-			if (responseData.length > 0) {
+			/* ***NB: BLOCK registration if data already exists in DB! */
+			if (responseData.length > 0 && this.regType === REG_TYPE.IND) {
 				this.recordAlreadyExists = true;
 				this.isLoading = false;
 				return;
-			}*/
+			}
 
 			/**
 			 * !!!NB: We need to re-format the file_*** form fields
