@@ -489,13 +489,9 @@
 							<h4 class="mb-1">Upload Documents</h4>
 
 							<hr class="my-4" *ngIf="regType === 'trust' || regType === 'business'">
-
-							<ng-container *ngIf="regForm.controls['firstName'].value.length <= 0 || regForm.controls['lastName'].value.length <= 0">
-								<p>**Please fill in your name, surname and ID or Passport before completing this section.</p>
-							</ng-container>
 	
 							<!-- FILE UPLOAD FIELDS -->
-							<ng-container *ngIf="regForm.controls['firstName'].value.length > 0 && regForm.controls['lastName'].value.length > 0">
+							<ng-container *ngIf="regForm.controls['acc_holder'].value.length > 0; else uploadDocsPrompt">
 
 								<div class="upload-docs-container">
 
@@ -579,6 +575,10 @@
 								</div>					
 								
 							</ng-container>
+
+							<ng-template #uploadDocsPrompt>
+								<p>**Please complete your Banking Information above before uploading documents.</p>
+							</ng-template>							
 							
 							<!-- SUBMISSION ERRORS ON LAST PAGE: if any are found -->
 							<ng-container *ngIf="formSubmissionErrors_PAGE3.length > 0"> 

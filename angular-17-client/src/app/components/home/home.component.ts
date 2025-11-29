@@ -352,6 +352,7 @@ export class HomeComponent {
 
 	updateRegType(value: string) {
 		this.regType = value;
+		this.resetUploadFormFields(this.regForm);
 	}
 
 	updateBank(value: string) {
@@ -1001,7 +1002,17 @@ export class HomeComponent {
 		return undefined;
 	}	
 
+	resetUploadFormFields(regForm: FormGroup<any>) {
+		const ctrl = regForm.controls;
+		ctrl['file_id'].setValue('');
+		ctrl['file_passport'].setValue('');
+		ctrl['file_bus_reg'].setValue('');
+		ctrl['file_trust'].setValue('');
+		ctrl['file_poa'].setValue('');
+		ctrl['file_bcl'].setValue('');
+		ctrl['file_bcl_bustrust'].setValue('');
+		ctrl['file_poa_bustrust'].setValue('');
+	}	
+
 }
-
-
 
