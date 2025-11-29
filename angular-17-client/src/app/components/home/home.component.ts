@@ -679,14 +679,13 @@ export class HomeComponent {
 				return isTrue = hasTrustSurname && hasTrustTitle && controlAct && hasTrustNo;
 				break;
 			case fileTypes.BUS_REG_DOC:
-				const documentBusDoc = dataText.toString().replace(/[ \-/]/g, '').toLowerCase();
+				const documentBusDoc = dataText.toString().replace(/\s/g, '').toLowerCase();
 				const ctrl_regNo = this.regForm.controls['bus_reg_no'].value;
-				//const getBusRegNo = ctrl_regNo && ctrl_regNo.length > 0 ? ctrl_regNo.replace(/\s/g, '') : '';
 				const hasCommissionerTag = documentBusDoc.includes('issuedbytheCommissionerofCompanies&Intellectual'.toLowerCase());
 				const hasCOR143Tag = documentBusDoc.includes('COR14.3'.toLowerCase());
 				const hasRegNoTitle = documentBusDoc.includes('Registrationnumber'.toLowerCase());
-				//const hasRegNo = text.includes(getBusRegNo.toLowerCase());
-				return isTrue = hasCommissionerTag && hasCOR143Tag && hasRegNoTitle;
+				const hasRegNo = documentBusDoc.includes(ctrl_regNo.toString().replace(/\s/g, ''));
+				return isTrue = hasCommissionerTag && hasCOR143Tag && hasRegNoTitle && hasRegNo;
 				break;
 			case fileTypes.BANK_CONF_LETTER:
 				const djl = dataText.toString().toLowerCase();
