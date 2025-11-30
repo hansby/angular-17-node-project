@@ -1,11 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { BehaviorSubject, catchError, concat, concatMap, delay, forkJoin, last, Observable, of, take } from 'rxjs';
+import { BehaviorSubject, catchError, concatMap, delay, forkJoin, last, Observable, of } from 'rxjs';
 import {
 	FormControl, FormGroup, FormBuilder, Validators,
 } from '@angular/forms';
 import { IRequiredQParams, RegistrationsService } from '../../services/registrations.service';
-import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { IGoogleDoc, UploadGoogleDocService } from '../../services/upload-google-doc.service';
 import { FileUploadService } from '../../services/file-upload.service';
 import { LoggerService } from '../../services/logger.service';
@@ -138,7 +138,7 @@ function isNumber(n: string) {
 	styleUrl: './home.component.css',
 })
 export class HomeComponent {
-	page: number = 2; // when all said and done this final value will be = 1
+	page: number = 1; // when all said and done this final value will be = 1
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -423,8 +423,6 @@ export class HomeComponent {
 				case fileTypes.BANK_CONF_LETTER_BUSTRUST: ctrl['file_bcl_bustrust'].setValue(myNewFile);
 					break;																				
 			}
-
-			console.log('regform ', this.regForm.value);
 		}
 	}
 
@@ -839,9 +837,6 @@ export class HomeComponent {
 	sendDocumentsToServer(completeApplication: boolean = false, isProvisional: boolean) {
 		const body: IRegistration = this.regForm.value;
 		const bodyCopyForFileUploads = Object.assign({}, body);
-
-		console.log('bodyCopyForFileUploads: ', bodyCopyForFileUploads);
-
 		if (this.regType === REG_TYPE.TRUST) {
 			this.fileUploadHelper(bodyCopyForFileUploads.file_trust, completeApplication, fileTypes.TRUST_DOC, isProvisional);
 			this.fileUploadHelper(bodyCopyForFileUploads.file_poa, completeApplication, fileTypes.PROOF_OF_ADDRESS, isProvisional);

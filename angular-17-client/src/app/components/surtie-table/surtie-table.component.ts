@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ISearchResultsSurtieDB, ISearchResultsSurtieDBAlt, SearchService, searchType } from '../../services/search.service';
+import { ISearchResultsSurtieDBAlt, SearchService, searchType } from '../../services/search.service';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ISurtieDBRecord, RegistrationsService } from '../../services/registrations.service';
 import { LoginService } from '../../services/login.service';
@@ -9,13 +9,11 @@ const PASSWORD = 'AccessApps001';
 
 @Component({
 	selector: 'app-applications',
-	//standalone: true,
-	//imports: [CommonModule],
 	templateUrl: './surtie-table.component.html',
 	styleUrl: './surtie-table.component.css',
 })
 export class SurtieTableComponent implements OnInit {
-	isLoggedIn: boolean = true;
+	isLoggedIn: boolean = false;
 	inpt_username: string = '';
 	inpt_password: string = '';
 	searchBy: searchType | null = null;
@@ -28,7 +26,6 @@ export class SurtieTableComponent implements OnInit {
 	noResultsFound: boolean = false;
 
 	allRecords: Array<ISurtieDBRecord> = [];
-
 
 	constructor(
 		private search: SearchService, 
@@ -43,14 +40,6 @@ export class SurtieTableComponent implements OnInit {
 				original_id_number: r.id_number
 			}));
 		});
-		
-		/*this.form.controls['search'].valueChanges.pipe(
-			map((val) => ({ ...val, hash: JSON.stringify(val) })),
-			distinctUntilKeyChanged('hash'),
-			debounceTime(300),			
-		).subscribe((keyword) => {
-			console.log('keyword from search: ', keyword);
-		})*/
 	}
 
 	updateSearchBy(type: searchType) {

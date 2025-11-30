@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ISearchResults, SearchService, searchType } from '../../services/search.service';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { RegistrationsService } from '../../services/registrations.service';
-import { Registration } from '../../models/registration.model';
-import { error } from 'jquery';
 
 const USERNAME = 'raymond001';
 const PASSWORD = 'AccessApps001';
@@ -16,13 +14,11 @@ interface IModalData {
 
 @Component({
 	selector: 'app-applications',
-	//standalone: true,
-	//imports: [CommonModule],
 	templateUrl: './applications.component.html',
 	styleUrl: './applications.component.css',
 })
 export class ApplicationsComponent implements OnInit {
-	isLoggedIn: boolean = true;
+	isLoggedIn: boolean = false;
 	inpt_username: string = '';
 	inpt_password: string = '';
 	searchBy: searchType | null = null;
@@ -38,7 +34,6 @@ export class ApplicationsComponent implements OnInit {
 		id: '',
 		isPassport: false
 	};
-
 
 	constructor(private search: SearchService, private registrationService: RegistrationsService) {}
 
@@ -97,5 +92,4 @@ export class ApplicationsComponent implements OnInit {
 	login() {
 		this.isLoggedIn = this.inpt_username === USERNAME && this.inpt_password === PASSWORD;
 	}
-
 }
