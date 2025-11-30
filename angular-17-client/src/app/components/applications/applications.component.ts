@@ -8,6 +8,12 @@ import { error } from 'jquery';
 const USERNAME = 'raymond001';
 const PASSWORD = 'AccessApps001';
 
+interface IModalData {
+	beneficiary: ISearchResults;
+	id: string;
+	isPassport: boolean;
+}
+
 @Component({
 	selector: 'app-applications',
 	//standalone: true,
@@ -27,6 +33,11 @@ export class ApplicationsComponent implements OnInit {
 	searchType = searchType;
 	_UISearchResults: Array<ISearchResults> = [];
 	noResultsFound: boolean = false;
+	modalData: IModalData = {
+		beneficiary: {} as ISearchResults,
+		id: '',
+		isPassport: false
+	};
 
 
 	constructor(private search: SearchService, private registrationService: RegistrationsService) {}

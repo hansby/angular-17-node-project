@@ -52,12 +52,7 @@
       <button class="btn btn-outline-success my-2 my-sm-0" 
 				type="submit" 
 				(click)="doSearch()">Search</button>
-    </form>		
-
-		<!-- 
-			+(searchBy === null ? '...' : searchBy) 
-			[disabled]="searchBy === null"
-		-->
+    </form>
 
 		<table class="table">
 			<thead>
@@ -66,20 +61,15 @@
 					<th scope="col">ID/PASSPORT</th>
 					<th scope="col">Bus Reg No</th>
 					<th scope="col">Trust Reg No</th>
-					<th scope="col">Cell</th>
 					<th scope="col">Citizen Status</th>
 					<th scope="col">Reg Type</th>
-					<th scope="col">Bank</th>
-					<!--<th scope="col">Acc No</th>-->
-					<th scope="col">Date Registered</th>
+					<th scope="col">Details</th>
 				</tr>
 			</thead>
 			<tbody *ngIf="_UISearchResults.length > 0">
 				<tr *ngFor="let ben of _UISearchResults">
 					<td scope="row">{{ben.firstName}} {{ben.lastName}}</td>
 					<td scope="row" class="input-text-row">
-						<!--{{ben.user_id && ben.user_id.length > 0 ? ben.user_id : ben.passport}}-->
-
 						<ng-container *ngIf="ben.user_id && ben.user_id.length > 0; else showPassport">
 							<input 
 								type="text" 
@@ -102,17 +92,16 @@
 								(click)="updateRecord(ben, ben.passport, true)"
 								[disabled]="!ben.passport">Update</button>									
 						</ng-template>
-						
-			
 					</td>
 					<td scope="row">{{ben.bus_reg_no}}</td>
 					<td scope="row">{{ben.trust_reg_no}}</td>
-					<td scope="row">{{ben.cell}}</td>
 					<td scope="row">{{ben.citizenStatus === 'citizen' ? 'SA' : 'Foreigner'}}</td>
 					<td scope="row">{{ben.reg_type}}</td>
-					<td scope="row">{{ben.bank === 'bank_other' ? ben.bank_other : ben.bank}}</td>
-					<!--<td scope="row">{{beneficiary.acc_no}}</td>-->
-					<td scope="row">{{ben.createdAt | date:'yyyy-MM-dd'}}</td>
+					<td scope="row">
+						<a href="#modal_tandcs" 
+							data-toggle="modal" 
+							(click)="modalData = { beneficiary: ben, id: ben.user_id || ben.passport, isPassport: !ben.user_id }">More info</a>
+					</td>
 				</tr>
 			</tbody>
 		</table>
@@ -124,4 +113,31 @@
 
 	</div>
 
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modal_tandcs" tabindex="-1" role="dialog" aria-labelledby="modal_tandcsLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal_tandcsLabel">{{ modalData.beneficiary.firstName }} {{ modalData.beneficiary.lastName }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+				<p>
+					<strong>ID/Passport No:</strong> {{ modalData.id }} <br />
+					<strong>Citizen Status:</strong> {{ modalData.beneficiary.citizenStatus === 'citizen' ? 'SA Citizen' : 'Foreigner' }} <br />
+					<strong>Cell number:</strong> {{ modalData.beneficiary.cell }} <br />
+					<strong>Bank:</strong> {{ modalData.beneficiary.bank === 'bank_other' ? modalData.beneficiary.bank_other : modalData.beneficiary.bank }} <br />
+					<strong>Date Registered:</strong> {{ modalData.beneficiary.createdAt | date:'yyyy-MM-dd' }} <br />
+				</p>
+			</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+      </div>
+    </div>
+  </div>
 </div>
