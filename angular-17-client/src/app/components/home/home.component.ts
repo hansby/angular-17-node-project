@@ -660,11 +660,11 @@ export class HomeComponent {
 				if (!dataText) return false;
 				const document = dataText.toString().replace(/[ \-/]/g, '').toLowerCase();
 				const isIDsMatching =  document.includes(ctrl_userID);
-				//const id_hasSurname = document.includes(ctrl_surname.toLowerCase());
-				//const id_hasForenames = document.includes('FORENAMES'.toLowerCase());
+				const id_hasName = document.toString().replace(/\s/g, '').includes(ctrls['firstName'].value.toLowerCase().replace(/\s/g, '')) && document.includes(ctrl_surname.toLowerCase().replace(/\s/g, ''));
+				const id_hasSurname = document.toString().replace(/\s/g, '').includes(ctrls['lastName'].value.toLowerCase().replace(/\s/g, '')) && document.includes(ctrl_surname.toLowerCase().replace(/\s/g, ''));
 				//const id_hasDateIssued = document.includes('DATEISSUED'.toLowerCase());
 				const id_hasCountryOfBirth = document.includes('COUNTRYOFBIRTH'.toLowerCase());
-				return isTrue = isIDsMatching && id_hasCountryOfBirth;
+				return isTrue = id_hasName && id_hasSurname && isIDsMatching && id_hasCountryOfBirth;
 				break;
 			case fileTypes.TRUST_DOC:
 				const documentTrustDoc = dataText.toString().replace(/ +/g, '');
