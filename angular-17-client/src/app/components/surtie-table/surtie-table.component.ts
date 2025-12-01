@@ -13,7 +13,7 @@ const PASSWORD = 'AccessApps001';
 	styleUrl: './surtie-table.component.css',
 })
 export class SurtieTableComponent implements OnInit {
-	isLoggedIn: boolean = false;
+	isLoggedIn: boolean = true;
 	inpt_username: string = '';
 	inpt_password: string = '';
 	searchBy: searchType | null = null;
@@ -57,9 +57,11 @@ export class SurtieTableComponent implements OnInit {
 		const keyword = this.form.controls['search'].value;
 		if (!keyword || keyword.length <= 0) return;
 		this.search.getBySearchFilterSurtieDB(keyword).subscribe((searchResults) => {
-			console.log('lets see searchResults: ', searchResults);
 			if (searchResults.length > 0) {
-				this._UISearchResults = searchResults;
+				this._UISearchResults = searchResults.map(r => ({
+					...r,
+					original_id_number: r.id_number
+				}));
 			} else {
 				this.noResultsFound = true;
 			}

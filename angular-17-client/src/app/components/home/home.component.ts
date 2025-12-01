@@ -138,7 +138,7 @@ function isNumber(n: string) {
 	styleUrl: './home.component.css',
 })
 export class HomeComponent {
-	page: number = 1; // when all said and done this final value will be = 1
+	page: number = 2; // when all said and done this final value will be = 1
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;
@@ -755,12 +755,12 @@ export class HomeComponent {
 
 		const $ = this.regService.getAll(qParams, this.regType, this.isSACitizen).subscribe((responseData) => {
 
-			/* ***NB: BLOCK registration if data already exists in DB! */
+			/* ***NB: BLOCK registration if data already exists in DB! 
 			if (responseData.length > 0 && this.regType === REG_TYPE.IND) {
 				this.recordAlreadyExists = true;
 				this.isLoading = false;
 				return;
-			}
+			}*/
 
 			/**
 			 * !!!NB: We need to re-format the file_*** form fields

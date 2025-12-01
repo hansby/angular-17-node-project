@@ -11,6 +11,7 @@ export interface ISearchResultsSurtieDB {
 }
 
 export interface ISearchResultsSurtieDBAlt {
+	allow?: boolean;
 	id_number: string,
 	first_name: string,
 	last_name: string,
