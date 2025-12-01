@@ -669,26 +669,32 @@ export class HomeComponent {
 			case fileTypes.TRUST_DOC:
 				const documentTrustDoc = dataText.toString().replace(/ +/g, '');
 				const ctrl_trustNo = this.regForm.controls['trust_reg_no'].value;
+				const acc_holder = this.regForm.controls['acc_holder'].value;
 				const getTrustNo = ctrl_trustNo && ctrl_trustNo.length > 0 ? ctrl_trustNo.replace(/\s/g, '') : '';
 				const hasTrustSurname = documentTrustDoc.toLowerCase().includes(ctrl_surname.toLowerCase());
 				const hasTrustTitle = documentTrustDoc.toLowerCase().includes('LETTERSOFAUTHORITY'.toLowerCase());
 				const controlAct = documentTrustDoc.toLowerCase().includes('TrustPropertyControlAct'.toLowerCase());
 				const hasTrustNo = documentTrustDoc.includes(getTrustNo);
-				return isTrue = hasTrustSurname && hasTrustTitle && controlAct && hasTrustNo;
+				const hasAccHolder = documentTrustDoc.toLowerCase().replace(/\s/g, '').includes(acc_holder.replace(/\s/g, '').toLowerCase());
+				return isTrue = hasTrustSurname && hasTrustTitle && controlAct && hasTrustNo && hasAccHolder;
 				break;
 			case fileTypes.BUS_REG_DOC:
 				const documentBusDoc = dataText.toString().replace(/\s/g, '').toLowerCase();
+				const acc_holder_bus = this.regForm.controls['acc_holder'].value;
 				const ctrl_regNo = this.regForm.controls['bus_reg_no'].value;
 				const hasCommissionerTag = documentBusDoc.includes('issuedbytheCommissionerofCompanies&Intellectual'.toLowerCase());
 				const hasCOR143Tag = documentBusDoc.includes('COR14.3'.toLowerCase());
 				const hasRegNoTitle = documentBusDoc.includes('Registrationnumber'.toLowerCase());
 				const hasRegNo = documentBusDoc.includes(ctrl_regNo.toString().replace(/\s/g, ''));
-				return isTrue = hasCommissionerTag && hasCOR143Tag && hasRegNoTitle && hasRegNo;
+				const hasAccHolder_bus = documentBusDoc.toLowerCase().replace(/\s/g, '').includes(acc_holder_bus.replace(/\s/g, '').toLowerCase());
+				return isTrue = hasAccHolder_bus && hasCommissionerTag && hasCOR143Tag && hasRegNoTitle && hasRegNo;
 				break;
 			case fileTypes.BANK_CONF_LETTER:
 				const regex = /\b(\d{2}\/\d{2}\/\d{4}|[12]\d{3}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4}|[12]\d{3}\/\d{2}\/\d{2}|(?:0?[1-9]|[12]\d|3[01])\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(19|20)\d{2})\b/g;
 				const dateMatches = dataText.toString().match(regex);
 				const hasDate = dateMatches && dateMatches.length > 0;
+				const accNo = this.regForm.controls['acc_no'].value;
+				const hasAccNo = dataText.toString().replace(/\s/g, '').includes(accNo.toString().replace(/\s/g, ''));
 				// check if date is within last 3 months
 				let dateIsValid = false;
 				if (hasDate) {
@@ -708,7 +714,7 @@ export class HomeComponent {
 				const djl = dataText.toString().toLowerCase();
 				const keywords = ['confirm', 'confirms', 'proof', 'banking'];
 				const basics = djl.includes('account') && djl.includes('branch');
-				isTrue = basics && keywords.filter(kw => djl.includes(kw)).length > 0 && dateIsValid;
+				isTrue = hasAccNo && basics && keywords.filter(kw => djl.includes(kw)).length > 0 && dateIsValid;
 				break;	
 		}
 		return isTrue
