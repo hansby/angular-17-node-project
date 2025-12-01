@@ -662,9 +662,10 @@ export class HomeComponent {
 				const isIDsMatching =  document.includes(ctrl_userID);
 				const id_hasName = document.toString().replace(/\s/g, '').includes(ctrls['firstName'].value.toLowerCase().replace(/\s/g, '')) && document.includes(ctrl_surname.toLowerCase().replace(/\s/g, ''));
 				const id_hasSurname = document.toString().replace(/\s/g, '').includes(ctrls['lastName'].value.toLowerCase().replace(/\s/g, '')) && document.includes(ctrl_surname.toLowerCase().replace(/\s/g, ''));
-				//const id_hasDateIssued = document.includes('DATEISSUED'.toLowerCase());
+				const keywords_ID = ['DATEISSUED', 'Date of Issue'];
+				const id_hasDateIssued = keywords_ID.filter(kw => document.toString().toLowerCase().replace(/\s/g, '').includes(kw.replace(/\s/g, '').toLowerCase())).length > 0;
 				const id_hasCountryOfBirth = document.includes('COUNTRYOFBIRTH'.toLowerCase());
-				return isTrue = id_hasName && id_hasSurname && isIDsMatching && id_hasCountryOfBirth;
+				return isTrue = id_hasName && id_hasSurname && isIDsMatching && id_hasCountryOfBirth && id_hasDateIssued;
 				break;
 			case fileTypes.TRUST_DOC:
 				const documentTrustDoc = dataText.toString().replace(/ +/g, '');
