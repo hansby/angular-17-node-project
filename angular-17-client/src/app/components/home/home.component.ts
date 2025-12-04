@@ -138,7 +138,7 @@ function isNumber(n: string) {
 	styleUrl: './home.component.css',
 })
 export class HomeComponent {
-	page: number = 2; // when all said and done this final value will be = 1
+	page: number = 1; // when all said and done this final value will be = 1
 	regForm: FormGroup;
 	applicationInProgress: boolean = true;
 	localStore: any;

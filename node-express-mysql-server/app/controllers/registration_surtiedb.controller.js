@@ -89,7 +89,12 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
 	const id_number = req.query.id_number;
 
-  RegistrationSurtie.findOne({ where: { id_number: id_number } }) //{ [Op.eq]: id_number }
+  RegistrationSurtie.findOne({ 
+		where: {
+			id_number: id_number,
+			allow: { [Op.eq]: "Yes" }
+		}
+	}) //{ [Op.eq]: id_number }
     .then(data => {
       if (data) {
         res.send({
