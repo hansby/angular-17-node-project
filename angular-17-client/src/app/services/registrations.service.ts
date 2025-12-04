@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { forkJoin, Observable, tap } from 'rxjs';
 import { Registration } from '../models/registration.model';
 import { REG_TYPE } from '../components/home/home.component';
 import { map } from 'rxjs/operators';
@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 const baseUrl = 'http://localhost:8080/api/registrations';
 
 export interface ISurtieDBRecord {
-	allow?: boolean;
+	allow?: boolean,
 	id_number: string,
 	first_name: string,
 	last_name: string,
@@ -19,6 +19,8 @@ export interface IStats {
 	totalApplications: number;
 	registeredToday: number;
 	registeredYesterday: number;
+	totalSurtieDBAllowed: number;
+	totalSurtieDBAllowedWhoRegistered: number;
 }
 
 export interface IRegistration {
@@ -48,12 +50,16 @@ export interface IRequiredQParams {
 export class RegistrationsService {
 	constructor(private http: HttpClient) {}
 
-	getAllSurtieDBRecords(): Observable<ISurtieDBRecord[]> {
-		return this.http.get<ISurtieDBRecord[]>(`http://localhost:8080/api/registrations_surtiedb`);
+	getAllSurtieDBRecords(limit: number = 100): Observable<ISurtieDBRecord[]> {
+		return this.http.get<ISurtieDBRecord[]>(`http://localhost:8080/api/registrations_surtiedb?limit=${limit}`);
 	}
 
 	updateSurtieDBRecord(originalID: string, data: ISurtieDBRecord): Observable<any> {
-		const { first_name, last_name, id_number, allow } = data;
+		let allow = 'No';
+		if (data.allow) {
+			allow = 'Yes';
+		}
+		const { first_name, last_name, id_number } = data;
 		return this.http.put(`http://localhost:8080/api/registrations_surtiedb/${originalID}`, {
 			first_name, last_name, id_number, allow
 		}).pipe(
@@ -97,17 +103,49 @@ export class RegistrationsService {
 	findByTitle(title: any): Observable<Registration[]> {
 		return this.http.get<Registration[]>(`${baseUrl}?title=${title}`);
 	}
-
+	/*
 	getStats(): Observable<IStats> {
 		return this.http.get<IRegistration[]>(`${baseUrl}`).pipe(
 			map((registrationData: IRegistration[]) => ({
 				registeredYesterday: getRegisteredUsersByDate(registrationData, new Date(Date.now() - 86400000)) ?? 0,
 				registeredToday: getRegisteredUsersByDate(registrationData, new Date()) ?? 0,
 				totalApplications: registrationData.length ?? 0,
+				totalSurtieDBAllowed: 0
+				// registrationData.filter(reg => reg['allow'] && reg['allow'].toString().toLowerCase() === 'yes').length ?? 
 			}))
 		);
+	}*/
+
+	getStats(): Observable<IStats> {
+		return forkJoin({
+			registrations: this.http.get<IRegistration[]>(baseUrl),
+			surtieRecords: this.getAllSurtieDBRecords(10000)
+		}).pipe(
+			map(({ registrations, surtieRecords }) => {
+				
+				// Create a fast lookup set of user_ids
+				const userIdSet = new Set(registrations.map(r => r.user_id));
+
+				return {
+					registeredYesterday: getRegisteredUsersByDate(registrations, new Date(Date.now() - 86400000)) ?? 0,
+					registeredToday: getRegisteredUsersByDate(registrations, new Date()) ?? 0,
+					totalApplications: registrations.length ?? 0,
+
+					totalSurtieDBAllowed: surtieRecords.filter(rec =>
+						rec.allow?.toString().toLowerCase() === 'yes'
+					).length,
+
+					// Must be allowed AND must match a registration.user_id
+					totalSurtieDBAllowedWhoRegistered: surtieRecords.filter(rec =>
+						rec.allow?.toString().toLowerCase() === 'yes' && userIdSet.has(rec.id_number)
+					).length
+				};
+			})
+		);
 	}
+
 }
+
 function getRegisteredUsersByDate(registrationData: IRegistration[], date: Date): number {
 	return registrationData.filter(reg => {
 		if (!reg.createdAt) return false;

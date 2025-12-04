@@ -103,6 +103,7 @@ exports.create = (req, res) => {
 // Retrieve all Registrations from the database.
 exports.findAll = (req, res) => {
   const { user_id, lastName, email, passport, acc_no, trust_reg_no, bus_reg_no } = req.query;
+	const limit = parseInt(req.query.limit) || 100;   // default 100
 
   const orConditions = [];
   if (user_id) orConditions.push({ user_id: { [Op.like]: `%${user_id}%` } });
@@ -114,7 +115,14 @@ exports.findAll = (req, res) => {
   if (lastName) orConditions.push({ lastName: { [Op.like]: `%${lastName}%` } });
 
   // If no params -> fetch all
-  const condition = orConditions.length > 0 ? { where: { [Op.or]: orConditions } } : {};
+  //const condition = orConditions.length > 0 ? { where: { [Op.or]: orConditions } } : {};
+
+  // If no params -> fetch all
+	const condition = {
+		where: orConditions.length > 0 ? { [Op.or]: orConditions } : undefined,
+		limit: limit,
+		//offset: offset
+	};	
 
   Registration.findAll(condition)
     .then(data => res.send(data))

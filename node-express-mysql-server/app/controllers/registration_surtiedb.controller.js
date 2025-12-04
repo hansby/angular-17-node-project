@@ -54,17 +54,23 @@ exports.create = (req, res) => {
 
 // Retrieve all Registrations from the database.
 exports.findAll = (req, res) => {
-  const { first_name, last_name, id_number, allow } = req.query;
+  const { source, first_name, last_name, id_number, allow } = req.query;
+	const limit = parseInt(req.query.limit) || 100;   // default 100
+	//const offset = parseInt(req.query.offset) || 0;   // default 0
 
   const orConditions = [];
-  //if (user_id) orConditions.push({ user_id: { [Op.like]: `%${user_id}%` } });
+	if (source) orConditions.push({ source: { [Op.like]: `%${source}%` } });
 	if (first_name) orConditions.push({ first_name: { [Op.like]: `%${first_name}%` } });
   if (last_name) orConditions.push({ last_name: { [Op.like]: `%${last_name}%` } });
 	if (id_number) orConditions.push({ id_number: { [Op.like]: `%${id_number}%` } });
 	if (allow) orConditions.push({ allow: { [Op.like]: `%${allow}%` } });
 
   // If no params -> fetch all
-  const condition = orConditions.length > 0 ? { where: { [Op.or]: orConditions } } : {};
+	const condition = {
+		where: orConditions.length > 0 ? { [Op.or]: orConditions } : undefined,
+		limit: limit,
+		//offset: offset
+	};
 
 	//res.send({ message: "SurtieDB Registration endpoint is active." });
 

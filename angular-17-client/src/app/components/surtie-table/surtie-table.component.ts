@@ -37,6 +37,7 @@ export class SurtieTableComponent implements OnInit {
 		this.registrationsService.getAllSurtieDBRecords().subscribe(records => {
 			this.allRecords = records.map(r => ({
 				...r,
+				allow: r.allow && r.allow.toString().toLowerCase() === 'yes' ? true : false,
 				original_id_number: r.id_number
 			}));
 		});
@@ -60,6 +61,7 @@ export class SurtieTableComponent implements OnInit {
 			if (searchResults.length > 0) {
 				this._UISearchResults = searchResults.map(r => ({
 					...r,
+					allow: r.allow && r.allow.toString().toLowerCase() === 'yes' ? true : false,
 					original_id_number: r.id_number
 				}));
 			} else {
