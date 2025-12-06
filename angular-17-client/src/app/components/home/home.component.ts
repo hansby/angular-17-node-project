@@ -725,16 +725,66 @@ export class HomeComponent {
 	}
 
 	parseDate(dateStr: string): Date {
+  	if (!dateStr) return new Date("Invalid");
+    dateStr = dateStr.trim();
+
 		// ISO format - safe
 		if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
 			return new Date(dateStr);
-		}
+		}		
 
 		// DD/MM/YYYY format
 		if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
 			const [day, month, year] = dateStr.split('/').map(Number);
 			return new Date(year, month - 1, day); // month is 0-based
-		}
+		}		
+
+    // --- 1. YYYY-MM-DD or YYYY/MM/DD ---
+    if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(dateStr)) {
+        const [y, m, d] = dateStr.split(/[-/]/).map(Number);
+        return new Date(y, m - 1, d);
+    }
+
+    // --- 2. DD/MM/YYYY or D/M/YYYY ---
+    if (/^\d{1,2}[\/]\d{1,2}[\/]\d{4}$/.test(dateStr)) {
+        const [d, m, y] = dateStr.split('/').map(Number);
+        return new Date(y, m - 1, d);
+    }
+
+    // --- 3. DD-MM-YYYY or D-M-YYYY ---
+    if (/^\d{1,2}[-]\d{1,2}[-]\d{4}$/.test(dateStr)) {
+        const [d, m, y] = dateStr.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    }
+
+    // Normalize month names: capitalize first letter
+    const normalizeMonth = (m: any) =>
+        m.charAt(0).toUpperCase() + m.slice(1).toLowerCase();
+
+    // --- 4. D or DD Month YYYY (e.g. 5 December 2025, 05 Dec 2025) ---
+    if (/^\d{1,2}\s+[A-Za-z]+\s+\d{4}$/.test(dateStr)) {
+        const [d, monthName, y] = dateStr.split(/\s+/);
+        const month = new Date(`${normalizeMonth(monthName)} 1, 2000`).getMonth();
+        if (isNaN(month)) return new Date("Invalid");
+        return new Date(Number(y), month, Number(d));
+    }
+
+    // --- 5. Month D, YYYY (e.g. December 5, 2025) ---
+    if (/^[A-Za-z]+\s+\d{1,2},\s*\d{4}$/.test(dateStr)) {
+        const [monthName, dayComma, y] = dateStr.split(/\s+/);
+        const d = Number(dayComma.replace(',', ''));
+        const month = new Date(`${normalizeMonth(monthName)} 1, 2000`).getMonth();
+        if (isNaN(month)) return new Date("Invalid");
+        return new Date(Number(y), month, d);
+    }
+
+    // --- 6. Mon D YYYY (e.g. Dec 5 2025) ---
+    if (/^[A-Za-z]{3,}\s+\d{1,2}\s+\d{4}$/.test(dateStr)) {
+        const [monthName, d, y] = dateStr.split(/\s+/);
+        const month = new Date(`${normalizeMonth(monthName)} 1, 2000`).getMonth();
+        if (isNaN(month)) return new Date("Invalid");
+        return new Date(Number(y), month, Number(d));
+    }		
 
 		return new Date('Invalid');
 	}	
