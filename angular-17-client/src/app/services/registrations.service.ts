@@ -69,7 +69,6 @@ export class RegistrationsService {
 
 	getAll(params: IRequiredQParams, regType: string, saCitizen: boolean): Observable<Registration[]> {
     const p: [string, string|number|boolean|undefined][] = [
-      //['email', params.email],
       ['acc_no', params.acc_no],
     ];
 		if (regType === REG_TYPE.IND && params.user_id && saCitizen) p.push(['user_id', params.user_id]);
@@ -103,18 +102,6 @@ export class RegistrationsService {
 	findByTitle(title: any): Observable<Registration[]> {
 		return this.http.get<Registration[]>(`${baseUrl}?title=${title}`);
 	}
-	/*
-	getStats(): Observable<IStats> {
-		return this.http.get<IRegistration[]>(`${baseUrl}`).pipe(
-			map((registrationData: IRegistration[]) => ({
-				registeredYesterday: getRegisteredUsersByDate(registrationData, new Date(Date.now() - 86400000)) ?? 0,
-				registeredToday: getRegisteredUsersByDate(registrationData, new Date()) ?? 0,
-				totalApplications: registrationData.length ?? 0,
-				totalSurtieDBAllowed: 0
-				// registrationData.filter(reg => reg['allow'] && reg['allow'].toString().toLowerCase() === 'yes').length ?? 
-			}))
-		);
-	}*/
 
 	getStats(): Observable<IStats> {
 		return forkJoin({
@@ -122,10 +109,9 @@ export class RegistrationsService {
 			surtieRecords: this.getAllSurtieDBRecords(10000)
 		}).pipe(
 			map(({ registrations, surtieRecords }) => {
-				
 				// Create a fast lookup set of user_ids
-				const userIdSet = new Set(registrations.map(r => r.user_id));
-
+				const userIdSet = new Set(registrations.map(r => r && r.user_id ? r.user_id.toString() : ''));
+				const prefixes = Array.from(userIdSet).map(id => id.split('-')[0]);
 				return {
 					registeredYesterday: getRegisteredUsersByDate(registrations, new Date(Date.now() - 86400000)) ?? 0,
 					registeredToday: getRegisteredUsersByDate(registrations, new Date()) ?? 0,
@@ -137,7 +123,7 @@ export class RegistrationsService {
 
 					// Must be allowed AND must match a registration.user_id
 					totalSurtieDBAllowedWhoRegistered: surtieRecords.filter(rec =>
-						rec.allow?.toString().toLowerCase() === 'yes' && userIdSet.has(rec.id_number)
+						rec.allow?.toString().toLowerCase() === 'yes' && prefixes.some(p => rec.id_number.startsWith(p))
 					).length
 				};
 			})

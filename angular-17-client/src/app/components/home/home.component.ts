@@ -161,7 +161,7 @@ export class HomeComponent {
 	radioPOPIModel: any;
 	radioTandCModel: any;
 	emailRegex = /^\S+@\S+\.\S+$/;
-	proofOfAddressLabelText: string = 'Upload Proof of Address';
+	proofOfAddressLabelText: string = 'Upload Official Proof of Address';
 
 	totalValidationCalls: number = 0;
 	completedValidations = 0;
@@ -185,7 +185,7 @@ export class HomeComponent {
 			bus_reg_no: new FormControl(''),
 			trust_reg_no: new FormControl(''),
 			cell: new FormControl(''),
-			email: new FormControl('', [Validators.required, Validators.email]),
+			email: new FormControl(''), // [Validators.email]
 			tax_no: new FormControl(''),
 
 			address_1: new FormControl('', [Validators.required]),
@@ -250,7 +250,7 @@ export class HomeComponent {
 			.subscribe(([reg_type]) => {
 				this.formSubmissionErrors.length = 0; // reset UI Error list
 				this.regType = reg_type;
-				this.proofOfAddressLabelText = 'Upload Proof of Address';
+				this.proofOfAddressLabelText = 'Upload Official Proof of Address';
 				/*switch(this.regType) {
 					case 't': 
 						this.proofOfAddressLabelText += ' (for Trust)';
@@ -294,6 +294,7 @@ export class HomeComponent {
 	];
 
 	allSaBanks: Array<IIdentity> = [
+		{name: 'FNB', id: 'fnb'},
 		{name: 'Absa Bank', id: 'absa'},
 		{name: 'African Bank', id: 'african_bank' },
 		{name: 'Bidvest Bank Ltd', id: 'bidvest'},
@@ -310,6 +311,7 @@ export class HomeComponent {
 	];	
 
 	banks: Array<IIdentity> = [
+		{name: 'FNB', id: 'fnb'},
 		{name: 'Absa Bank', id: 'absa'},
 		{name: 'African Bank', id: 'african_bank' },
 		{name: 'Bidvest Bank Ltd', id: 'bidvest'},
@@ -505,7 +507,7 @@ export class HomeComponent {
 
 		let result = ctrlValue.result;
 		if (!result || typeof result === "undefined") {
-			this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your ${errorTag} document before continuing`);
+			this.formSubmissionErrors_PAGE3.push(`Please upload an official copy of your ${errorTag} document before continuing`);
 			this.isLoading = false;
 			return;
 		}			
@@ -521,14 +523,14 @@ export class HomeComponent {
 
 		// IND
 		if ((!ctrl_POA || typeof ctrl_POA === "undefined")) {
-			this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Proof of Address (Individual) document before continuing`);
+			this.formSubmissionErrors_PAGE3.push(`Please upload an official copy of your Proof of Address (Individual) document before continuing`);
 			this.isLoading = false;
 			return;
 		}
 
 		// BUS/TRUST
 		if ((this.regType == REG_TYPE.BUS || this.regType == REG_TYPE.TRUST) && (!ctrl_POABUSTRUST || typeof ctrl_POABUSTRUST === "undefined")) {
-			this.formSubmissionErrors_PAGE3.push(`Please upload a copy of your Proof of Address (${this.regType}) document before continuing`);
+			this.formSubmissionErrors_PAGE3.push(`Please upload an official copy of your Proof of Address (${this.regType}) document before continuing`);
 			this.isLoading = false;
 			return;
 		}
@@ -703,7 +705,8 @@ export class HomeComponent {
 					const threeMonthsAgo = new Date();
 					threeMonthsAgo.setMonth(now.getMonth() - 3);
 					for (let dateStr of dateMatches) {
-						let parsedDate = new Date(dateStr);
+						//let parsedDate = new Date(dateStr);
+						let parsedDate = this.parseDate(dateStr);
 						if (parsedDate.toString() !== 'Invalid Date') {
 							if (parsedDate >= threeMonthsAgo && parsedDate <= now) {
 								dateIsValid = true;
@@ -720,6 +723,21 @@ export class HomeComponent {
 		}
 		return isTrue
 	}
+
+	parseDate(dateStr: string): Date {
+		// ISO format - safe
+		if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+			return new Date(dateStr);
+		}
+
+		// DD/MM/YYYY format
+		if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+			const [day, month, year] = dateStr.split('/').map(Number);
+			return new Date(year, month - 1, day); // month is 0-based
+		}
+
+		return new Date('Invalid');
+	}	
 
 	filterArrByField(arr: any, fieldName: string) {
 		const body: IRegistration = this.regForm.value;
@@ -882,12 +900,14 @@ export class HomeComponent {
 
 	fileUploadHelper(fileUploadObj: { file: File }, completeApplication: boolean, tag: string = '', isProvisional: boolean = false) {
 			const obj: File = fileUploadObj.file;
-			const newFile = new File([obj],( isProvisional ? `PROVISIONAL_${obj.name}` : obj.name), {type: obj.type});
+			const getCellphone = this.regForm.controls['cell'].value;
+			const newFile = new File([obj],( isProvisional ? `PROVISIONAL_${obj.name} cellphone: ${getCellphone}` : obj.name), {type: obj.type});
+			
 			this.fileUploadService.upload(newFile).pipe(
 				last(),	
 				concatMap((event) => {
 					this.loggerService.sendLog(
-						`file=${isProvisional ? `PROVISIONAL_${obj.name}` : obj.name}`, 
+						`file=${isProvisional ? `PROVISIONAL_${obj.name} cellphone: ${getCellphone}` : obj.name}`, 
 						isProvisional ? 0 : 1
 					).subscribe();
 					if (completeApplication) {
@@ -898,7 +918,7 @@ export class HomeComponent {
 				}),
 				catchError((err: HttpErrorResponse) => {
 					this.isLoading = false;
-					this.loggerService.sendLog(`file upload error for file=${isProvisional ? `PROVISIONAL_${obj.name}` : obj.name}`, isProvisional ? 0 : 1);
+					this.loggerService.sendLog(`file upload error for file=${isProvisional ? `PROVISIONAL_${obj.name} cellphone: ${getCellphone}` : obj.name}`, isProvisional ? 0 : 1);
 					return of(err);
 				})
 			).subscribe();
@@ -939,8 +959,8 @@ export class HomeComponent {
 		if (cellphone.length <= 0) formSubList.push('Cellphone number');
 		if (cellphone.length > 0 && cellphone.length < 10) formSubList.push('Cellphone must be 10 or more digits');
 		if (!numbersOnly.test(cellphone)) formSubList.push('Cellphone must be numbers only');
-		if (email.length <= 0) formSubList.push('Email address');
-		if (email.length > 0 && !emailIsValid) formSubList.push('Email address is not valid');
+		//if (email.length <= 0) formSubList.push('Email address');
+		//if (email.length > 0 && !emailIsValid) formSubList.push('Email address is not valid');
 
 		// Address
 		if (address_1.length <= 0 && this.regType === REG_TYPE.IND) formSubList.push('Please complete address 1 field');

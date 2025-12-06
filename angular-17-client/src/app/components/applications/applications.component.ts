@@ -18,7 +18,7 @@ interface IModalData {
 	styleUrl: './applications.component.css',
 })
 export class ApplicationsComponent implements OnInit {
-	isLoggedIn: boolean = false;
+	isLoggedIn: boolean = true;
 	inpt_username: string = '';
 	inpt_password: string = '';
 	searchBy: searchType | null = null;

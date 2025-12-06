@@ -141,10 +141,11 @@ Fishing And Enterprises</strong>.”</p>
 					<br /><br />
 					<p class="text-left">Before starting please ensure you have the following documents ready for upload, based on your citizen status and registration type:</p>
 					<ul class="text-left">
-						<li>Copy of ID or Passport</li>
+						<li><strong>Official</strong> copy of ID or Passport <span class="red-text">(*NB: for <strong>Smart IDs</strong> please upload the front and back part of your ID in <strong>one</strong> document)</span></li>
 						<li>an Individual: Proof of Address</li>
-						<li>a Business: Copy of Business Registration Doc</li>
-						<li>a Trust: Copy of Letter of Authority</li>
+						<li>a Business: An <strong>Official</strong> copy of Business Registration Doc</li>
+						<li>a Trust: An <strong>Official</strong> Copy of Letter of Authority</li>
+						<li>an <strong>Official</strong> Bank Confirmation Letter <span class="red-text">(Stamped and <strong>not older</strong> than 3 months)</span></li>
 					</ul>				
 				</div>
 
@@ -576,21 +577,21 @@ Fishing And Enterprises</strong>.”</p>
 
 										<ng-container *ngIf="regType === 'business'">
 											<app-file-upload 
-												[fileName]="'Upload Registration Certificate (COR 14.3)'" 
+												[fileName]="'Upload Official Registration Certificate (COR 14.3)'" 
 												[fileType]="fileTypes.BUS_REG_DOC"
 												(dbName)="updateDBName($event, fileTypes.BUS_REG_DOC)"></app-file-upload>
 										</ng-container>
 			
 										<ng-container *ngIf="regType === 'trust'">
 											<app-file-upload 
-												[fileName]="'Upload Letter of authority'" 
+												[fileName]="'Upload Official Letter of authority'" 
 												[fileType]="fileTypes.TRUST_DOC"
 												(dbName)="updateDBName($event, fileTypes.TRUST_DOC)"></app-file-upload>
 										</ng-container>
 
 										<ng-container>
 											<app-file-upload 
-												[fileName]="'Upload Bank Confirmation Letter'" 
+												[fileName]="'Upload Official Bank Confirmation Letter'" 
 												[fileType]="fileTypes.BANK_CONF_LETTER_BUSTRUST" 
 												(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER_BUSTRUST)"></app-file-upload>								
 										</ng-container>													
@@ -616,21 +617,21 @@ Fishing And Enterprises</strong>.”</p>
 										<!-- BANK CONFIRMATION LETTER PERSONAL --- DEV NOTE: NEEDS TO BE TWEAKED -->
 										<ng-container *ngIf="isSACitizen">
 											<app-file-upload 
-												[fileName]="'Upload ID'" 
+												[fileName]="'Upload Official ID'" 
 												[fileType]="fileTypes.ID" 
 												(dbName)="updateDBName($event, fileTypes.ID, regType !== 'individual' ? regType : '')"></app-file-upload>								
 										</ng-container>
 
 										<ng-container *ngIf="isForeigner">
 											<app-file-upload 
-												[fileName]="'Upload Passport'" 
+												[fileName]="'Upload Official Passport'" 
 												[fileType]="fileTypes.PASSPORT" 
 												(dbName)="updateDBName($event, fileTypes.PASSPORT, regType !== 'individual' ? regType : '')"></app-file-upload>								
 										</ng-container>	
 
 										<ng-container *ngIf="regType === 'individual'">
 											<app-file-upload 
-												[fileName]="'Upload Bank Confirmation Letter'" 
+												[fileName]="'Upload Official Bank Confirmation Letter'" 
 												[fileType]="fileTypes.BANK_CONF_LETTER" 
 												(dbName)="updateDBName($event, fileTypes.BANK_CONF_LETTER)"></app-file-upload>								
 										</ng-container>																					
@@ -711,7 +712,7 @@ Fishing And Enterprises</strong>.”</p>
 	<ng-container *ngIf="!applicationInProgress && !rateLimiterActive">
 		<div class="container">
 			<div class="py-5 text-center">
-				<h2>Your Application has been processed!</h2>
+				<h2>Your FICA registration was successful!</h2>
 				<p class="lead">Congratulations, your application has been processed successfully. You will receive further communication from your relevant contact in due course.</p>
 			</div>
 		</div>
