@@ -56,7 +56,7 @@
 					<tr *ngFor="let ben of _UISearchResults">
 						<td scope="row">{{ben.first_name}}</td>
 						<td scope="row">{{ben.last_name}}</td>
-						<td scope="row">
+						<td scope="row" class="idpass-row">
 							<input 
 								type="text" 
 								[(ngModel)]="ben.id_number"
@@ -110,7 +110,7 @@
 					<tr *ngFor="let ben of allRecords">
 						<td scope="row">{{ben.first_name}}</td>
 						<td scope="row">{{ben.last_name}}</td>
-						<td scope="row">
+						<td scope="row" class="idpass-row">
 							<input 
 								type="text" 
 								[(ngModel)]="ben.id_number"
