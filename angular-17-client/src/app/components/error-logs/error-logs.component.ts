@@ -128,11 +128,21 @@ export class ErrorLogsComponent implements OnInit {
 
 	formatDataLog(log: string): string {
 		const serverPath = 'http://localhost:8080/assets/uploads/';
-		if (log.includes('file=')) {
-			const filePath = log.substring(log.indexOf('file=') + 5, log.length);
-			return `link: <a href="${serverPath}${filePath}" target="_blank">${filePath}</a>`;
-		}
-		return log;
+		const result = splitAndLink(serverPath, log);
+		return `${result.leftText} | File Link: ${result.hyperlink}`;
 	}
 
+}
+
+function splitAndLink(baseUrl: string, input: string): { leftText: string; hyperlink: string } {
+  // Split on the first pipe |
+  const [left, right] = input.split('|').map(s => s.trim());
+
+  // Left side keeps original format (cellphone: xxx |)
+  const leftText = left;
+
+  // Right side becomes a hyperlink (no encoding)
+  const hyperlink = `<a href="${baseUrl}${right}" target="_blank">${right}</a>`;
+
+  return { leftText, hyperlink };
 }

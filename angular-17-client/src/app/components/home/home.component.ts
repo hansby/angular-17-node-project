@@ -951,13 +951,13 @@ export class HomeComponent {
 	fileUploadHelper(fileUploadObj: { file: File }, completeApplication: boolean, tag: string = '', isProvisional: boolean = false) {
 			const obj: File = fileUploadObj.file;
 			const getCellphone = this.regForm.controls['cell'].value;
-			const newFile = new File([obj],( isProvisional ? `PROVISIONAL_${obj.name} cellphone: ${getCellphone}` : obj.name), {type: obj.type});
+			const newFile = new File([obj],( isProvisional ? `PROVISIONAL_${obj.name}` : obj.name), {type: obj.type});
 			
 			this.fileUploadService.upload(newFile).pipe(
 				last(),	
 				concatMap((event) => {
 					this.loggerService.sendLog(
-						`file=${isProvisional ? `PROVISIONAL_${obj.name} cellphone: ${getCellphone}` : obj.name}`, 
+						`${isProvisional ? `cellphone: ${getCellphone} | PROVISIONAL_${obj.name}` : obj.name}`, 
 						isProvisional ? 0 : 1
 					).subscribe();
 					if (completeApplication) {
@@ -968,7 +968,7 @@ export class HomeComponent {
 				}),
 				catchError((err: HttpErrorResponse) => {
 					this.isLoading = false;
-					this.loggerService.sendLog(`file upload error for file=${isProvisional ? `PROVISIONAL_${obj.name} cellphone: ${getCellphone}` : obj.name}`, isProvisional ? 0 : 1);
+					this.loggerService.sendLog(`file upload error for ${isProvisional ? `cellphone: ${getCellphone} | PROVISIONAL_${obj.name}` : obj.name}`, isProvisional ? 0 : 1);
 					return of(err);
 				})
 			).subscribe();
