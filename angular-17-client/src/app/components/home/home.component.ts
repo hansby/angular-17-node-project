@@ -596,17 +596,27 @@ export class HomeComponent {
 		this.runValidationLogicHelper('ID', response[0], fileTypes.ID);
 	}	
 
-	runValidationLogicHelper(errTag: string, response: any, fileType: fileTypes){
+	runValidationLogicHelper(errTag: string, response: any, fType: fileTypes){
 		let formSubList = this.formSubmissionErrors_PAGE3;
 		if (response && response.document) {
-			const isValid = this.isDocValid(response.document.text, fileType);
+			const isValid = this.isDocValid(response.document.text, fType);
 			if (!isValid) {
 				formSubList.push(`Your ${errTag} is either not a valid document or it is but does not match your details above.`);
 				this.isLoading = false;
 				this.validationFailed = true;
+				const body: IRegistration = this.regForm.value;
+				const bodyCopy = Object.assign({}, body);				
 
+				if (fType === fileTypes.TRUST_DOC) this.fileUploadHelper(bodyCopy.file_trust, false, fileTypes.TRUST_DOC, true);
+				if (fType === fileTypes.ID) this.fileUploadHelper(bodyCopy.file_id, false, fileTypes.ID, true);
+				if (fType === fileTypes.PROOF_OF_ADDRESS) this.fileUploadHelper(bodyCopy.file_poa, false, fileTypes.PROOF_OF_ADDRESS, true);
+				if (fType === fileTypes.PASSPORT) this.fileUploadHelper(bodyCopy.file_passport, false, fileTypes.PASSPORT, true);
+				if (fType === fileTypes.BUS_REG_DOC) this.fileUploadHelper(bodyCopy.file_bus_reg, false, fileTypes.BUS_REG_DOC, true);
+				if (fType === fileTypes.BANK_CONF_LETTER) this.fileUploadHelper(bodyCopy.file_bcl, false, fileTypes.BANK_CONF_LETTER, true);
+				if (fType === fileTypes.BANK_CONF_LETTER_BUSTRUST) this.fileUploadHelper(bodyCopy.file_bcl_bustrust, false, fileTypes.BANK_CONF_LETTER_BUSTRUST, true);
+				if (fType === fileTypes.PROOF_OF_ADDRESS_BUSTRUST) this.fileUploadHelper(bodyCopy.file_poa_bustrust, false, fileTypes.PROOF_OF_ADDRESS_BUSTRUST, true);
 				// SEND PROVISIONAL UPLOAD TO FILE SERVER
-				this.sendDocumentsToServer(false, true);
+				//this.sendDocumentsToServer(false, true);
 				return;
 			}
 		} else {
